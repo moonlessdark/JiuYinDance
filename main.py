@@ -17,8 +17,8 @@ if __name__ == '__main__':
         QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
         app = QtWidgets.QApplication(sys.argv)
         main_gui = mainUI()
-        main_gui.setMaximumSize(260, 400)
-        main_gui.setMinimumSize(260, 400)
+        main_gui.setMaximumSize(331, 487)
+        main_gui.setMinimumSize(331, 487)
         main_gui.show()
         sys.exit(app.exec_())
     else:

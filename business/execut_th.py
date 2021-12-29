@@ -57,22 +57,14 @@ class signalThreading(QThread):
         """
         self.working = False
 
-    def start_execute_init(self, windows_handle_list, windows_chose):
+    def start_execute_init(self, windows_handle_list):
         """
         线程开始
         :return:
         """
         self.working = True
         self.cond.wakeAll()
-        if 1 in windows_chose:
-            self.windows_handle_list.append(windows_handle_list[0])
-        if 2 in windows_chose:
-            self.windows_handle_list.append(windows_handle_list[1])
-        if 3 in windows_chose:
-            self.windows_handle_list.append(windows_handle_list[2])
-        if len(self.windows_handle_list) == 0:
-            self.pause()
-            self.sin_out.emit("未选择窗口，程序停止运行")
+        self.windows_handle_list = windows_handle_list
 
     def run(self):
         """
@@ -93,30 +85,31 @@ class signalThreading(QThread):
                     win32gui.SetForegroundWindow(self.windows_handle_list[i])
                     # 设置为活动的，方便输入按键
                     win32gui.ShowWindow(self.windows_handle_list[i], win32con.SW_SHOW)
+                    time.sleep(0.5)
                     for n in range(len(key_list)):
                         key = key_list[n]
                         if key == 'j':
-                            self.kk.dp('j', round(random.uniform(0, 0.5), 2))
+                            self.kk.dp('j', round(random.uniform(0, 0.3), 2))
                         elif key == 'k':
-                            self.kk.dp('k', round(random.uniform(0, 0.5), 2))
+                            self.kk.dp('k', round(random.uniform(0, 0.3), 2))
                         elif key == 'up':
-                            self.kk.dp(38, round(random.uniform(0, 0.5), 2))
+                            self.kk.dp(38, round(random.uniform(0, 0.3), 2))
                         elif key == 'down':
-                            self.kk.dp(40, round(random.uniform(0, 0.5), 2))
+                            self.kk.dp(40, round(random.uniform(0, 0.3), 2))
                         elif key == 'left':
-                            self.kk.dp(37, round(random.uniform(0, 0.5), 2))
+                            self.kk.dp(37, round(random.uniform(0, 0.3), 2))
                         elif key == 'right':
-                            self.kk.dp(39, round(random.uniform(0, 0.5), 2))
+                            self.kk.dp(39, round(random.uniform(0, 0.3), 2))
                     if self.is_handle is None:
                         self.open_handle_num = 1
                     elif self.is_handle == 1:
                         self.open_handle_num = 2
                     else:
                         self.open_handle_num = 1
-                    self.sin_out.emit("%s 本轮团练结束，按钮为 %s" % (time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()), key_list))
-                    time.sleep(20)
+                    self.sin_out.emit("%s 本轮团练结束，按钮为 %s" % (time.strftime("%H:%M:%S", time.localtime()), key_list))
+                    time.sleep(15)
                 else:
-                    self.sin_out.emit("%s 团练还没开始或还没轮到此号" % time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
-                time.sleep(0.5)
-        self.sin_out.emit("线程已停止运行(或已完成循环对比)")
+                    self.sin_out.emit("%s 团练未开始或还没到此号" % time.strftime("%H:%M:%S", time.localtime()))
+
+        self.sin_out.emit("线程已停止运行")
         self.mutex.unlock()
