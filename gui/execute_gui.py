@@ -43,20 +43,22 @@ class mainUI(Ui_main_page_gui):
             self.log_count = 0
 
     def start_execute(self):
-
-        self.print_logs("开始执行")
-        windows_list = []
-        if self.checkBox_1_windows.isCheckable():
-            windows_list.append(self.windows_1_handle)
-        if self.checkBox_2_windows.isCheckable():
-            windows_list.append(self.windows_1_handle)
-        if self.checkBox_3_windows.isCheckable():
-            windows_list.append(self.windows_1_handle)
+        if self.type_select_button.currentText() == "自定义模式":
+            self.print_logs("开始执行自定义模式")
+            windows_list = []
+            if self.checkBox_1_windows.isCheckable():
+                windows_list.append(self.windows_1_handle)
+            if self.checkBox_2_windows.isCheckable():
+                windows_list.append(self.windows_1_handle)
+            if self.checkBox_3_windows.isCheckable():
+                windows_list.append(self.windows_1_handle)
+            else:
+                self.print_logs("请选择您需要团练的窗口")
+                return None
+            self.th.start_execute_init(windows_list)
+            self.th.start()
         else:
-            self.print_logs("请选择您需要团练的窗口")
-            return None
-        self.th.start_execute_init(windows_list)
-        self.th.start()
+            self.print_logs("顺序模式还未完善，暂无法使用")
 
     def stop(self):
         self.th.pause()
