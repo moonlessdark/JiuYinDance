@@ -93,8 +93,8 @@ class Ui_main_page_gui(QtWidgets.QWidget):
 
         self.setWindowTitle("瓜牛劲舞团多开版")
         self.groupBox.setTitle("设置")
-        self.type_select_button.setItemText(0, "自定义模式")
-        self.type_select_button.setItemText(1, "顺序模式")
+        self.type_select_button.setItemText(0, "团练模式")
+        self.type_select_button.setItemText(1, "授业模式")
         self.get_windows_list_button.setText("窗口获取")
         self.execute_button.setText("开始执行")
         self.groupBox_2.setTitle("窗口信息")
