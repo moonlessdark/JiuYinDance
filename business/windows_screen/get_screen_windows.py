@@ -58,21 +58,16 @@ class windowsCap(object):
         :return:
         """
         handle_list = []
-        handle_1 = win32gui.FindWindow("FxMain", None)
-        # print("%d" % handle_1)
-        if handle_1 > 0:
-            handle_list.append(handle_1)
-            # handle_2 = win32gui.FindWindowEx(None, handle_1, None, "九阴真经  武侠服专区-萍踪侠影")
-            handle_2 = win32gui.FindWindowEx(None, handle_1, "FxMain", None)
-            # print("%d" % handle_2)
-            if handle_2 > 0:
-                handle_list.append(handle_2)
-                handle_3 = win32gui.FindWindowEx(None, handle_2, "FxMain", None)
-                # print("%d" % handle_3)
-                if handle_3 > 0:
-                    handle_list.append(handle_3)
-        return list(set(handle_list))
-
+        handle = win32gui.FindWindow("FxMain", None)
+        if handle > 0:
+            handle_list.append(handle)
+            while True:
+                handle = win32gui.FindWindowEx(None, handle, "FxMain", None)
+                if handle > 0:
+                    handle_list.append(handle)
+                else:
+                    break
+        return handle_list
 
 
 if __name__ == "__main__":
