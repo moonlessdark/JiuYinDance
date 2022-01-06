@@ -1,6 +1,7 @@
 # JiuYinPlus
 九阴真经团练助手3开版
 
+本脚本引用了：https://github.com/bode135/pydamo  
 
 九阴真经OL团练/授业脚本
 
