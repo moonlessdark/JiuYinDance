@@ -8,10 +8,11 @@ class getPic:
         self.get_coord = getCoord()
         self.hash = hashKey()
 
-    def get_screen_pic(self, url_path):
+    def get_screen_pic(self, url_path, execute_type):
         key_img_list = self.get_coord.get_pic_coord(url_path)
-        if key_img_list is not None:
+        if key_img_list is not None and len(key_img_list) > 0:
             keyword_list_result = self.hash.pic_hash_com(key_img_list)
-            print(keyword_list_result)
             return keyword_list_result
-        return None
+        else:
+            pic_list = self.get_coord.get_end_pic(url_path)
+            return self.hash.pic_hash_end_icon_all(pic_list, execute_type)

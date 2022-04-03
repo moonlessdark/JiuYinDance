@@ -1,12 +1,12 @@
 import cv2
 
-from pictureDiscern.getKeyCount import getCountByPic
+from pictureDiscern.getKeyCount import getPicByWindows
 
 
 class getCoord(object):
 
     def __init__(self):
-        self.get_count = getCountByPic()
+        self.get_count = getPicByWindows()
 
     def get_pic_coord(self, img):
         """
@@ -17,7 +17,7 @@ class getCoord(object):
         a = 735
         b = 775
 
-        pic_count = self.get_count.get_count(img)
+        pic_count = self.get_count.get_button_area_pic(img)
         key_coord_list = []
 
         if pic_count == 0:
@@ -87,3 +87,10 @@ class getCoord(object):
             return None
         return key_coord_list
 
+    def get_end_pic(self, img):
+        """
+        结束的标志图片在不在
+        :param img:
+        :return:
+        """
+        return self.get_count.get_end_icon(img)

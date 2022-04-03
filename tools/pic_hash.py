@@ -10,6 +10,7 @@ class PictureHashCompare(object):
     """
     def __init__(self):
         self.img_read = None
+        self.accuracy_num = 64  # 精准度
 
     def avg_hash(self, img):
         """
@@ -25,21 +26,22 @@ class PictureHashCompare(object):
             # self.img_read = cv2.imdecode(np.frombuffer(img, np.uint8), cv2.IMREAD_COLOR)
             self.img_read = img
         # 缩放为8*8
-        img_read = cv2.resize(self.img_read, (64, 64), interpolation=cv2.INTER_CUBIC)
+        # img_read = cv2.resize(self.img_read, (64, 64), interpolation=cv2.INTER_CUBIC)
+        img_read = cv2.resize(self.img_read, (self.accuracy_num, self.accuracy_num), interpolation=cv2.INTER_CUBIC)
         # 转换为灰度图
         gray = cv2.cvtColor(img_read, cv2.COLOR_BGR2GRAY)
         # s为像素和初值为0，hash_str为hash值初值为''
         s = 0
         hash_str = ''
         # 遍历累加求像素和
-        for i in range(64):
-            for j in range(64):
+        for i in range(self.accuracy_num):
+            for j in range(self.accuracy_num):
                 s = s + gray[i, j]
         # 求平均灰度
-        avg = s / 4096
+        avg = s / (self.accuracy_num*self.accuracy_num)
         # 灰度大于平均值为1相反为0生成图片的hash值
-        for i in range(64):
-            for j in range(64):
+        for i in range(self.accuracy_num):
+            for j in range(self.accuracy_num):
                 if gray[i, j] > avg:
                     hash_str = hash_str + '1'
                 else:
@@ -59,13 +61,14 @@ class PictureHashCompare(object):
             self.img_read = img
         #     self.img_read = cv2.imdecode(np.frombuffer(img, np.uint8), cv2.IMREAD_COLOR)
         # 缩放65*64
-        img_read = cv2.resize(self.img_read, (65, 64), interpolation=cv2.INTER_CUBIC)
+        # img_read = cv2.resize(self.img_read, (65, 64), interpolation=cv2.INTER_CUBIC)
+        img_read = cv2.resize(self.img_read, (self.accuracy_num+1, self.accuracy_num), interpolation=cv2.INTER_CUBIC)
         # 转换灰度图
         gray = cv2.cvtColor(img_read, cv2.COLOR_BGR2GRAY)
         hash_str = ''
         # 每行前一个像素大于后一个像素为1，相反为0，生成哈希
-        for i in range(64):
-            for j in range(64):
+        for i in range(self.accuracy_num):
+            for j in range(self.accuracy_num):
                 if gray[i, j] > gray[i, j + 1]:
                     hash_str = hash_str + '1'
                 else:
@@ -120,7 +123,7 @@ class PictureHashCompare(object):
             if hash1[i] != hash2[i]:
                 n = n + 1
         # return round((len(hash1)-n)*100/len(hash2), 2)
-        return 1 - n / 4096
+        return round(1 - n / (self.accuracy_num*self.accuracy_num), 2)
 
     def cmp2hash(self, hash1, hash2):
         """
@@ -139,7 +142,7 @@ class PictureHashCompare(object):
         else:
             # num = (100-num)/100
             num = 1 - num / 1024
-        return num
+        return round(num, 2)
 
     # def contrast_hash(self, pic_url_1, pic_url_2, hash_type):
     #     """
