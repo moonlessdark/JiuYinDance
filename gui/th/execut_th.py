@@ -53,10 +53,10 @@ class tuanLianTh(QThread):
         self.windows_handle_list = windows_handle_list
         self.execute_type = execute_type
         if execute_type == "团练模式":
-            self.wait_time = 0.2
+            self.wait_time = 0.3
         else:
             if len(windows_handle_list) == 1:
-                self.wait_time = 0.1
+                self.wait_time = 0.2
         self.dm_windows = getWindows()
         self.dm_keyboard = getKeyBoardMouse()
 
