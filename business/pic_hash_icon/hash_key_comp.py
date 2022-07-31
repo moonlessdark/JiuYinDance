@@ -1,7 +1,5 @@
-import cv2
-
-from tools.enum_key import iconEnum
-from tools.pic_hash import PictureHashCompare
+from common.tools.resources_tools.enum_key import iconEnum
+from common.tools.pic_tools.pic_hash import PictureHashCompare
 
 
 class hashKey:
@@ -25,7 +23,6 @@ class hashKey:
         right = iconEnum.right.value
         end_tl = iconEnum.end_tl.value
         end_sy = iconEnum.end_sy.value
-
 
         avg_hash_j = self.pic_hash.avg_hash(j)
         avg_hash_k = self.pic_hash.avg_hash(k)
@@ -70,7 +67,6 @@ class hashKey:
                               "p_hash_list": p_hash_end_tl_list}
 
     def pic_hash_com(self, pic_path_list):
-
         if self.origin_hash_dict is None:
             self.origin_hash()
 
@@ -167,7 +163,7 @@ class hashKey:
         return end_icon_result
 
 
-if __name__ == "__main__":
-    img = cv2.imread("D:\\111.png")  # 载入图像
-    imgs = img[30:190, 1735:1795]
-    hashKey().pic_hash_end_icon(imgs, "授业模式")
+# if __name__ == "__main__":
+#     img = cv2.imread("D:\\111.png")  # 载入图像
+#     imgs = img[30:190, 1735:1795]
+#     hashKey().pic_hash_end_icon(imgs, "授业模式")

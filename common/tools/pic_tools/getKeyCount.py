@@ -1,7 +1,11 @@
 import cv2
 
 
-class getPicByWindows(object):
+class getPicByWindows:
+
+    """
+    计算出现的按钮个数
+    """
 
     def get_button_area_pic(self, img):
         """
@@ -22,7 +26,7 @@ class getPicByWindows(object):
                 i += 1
         if i == 0:
             return i
-        print("个数为：%d" % (i-1))
+        # print("个数为：%d" % (i-1))
         return i - 1
 
     def get_end_icon(self, img):
@@ -36,5 +40,5 @@ class getPicByWindows(object):
         return {"团练": img_tl, "授业": img_sy}
 
 
-if __name__ == '__main__':
-    getPicByWindows().get_button_area_pic("D:/12.png")
+# if __name__ == '__main__':
+#     getPicByWindows().get_button_area_pic("D:/12.png")

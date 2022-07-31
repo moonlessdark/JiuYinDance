@@ -1,0 +1,4 @@
+PyQt5~=5.15.7
+numpy~=1.23.1
+opencv-python~=4.5.4.60
+comtypes~=1.1.11

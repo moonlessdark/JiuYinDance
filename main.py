@@ -1,14 +1,13 @@
 import ctypes
 import sys
 from PyQt5 import QtWidgets, QtCore
-
-from gui.execute_gui import mainUI
+from gui.connect.connect_gui import mainUI
 
 
 def is_admin():
     try:
         return ctypes.windll.shell32.IsUserAnAdmin()
-    except:
+    except Exception as e:
         return False
 
 
@@ -17,8 +16,6 @@ if __name__ == '__main__':
         QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
         app = QtWidgets.QApplication(sys.argv)
         main_gui = mainUI()
-        main_gui.setMaximumSize(331, 487)
-        main_gui.setMinimumSize(331, 487)
         main_gui.show()
         sys.exit(app.exec_())
     else:

@@ -1,10 +1,10 @@
-import cv2
-
-from pictureDiscern.getKeyCount import getPicByWindows
+from common.tools.pic_tools.getKeyCount import getPicByWindows
 
 
 class getCoord(object):
-
+    """
+    计算按钮出现的坐标
+    """
     def __init__(self):
         self.get_count = getPicByWindows()
 
@@ -19,7 +19,6 @@ class getCoord(object):
 
         pic_count = self.get_count.get_button_area_pic(img)
         key_coord_list = []
-
         if pic_count == 0:
             return None
         elif pic_count == 1:

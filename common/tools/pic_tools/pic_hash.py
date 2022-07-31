@@ -1,7 +1,5 @@
 import cv2
-import numpy as np
-
-# from tools.Enum_tools import hash_type as ht
+from numpy import fromfile, uint8, float32, mean
 
 
 class PictureHashCompare(object):
@@ -21,7 +19,7 @@ class PictureHashCompare(object):
 
         if isinstance(img, str):
             # img_read = cv2.cv2.imread(img)   # 这个方法无法处理带中文的路径
-            self.img_read = cv2.imdecode(np.fromfile(img, dtype=np.uint8), -1)
+            self.img_read = cv2.imdecode(fromfile(img, dtype=uint8), -1)
         else:
             # self.img_read = cv2.imdecode(np.frombuffer(img, np.uint8), cv2.IMREAD_COLOR)
             self.img_read = img
@@ -56,7 +54,7 @@ class PictureHashCompare(object):
         """
         if isinstance(img, str):
             # img_read = cv2.cv2.imread(img)   # 这个方法无法处理带中文的路径
-            self.img_read = cv2.imdecode(np.fromfile(img, dtype=np.uint8), -1)
+            self.img_read = cv2.imdecode(fromfile(img, dtype=uint8), -1)
         else:
             self.img_read = img
         #     self.img_read = cv2.imdecode(np.frombuffer(img, np.uint8), cv2.IMREAD_COLOR)
@@ -83,20 +81,20 @@ class PictureHashCompare(object):
         """
         if isinstance(img, str):
             # img_read = cv2.cv2.imread(img)   # 这个方法无法处理带中文的路径
-            self.img_read = cv2.imdecode(np.fromfile(img, dtype=np.uint8), -1)
+            self.img_read = cv2.imdecode(fromfile(img, dtype=uint8), -1)
         else:
             self.img_read = img
         #     self.img_read = cv2.imdecode(np.frombuffer(img, np.uint8), cv2.IMREAD_COLOR)
-        self.img_read = cv2.cv2.resize(self.img_read, (32, 32))
+        self.img_read = cv2.resize(self.img_read, (32, 32))
 
-        gray = cv2.cv2.cvtColor(self.img_read, cv2.cv2.COLOR_BGR2GRAY)
+        gray = cv2.cvtColor(self.img_read, cv2.COLOR_BGR2GRAY)
 
-        dct = cv2.cv2.dct(np.float32(gray))
+        dct = cv2.dct(float32(gray))
 
         dct_roi = dct[0:8, 0:8]
 
         hash = []
-        avreage = np.mean(dct_roi)
+        avreage = mean(dct_roi)
         for i in range(dct_roi.shape[0]):
             for j in range(dct_roi.shape[1]):
                 if dct_roi[i, j] > avreage:
@@ -143,29 +141,3 @@ class PictureHashCompare(object):
             # num = (100-num)/100
             num = 1 - num / 1024
         return round(num, 2)
-
-    # def contrast_hash(self, pic_url_1, pic_url_2, hash_type):
-    #     """
-    #     2张图片的hash对比
-    #     :param pic_url_1: 图片路径1
-    #     :param pic_url_2: 图片路径2
-    #     :param hash_type: 哈希类型(str)，'感知哈希', '差值哈希', '均值哈希'
-    #     :return: 对比结果
-    #     """
-    #     if hash_type == ht.avg_hash.value:
-    #         hash_1 = self.avg_hash(pic_url_1)
-    #         hash_2 = self.avg_hash(pic_url_2)
-    #         result = self.cmpHash(hash_1, hash_2)
-    #         return result
-    #     elif hash_type == ht.difference_hash.value:
-    #         hash_1 = self.difference_hash(pic_url_1)
-    #         hash_2 = self.difference_hash(pic_url_2)
-    #         result = self.cmpHash(hash_1, hash_2)
-    #         return result
-    #     elif hash_type == ht.perception_hash.value:
-    #         hash_1 = self.perception_hash(pic_url_1)
-    #         hash_2 = self.perception_hash(pic_url_2)
-    #         result = self.cmp2hash(hash_1, hash_2)
-    #         return result
-    #     else:
-    #         raise
