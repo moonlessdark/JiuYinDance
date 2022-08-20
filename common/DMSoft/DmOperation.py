@@ -1,3 +1,4 @@
+import random
 import time
 
 from common.DMSoft.regsvr import reg_dm_soft
@@ -104,6 +105,12 @@ class GetKeyBordAndMouse:
     def __init__(self):
         self.dm = None
 
+    def sleep_time(self):
+        """
+        按钮按下之间的随机时间
+        """
+        return round(random.uniform(0.01, 0.3), 2)
+
     def get_dm_driver(self, dm=None, dm_reg_path: str = None, dm_path: str = None):
         """
         :param dm: 已经加载成功的大漠插件驱动对象
@@ -132,35 +139,35 @@ class GetKeyBordAndMouse:
         """
         return self.dm.GetKeyState(vk_code)
 
-    def key_down(self, vk_code: int, hold_time: float = 0.1) -> bool:
+    def key_down(self, vk_code: int) -> bool:
         """
         按住指定的虚拟键码
         :param hold_time: 按住按钮的时长
         :param vk_code: 字符编码
         """
-        if hold_time > 0:
+        if self.sleep_time() > 0:
             self.dm.KeyDown(vk_code)
-            time.sleep(hold_time)
+            time.sleep(self.sleep_time())
             self.key_up(vk_code)
             return True
         else:
             return True if self.dm.KeyDown(vk_code) == 1 else False
 
-    def key_down_char(self, key_str: str, hold_time: float = 0.1) -> bool:
+    def key_down_char(self, key_str: str) -> bool:
         """
         按住指定的虚拟键码，支持以字符形式传入
         :param hold_time: 按住按钮的时长
         :param key_str: 按钮字符,不区分大小写
         """
-        if hold_time > 0:
+        if self.sleep_time() > 0:
             self.dm.KeyDownChar(key_str)
-            time.sleep(hold_time)
+            time.sleep(self.sleep_time())
             self.key_up_char(key_str)
             return True
         else:
             return True if self.dm.KeyDownChar(key_str) == 1 else False
 
-    def key_press(self, vk_code: int, sleep_time: float = 0) -> bool:
+    def key_press(self, vk_code: int, sleep_time: float = 0.1) -> bool:
         """
         按下指定的虚拟键码
         :param sleep_time: 按了按钮之后等待的时间
@@ -172,7 +179,7 @@ class GetKeyBordAndMouse:
         else:
             return False
 
-    def key_press_char(self, key_str: str, sleep_time: float = 0) -> bool:
+    def key_press_char(self, key_str: str, sleep_time: float = 0.1) -> bool:
         """
         按下指定的虚拟键码
         :param sleep_time: 按了按钮之后等待的时间
@@ -379,7 +386,7 @@ class GetWindows:
                 这里注意,返回的数组里的是字符串,要用于使用,比如BindWindow时,还得强制类型转换,比如int(hwnds(0))
         """
         hwnds = self.dm.EnumWindow(parent, title, class_name, filter_num)
-        if hwnds is not None or hwnds != "":
+        if hwnds != "":
             return hwnds.split(",")
         else:
             return []
@@ -402,7 +409,7 @@ class GetWindows:
                 这里注意,返回的数组里的是字符串,要用于使用,比如BindWindow时,还得强制类型转换,比如int(hwnds(0))
         """
         hwnds = self.dm.EnumWindowByProcess(process_name, title, class_name, filter_num)
-        if hwnds is not None or hwnds != "":
+        if hwnds != "":
             return hwnds.split(",")
         else:
             return []
