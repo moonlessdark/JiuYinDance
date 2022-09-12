@@ -1,4 +1,4 @@
-from common.tools.pic_tools.getKeyCount import getPicByWindows
+from deskPage.common.tools.pic_tools.getKeyCount import getPicByWindows
 
 
 class getCoord(object):

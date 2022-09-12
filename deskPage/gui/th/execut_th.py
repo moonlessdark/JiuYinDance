@@ -2,9 +2,9 @@ import random
 from PyQt5.QtCore import QThread, pyqtSignal, QWaitCondition, QMutex
 import time
 from numpy import ndarray
-from business.windows_screen.get_screen_windows import windowsCap
-from common.DMSoft.get_dm_driver import getWindows, getKeyBoardMouse
-from business.get_pic_icon.get_pic import getPic
+from deskPage.business.windows_screen.get_screen_windows import windowsCap
+from deskPage.common.DMSoft.get_dm_driver import getWindows, getKeyBoardMouse
+from deskPage.business.get_pic_icon.get_pic import getPic
 
 
 class tuanLianTh(QThread):

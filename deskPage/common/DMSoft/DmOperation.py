@@ -1,7 +1,7 @@
 import random
 import time
 
-from common.DMSoft.regsvr import reg_dm_soft
+from deskPage.common.DMSoft.regsvr import reg_dm_soft
 
 
 class GetKeyBordAndMouse:

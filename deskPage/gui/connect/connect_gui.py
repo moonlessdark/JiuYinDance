@@ -1,8 +1,8 @@
-from gui.page.mz import Ui_Form
-from gui.page.tuanlian import Ui_main_page_gui
-from gui.th.execut_th import tuanLianTh
-from common.DMSoft.get_dm_driver import getDM, getWindows, getKeyBoardMouse
-from common.tools.resources_tools.enum_key import damo_tools
+from deskPage.gui.page.mz import Ui_Form
+from deskPage.gui.page.tuanlian import Ui_main_page_gui
+from deskPage.gui.th.execut_th import tuanLianTh
+from deskPage.common.DMSoft.get_dm_driver import getDM, getWindows, getKeyBoardMouse
+from deskPage.common.tools.resources_tools.enum_key import damo_tools
 
 
 class mz(Ui_Form):

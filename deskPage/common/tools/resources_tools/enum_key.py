@@ -1,6 +1,6 @@
 import os
 from enum import Enum
-from common.tools.path_tools.project_path import pathUtil
+from deskPage.common.tools.path_tools.project_path import pathUtil
 
 
 class iconEnum(Enum):

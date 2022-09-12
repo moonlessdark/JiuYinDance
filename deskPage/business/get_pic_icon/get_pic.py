@@ -1,5 +1,5 @@
-from common.tools.pic_tools.picCoordinate import getCoord
-from business.pic_hash_icon.hash_key_comp import hashKey
+from deskPage.common.tools.pic_tools.picCoordinate import getCoord
+from deskPage.business.pic_hash_icon.hash_key_comp import hashKey
 
 
 class getPic:

@@ -1,5 +1,5 @@
-from common.DMSoft.DmOperation import GetKeyBordAndMouse, GetWindows
-from common.DMSoft.regsvr import reg_dm_soft
+from deskPage.common.DMSoft.DmOperation import GetKeyBordAndMouse, GetWindows
+from deskPage.common.DMSoft.regsvr import reg_dm_soft
 
 
 class getDM:

@@ -1,5 +1,5 @@
-from common.tools.resources_tools.enum_key import iconEnum
-from common.tools.pic_tools.pic_hash import PictureHashCompare
+from deskPage.common.tools.resources_tools.enum_key import iconEnum
+from deskPage.common.tools.pic_tools.pic_hash import PictureHashCompare
 
 
 class hashKey:
