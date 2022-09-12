@@ -10,7 +10,6 @@ class signIn(Ui_MainWindow):
     """
     公众号签到
     """
-
     def __init__(self):
         super(signIn, self).__init__()
 
