@@ -299,6 +299,9 @@ class dance(Ui_MainWindow):
         self.checkBox_1_windows.setEnabled(False)
         self.checkBox_2_windows.setEnabled(False)
         self.checkBox_3_windows.setEnabled(False)
+        self.checkBox_1_windows.setChecked(False)
+        self.checkBox_2_windows.setChecked(False)
+        self.checkBox_3_windows.setChecked(False)
 
         windows_handle_list = self.__get_windows_handle()
 
