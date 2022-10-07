@@ -1,5 +1,7 @@
 import os
 import sys
+import time
+
 from deskPage.toolSoft.enum_key import damo_tools
 from deskPage.deskGui.guiPage.JiuYinTools import Ui_MainWindow
 from deskPage.deskGui.th.execut_th import DanceThByFindPic, signInTh, DanceThByHash
@@ -318,12 +320,16 @@ class dance(Ui_MainWindow):
         检测游戏窗口.对当前活跃的游戏窗口进行检测
         :return:
         """
-        windows_handle = getWindows().set_window_state(getWindows().find_window("", "FxMain"), 12)
-        # getWindows().set_window_state(windows_handle, 8)  # 置顶窗口
-        getWindows().set_window_state(windows_handle, 1)  # 激活窗口
-        getKeyBoardMouse().key_down_char("k", hold_time=0.1)
-        self.print_logs("窗口已激活，并按下了'K'按钮")
-        # getWindows().set_window_state(windows_handle, 9)
+        handle_list = self.check_handle_is_selected()
+        for i in handle_list:
+            windows_handle = getWindows().set_window_state(i, 12)
+            # getWindows().set_window_state(windows_handle, 8)  # 置顶窗口
+            getWindows().set_window_state(windows_handle, 1)  # 激活窗口
+            getKeyBoardMouse().key_down_char("k", hold_time=0.1)
+            self.print_logs("窗口已激活，并按下了'K'按钮")
+            time.sleep(0.5)
+        if len(handle_list) == 0:
+            self.print_logs("请勾选需要测试的窗口", is_clear=True)
 
     def stop_execute(self):
         """
