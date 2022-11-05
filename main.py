@@ -18,7 +18,13 @@ def is_admin():
 if __name__ == '__main__':
 
     if is_admin():
-        ctypes.windll.shcore.SetProcessDpiAwareness(False)  # 需要在渲染GUI前执行，False表示不启用获取显示器真是分辨率。得到的结果是缩放分辨率(例如4K进行缩放到150%的分辨率变成了2K)
+        try:
+            # >= win8.1
+            # 需要在渲染GUI前执行，False表示不启用获取显示器真是分辨率。得到的结果是缩放分辨率(例如4K进行缩放到150%的分辨率变成了2K)
+            ctypes.windll.shcore.SetProcessDpiAwareness(False)
+        except:
+            # win7
+            ctypes.windll.user32.SetProcessDpiAware()
         QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
         app = QApplication(sys.argv)
         main_gui = mainUI()
