@@ -1,8 +1,10 @@
 import ctypes
 import sys
-from PyQt5 import QtCore
-from PyQt5.QtWidgets import QApplication
-from deskPage.deskGui.connect.connect_gui import mainUI
+
+from PySide2 import QtCore
+from PySide2.QtWidgets import QApplication
+
+from DeskPage.DeskGUIConnect.connect_gui import Dance
 
 
 def is_admin():
@@ -27,8 +29,8 @@ if __name__ == '__main__':
             ctypes.windll.user32.SetProcessDpiAware()
         QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
         app = QApplication(sys.argv)
-        main_gui = mainUI()
-        main_gui.q.show()
+        main_gui = Dance()
+        main_gui.show()
         sys.exit(app.exec_())
     else:
         ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv[1:]), None, 0)  # pyinstaller 打包模式
