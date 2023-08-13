@@ -5,12 +5,12 @@ import time
 import cv2
 import numpy
 import win32gui
-from PySide2.QtCore import Signal, QThread, QWaitCondition, QMutex
+from PySide6.QtCore import Signal, QThread, QWaitCondition, QMutex
 
 from DeskPage.DeskDance.findPicBySmallToBigger.findButton import FindButton
 from DeskPage.DeskTools.DmSoft.get_dm_driver import getKeyBoardMouse, getWindows
 from DeskPage.DeskTools.WindowsSoft.get_windows import windowsCap, GetHandleList
-from DeskPage.DeskTools.GhostSoft.get_driver import SetGhostBoards
+from DeskPage.DeskTools.GhostSoft.get_driver_v3 import SetGhostBoards
 
 
 def get_random_time(end_time):

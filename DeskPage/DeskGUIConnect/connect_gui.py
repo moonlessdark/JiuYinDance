@@ -1,13 +1,10 @@
 import time
 import platform
-import win32con
-import win32gui
-from win32com import client
 
 from DeskPage.DeskGUIQth.execut_th import DanceThByFindPic, ScreenGameQth
 from DeskPage.DeskTools.DmSoft.get_dm_driver import getDM, getWindows, getKeyBoardMouse
 from DeskPage.DeskTools.KeyEnumSoft.enum_key import DamoTools
-from DeskPage.DeskTools.GhostSoft.get_driver import GetGhostDriver, SetGhostBoards
+from DeskPage.DeskTools.GhostSoft.get_driver_v3 import GetGhostDriver, SetGhostBoards
 from DeskPage.DeskGUI.MainPage import MainGui
 from DeskPage.DeskTools.WindowsSoft.get_windows import GetHandleList
 
@@ -76,9 +73,8 @@ class Dance(MainGui):
             """
             GetGhostDriver(dll_path=DamoTools.ghost_dll.value)
             if GetGhostDriver.dll is not None:
-                driver_version: str = SetGhostBoards().get_usb_version()
-                if driver_version != "":
-                    SetGhostBoards().select_usb_devices("")
+                SetGhostBoards().open_device()
+                if SetGhostBoards().check_usb_connect():
                     self.print_logs("幽灵键鼠加载成功")
                 else:
                     self.print_logs("未检测到usb设备,请检查后重试")
@@ -265,5 +261,6 @@ class Dance(MainGui):
         self.status_bar_print.showMessage("等待执行")
 
     def execute_status(self, sin_work_status):
-        self.push_button_start_or_stop_execute.setEnabled(True)
-        self.stop_execute()
+        if sin_work_status == "结束":
+            self.push_button_start_or_stop_execute.setEnabled(True)
+            self.stop_execute()

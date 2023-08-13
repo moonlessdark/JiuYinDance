@@ -3,7 +3,7 @@ from enum import Enum
 
 from DeskPage.DeskTools.KeyEnumSoft.project_path import pathUtil
 
-project_path = "D:\\SoftWare\\Dev\\Project\\JiuYinDancingPlus\\DeskPage"
+project_path = "D:\\SoftWare\\Dev\\Project\\JiuYinDancingPyside6\\DeskPage"
 
 dev_mode = "Prod"
 
@@ -43,8 +43,8 @@ class DamoTools(Enum):
     if dev_mode == "Debug":
         dm = project_path + '/resources/dm.dll'
         dm_reg = project_path + '/resources/DmReg.dll'
-        ghost_dll: str = project_path + '/resources/igkmlib32.dll'
+        ghost_dll: str = project_path + '/resources/gbild64.dll'
     else:
         dm: str = pathUtil().resource_path(os.path.join('res', 'dm.dll'))
         dm_reg: str = pathUtil().resource_path(os.path.join('res', 'DmReg.dll'))
-        ghost_dll: str = pathUtil().resource_path(os.path.join('res', 'igkmlib32.dll'))
+        ghost_dll: str = pathUtil().resource_path(os.path.join('res', 'gbild64.dll'))

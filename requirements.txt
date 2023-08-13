@@ -2,6 +2,6 @@ opencv-python
 numpy
 comtypes
 findimage
-PySide2
+PySide6
 pywin32
 pyinstaller
