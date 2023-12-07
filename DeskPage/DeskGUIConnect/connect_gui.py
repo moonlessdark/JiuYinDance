@@ -76,6 +76,7 @@ class Dance(MainGui):
                 SetGhostBoards().open_device()
                 if SetGhostBoards().check_usb_connect():
                     self.print_logs("幽灵键鼠加载成功")
+                    is_load = True
                 else:
                     self.print_logs("未检测到usb设备,请检查后重试")
                     self.push_button_get_windows_handle.setEnabled(False)
@@ -90,12 +91,15 @@ class Dance(MainGui):
             dm_release: str = self.dm_driver.get_version()
             if dm_release is not None:
                 self.print_logs("大漠驱动免注册加载成功")
+                is_load = True
             else:
                 self.print_logs("大漠插件加载失败，请检查驱动文件是否存在或杀毒软件误杀")
                 self.push_button_get_windows_handle.setEnabled(False)
         if is_load:
-            self.print_logs("注意：\n1:请在游戏客户端中设置为“经典模式”，不然无法正常识别到游戏画面")
-            self.print_logs("2:开始执行后，请不要做其他操作，保持游戏窗口一直显示在最前面")
+            self.print_logs("注意：")
+            self.print_logs("1、请在游戏客户端中设置为“经典模式”，不然无法正常识别到游戏画面")
+            self.print_logs("2、开始执行后，请不要做其他操作，保持游戏窗口一直显示在最前面")
+            self.print_logs("3、本工具为免费工具，请勿支付金钱购买")
 
     def print_logs(self, text, is_clear=False):
         """
