@@ -25,8 +25,7 @@ class GetHandleList:
         if len(hwnd_list) > 0:
             for handle_id in hwnd_list:
                 main_text: str = win32gui.GetWindowText(handle_id)
-                main_class: str = win32gui.GetClassName(handle_id)
-                if "九阴真经 " in main_text and "FxMain" == main_class:
+                if "九阴真经 " in main_text:
                     handle_list.append(handle_id)
         handle_list.sort()
         return handle_list
