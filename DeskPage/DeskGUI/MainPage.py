@@ -1,9 +1,9 @@
 import ctypes
 import sys
 
-from PySide2 import QtWidgets, QtCore
-from PySide2.QtGui import QIcon
-from PySide2.QtWidgets import QApplication
+from PySide6 import QtWidgets, QtCore
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QApplication
 
 from DeskPage.DeskTools.KeyEnumSoft.enum_key import IconEnum
 
