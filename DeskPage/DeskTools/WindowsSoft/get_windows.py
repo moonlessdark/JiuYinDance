@@ -30,18 +30,51 @@ class GetHandleList:
         handle_list.sort()
         return handle_list
 
+   
+    def activate_windows(self, windows_handle: int):
+        """
+        激活窗口
+        :param windows_handle:
+        :return:
+        """
+        self.activate_windows_2(windows_handle)
+        time.sleep(0.2)
+
+    def activate_windows_1(self, windows_handle: int):
+        if windows_handle != win32gui.GetForegroundWindow():
+            if self.shell is None:
+                pythoncom.CoInitialize()
+                self.shell = client.Dispatch("WScript.Shell")
+            self.shell.SendKeys('%')
+            win32gui.ShowWindow(windows_handle, win32con.SW_SHOWNA)
+            win32gui.SetForegroundWindow(windows_handle)
+
     @staticmethod
-    def activate_windows(windows_handle: int):
+    def activate_windows_2(windows_handle: int):
         """
         激活窗口
         :param windows_handle:
         :return:
         """
         if windows_handle != win32gui.GetForegroundWindow():
-            shell = client.Dispatch("WScript.Shell")
+            shell = win32com.client.Dispatch("WScript.Shell")
+            # input("Press Enter")
+            shell.SendKeys(' ')  # Undocks my focus from Python IDLE
+            win32gui.SetForegroundWindow(windows_handle)  # It works!
             shell.SendKeys('%')
-            win32gui.ShowWindow(windows_handle, win32con.SW_SHOWNA)
+        time.sleep(0.2)
+
+    @staticmethod
+    def activate_windows_3(windows_handle: int):
+        """
+        激活窗口方法3
+        :param windows_handle:
+        :return:
+        """
+        if windows_handle is not None:
             win32gui.SetForegroundWindow(windows_handle)
+            win32gui.SetWindowPos(windows_handle, win32con.HWND_TOP, 0, 0, 0, 0,
+                                  win32con.SWP_NOMOVE | win32con.SWP_NOACTIVATE | win32con.SWP_NOOWNERZORDER | win32con.SWP_SHOWWINDOW | win32con.SWP_NOSIZE)
 
 
 def get_window_rect(handle) -> list:
