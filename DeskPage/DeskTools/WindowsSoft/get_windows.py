@@ -74,7 +74,7 @@ class GetHandleList:
         if windows_handle is not None:
             win32gui.SetForegroundWindow(windows_handle)
             win32gui.SetWindowPos(windows_handle, win32con.HWND_TOP, 0, 0, 0, 0,
-                                  win32con.SWP_NOMOVE | win32con.SWP_NOACTIVATE | win32con.SWP_NOOWNERZORDER | win32con.SWP_SHOWWINDOW | win32con.SWP_NOSIZE)
+                                  win32con.SWP_NOMOVE | win32con.SWP_NOOWNERZORDER | win32con.SWP_SHOWWINDOW | win32con.SWP_NOSIZE)
 
 
 def get_window_rect(handle) -> list:
