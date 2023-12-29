@@ -38,7 +38,7 @@ class GetHandleList:
         :return:
         """
         self.activate_windows_2(windows_handle)
-        time.sleep(0.2)
+        time.sleep(0.5)
 
     def activate_windows_1(self, windows_handle: int):
         if windows_handle != win32gui.GetForegroundWindow():
