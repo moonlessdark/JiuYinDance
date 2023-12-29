@@ -57,11 +57,15 @@ class GetHandleList:
         :return:
         """
         if windows_handle != win32gui.GetForegroundWindow():
-            shell = win32com.client.Dispatch("WScript.Shell")
-            # input("Press Enter")
-            shell.SendKeys(' ')  # Undocks my focus from Python IDLE
-            win32gui.SetForegroundWindow(windows_handle)  # It works!
-            shell.SendKeys('%')
+            try:
+                shell = win32com.client.Dispatch("WScript.Shell")
+                # input("Press Enter")
+                shell.SendKeys(' ')  # Undocks my focus from Python IDLE
+                win32gui.SetForegroundWindow(windows_handle)  # It works!
+                shell.SendKeys('%')
+            except Exception as e:
+                return False
+        return True
 
     @staticmethod
     def activate_windows_3(windows_handle: int):
