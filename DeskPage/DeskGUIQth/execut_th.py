@@ -66,7 +66,6 @@ def activate_windows(windows_handle: int):
     :return:
     """
     GetHandleList().activate_windows(windows_handle)
-    time.sleep(0.2)
 
 
 def input_key_by_ghost(key_list: list):
@@ -171,8 +170,11 @@ class DanceThByFindPic(QThread):
                             time.strftime("%H:%M:%S", time.localtime()), windows_this_handle, "".join(key_str_list)))
 
                             if self.key_board_mouse_driver_type == "ghost":
-                                GetHandleList().activate_windows(windows_this_handle)   # 激活窗口
-                                input_key_by_ghost(key_list)  # 输入按钮
+                                if GetHandleList().activate_windows(windows_this_handle):   # 激活窗口
+                                    input_key_by_ghost(key_list)  # 输入按钮
+                                else:
+                                    self.sin_out.emit(f"出错了,窗口{windows_this_handle}激活失败,开始重试")
+                                    break
                             else:
                                 getWindows().set_window_state(hwnd=windows_this_handle, flag=12)  # 激活窗口
                                 input_key_by_dm(key_list)  # 输入按钮
