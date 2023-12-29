@@ -243,13 +243,18 @@ class Dance(MainGui):
             self.print_logs("请勾选需要测试的窗口", is_clear=True)
         else:
             for i in handle_list:
-                GetHandleList().activate_windows(i)
-                if windows_release > 7:
-                    SetGhostBoards().click_press_and_release_by_key_name("K")
-                else:
-                    getKeyBoardMouse().key_press_char("K")
-                self.print_logs("窗口(%s)已激活，并尝试按下了'K'按钮" % i)
-                time.sleep(1)
+                for execute_num in range(5):
+                    if GetHandleList().activate_windows(i) is False：
+                        self.print_logs(f"{i} 激活失败，正在进行第{execute_num}次重试")
+                        continue
+                    else:
+                        if windows_release > 7:
+                            SetGhostBoards().click_press_and_release_by_key_name("K")
+                        else:
+                            getKeyBoardMouse().key_press_char("K")
+                        self.print_logs("窗口(%s)已激活，并尝试按下了'K'按钮" % i)
+                        time.sleep(1)
+                        break
 
     def stop_execute(self):
         """
