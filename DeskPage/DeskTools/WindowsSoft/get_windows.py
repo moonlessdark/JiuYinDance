@@ -62,7 +62,6 @@ class GetHandleList:
             shell.SendKeys(' ')  # Undocks my focus from Python IDLE
             win32gui.SetForegroundWindow(windows_handle)  # It works!
             shell.SendKeys('%')
-        time.sleep(0.2)
 
     @staticmethod
     def activate_windows_3(windows_handle: int):
