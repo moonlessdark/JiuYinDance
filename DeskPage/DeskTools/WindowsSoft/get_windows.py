@@ -218,11 +218,12 @@ class windowsCap:
         """
         handle = int(handle)
         f_img, w, h = self.capture(handle)
-        return self.__clear_blacK_area(f_img)
+        return self.__clear_black_area2(f_img)
 
     def __clear_blacK_area(self, read_img):
         """
-        去除屏幕黑边，并返回去除后的分辨率。此方法效率很慢，只能用在不是很急的时候
+        去除屏幕黑边，并返回去除后的分辨率。
+        由于是正序(从左上角(0,0)开始)遍历整张图片的所有像素，此方法效率很慢，只能用在不是很急的时候
         :param read_img:
         :return: 图片，高，宽
         """
@@ -256,6 +257,44 @@ class windowsCap:
         height = top - bottom  # 高度
         pre1_picture = image[left:left + width, bottom:bottom + height]  # 图片截取
         return pre1_picture, pre1_picture.shape[0], pre1_picture.shape[1]  # 返回图片数据
+
+    def __clear_black_area2(self, read_img):
+        """
+        采用倒序的方式，去除透明图层。并返回去除后的分辨率。速度快很多
+        :param read_img:
+        :return: 图片，高，宽
+        """
+        if isinstance(read_img, str):
+            # img_read = cv2.cv2.imread(img)   # 这个方法无法处理带中文的路径
+            image = cv2.imdecode(fromfile(read_img, dtype=uint8), -1)
+        else:
+            image = read_img
+        # image = cv2.imread(read_img, 1)  # 读取图片 image_name应该是变量
+        img = cv2.medianBlur(image, 5)  # 中值滤波，去除黑色边际中可能含有的噪声干扰
+        b = cv2.threshold(img, 15, 255, cv2.THRESH_BINARY)  # 调整裁剪效果
+        binary_image = b[1]  # 二值图--具有三通道
+        binary_image = cv2.cvtColor(binary_image, cv2.COLOR_BGR2GRAY)
+        h: int = int(binary_image.shape[0])
+        w: int = int(binary_image.shape[1])
+        edges_w: list = []
+        edges_h: list = []
+        # 先算高度，从底部侧往上算，左下角往上算，碰到非透明的就结束
+        for i in range(h-1, -1, -1):
+            edges_h.append(i)
+            if binary_image[i][0] != 0:
+                #  如果是非透明像素，说明没有透明的了，就退出
+                break
+        # 先算宽度，从右侧往左算，从右上角往左算，碰到非透明的就结束
+        for j in range(w-1, -1, -1):
+            edges_w.append(j)
+            if binary_image[0][j] != 0:
+                # 如果是非透明像素，说明没有透明的了，就退出
+                break
+        left = min(edges_w)  # 图片中，透明部分的开始的宽度
+        bottom = min(edges_h)  # 图片中，透明部分的开始的高度
+        pre1_picture = image[0:bottom, 0:left]  # 图片截取，只截图非透明的那部分
+        return pre1_picture, pre1_picture.shape[0], pre1_picture.shape[1]  # 返回图片数据， 格式为 图片内容，高度，宽度
+
 
     def capture_by_coordinate(self, handle: int, height_top: int, height_down: int, width_left: int, width_right: int):
         """
