@@ -157,9 +157,8 @@ class DanceThByFindPic(QThread):
                         self.status_bar.emit(
                             "窗口检测中 => %s %s" % (time.strftime("%H:%M:%S", time.localtime()), "." * wait_num_print))
 
-                        pic_content, width, high = windowsCap().capture(windows_this_handle)
-                        key_list = FindButton().find_pic_by_bigger(pic_content, pic_size=[high, width],
-                                                                   find_type=self.dance_type)
+                        pic_content = WindowsCapture().capture_and_clear_black_area(windows_this_handle)
+                        key_list = FindButton().find_pic_by_bigger(bigger_pic_cap=pic_content, find_type=self.dance_type)
                         if len(key_list) > 0:
                             key_str_list = numpy.array(key_list)
                             key_str_list[numpy.where(key_str_list == "UP")] = "上"
@@ -241,7 +240,8 @@ class ScreenGameQth(QThread):
             for i in range(len(self.windows_handle_list)):
                 self.status_bar.emit("%s => 窗口截图中..." % time.strftime("%H:%M:%S", time.localtime()))
                 try:
-                    pic_content, width, high = windowsCap().capture(self.windows_handle_list[i])
+                    pic_content_obj = WindowsCapture().capture_and_clear_black_area(self.windows_handle_list[i])
+                    pic_content = pic_content_obj.pic_content
                     time_str_m = time.strftime("%H_%M", time.localtime(int(time.time())))
                     pic_file_path = self.pic_save_path + "/JiuYinScreenPic/" + time_str_m + "/"
                     if not os.path.exists(pic_file_path):  # 如果主目录+小时+分钟这个文件路径不存在的话
