@@ -9,7 +9,7 @@ from PySide6.QtCore import Signal, QThread, QWaitCondition, QMutex
 
 from DeskPage.DeskDance.findPicBySmallToBigger.findButton import FindButton
 from DeskPage.DeskTools.DmSoft.get_dm_driver import getKeyBoardMouse, getWindows
-from DeskPage.DeskTools.WindowsSoft.get_windows import windowsCap, GetHandleList
+from DeskPage.DeskTools.WindowsSoft.get_windows import WindowsCapture as windowsCap, GetHandleList
 from DeskPage.DeskTools.GhostSoft.get_driver_v3 import SetGhostBoards
 
 
