@@ -1,17 +1,27 @@
-import ctypes
+import time
 from collections import namedtuple
-from ctypes import windll, c_ubyte, wintypes
-from ctypes.wintypes import RECT
+from ctypes import windll, c_ubyte, wintypes, pointer, byref, sizeof
+from typing import List
 
-import win32gui, win32con
-from numpy import frombuffer, fromfile, uint8
+
 import cv2
+import psutil
+import pythoncom
+import win32com
+import win32con
+import win32gui
+import win32process
 from findimage import find_template, find_all_template
-from typing import List, Type
+from numpy import frombuffer, fromfile, uint8
 from win32com import client
+
+from DeskPage.DeskTools.WindowsSoft.windows import SetForegroundWindowInternal, AllowSetForegroundWindow
+
+PicCapture = namedtuple("PicCapture", ["pic_content", "pic_width", "pic_height"])
 
 
 class GetHandleList:
+    shell = None
 
     @staticmethod
     def get_windows_handle() -> List[int]:
@@ -25,20 +35,26 @@ class GetHandleList:
         if len(hwnd_list) > 0:
             for handle_id in hwnd_list:
                 main_text: str = win32gui.GetWindowText(handle_id)
-                if "九阴真经 " in main_text:
+
+                # 读取任务进程id
+                thread_id, process_id = win32process.GetWindowThreadProcessId(handle_id)
+                # Get the process name and executable path
+                process: psutil.Process = psutil.Process(process_id)
+                process_name: str = process.name()
+
+                if main_text.find("九阴真经 ") == 0 and process_name == 'fxgame.exe':
                     handle_list.append(handle_id)
         handle_list.sort()
         return handle_list
 
-   
-    def activate_windows(self, windows_handle: int):
+    def activate_windows(self, windows_handle: int) -> bool:
         """
         激活窗口
         :param windows_handle:
         :return:
         """
-        self.activate_windows_2(windows_handle)
-        time.sleep(0.5)
+        time.sleep(0.2)
+        return self.activate_windows_2(windows_handle)
 
     def activate_windows_1(self, windows_handle: int):
         if windows_handle != win32gui.GetForegroundWindow():
@@ -48,6 +64,7 @@ class GetHandleList:
             self.shell.SendKeys('%')
             win32gui.ShowWindow(windows_handle, win32con.SW_SHOWNA)
             win32gui.SetForegroundWindow(windows_handle)
+        return True
 
     @staticmethod
     def activate_windows_2(windows_handle: int):
@@ -74,10 +91,27 @@ class GetHandleList:
         :param windows_handle:
         :return:
         """
-        if windows_handle is not None:
-            win32gui.SetForegroundWindow(windows_handle)
-            win32gui.SetWindowPos(windows_handle, win32con.HWND_TOP, 0, 0, 0, 0,
-                                  win32con.SWP_NOMOVE | win32con.SWP_NOOWNERZORDER | win32con.SWP_SHOWWINDOW | win32con.SWP_NOSIZE)
+        if windows_handle != win32gui.GetForegroundWindow():
+            for i in range(50):
+                try:
+                    SetForegroundWindowInternal(windows_handle)
+                    return True
+                except Exception as e:
+                    time.sleep(0.1)
+                    pass
+            return False
+
+    @staticmethod
+    def set_allow_set_foreground_window():
+        """
+        允许其他窗口来到前台
+        :return:
+        """
+        windows_foregroud_handle_id = win32gui.GetForegroundWindow()
+        # 读取任务进程id
+        thread_id, process_id = win32process.GetWindowThreadProcessId(windows_foregroud_handle_id)
+        # Get the process name and executable path
+        AllowSetForegroundWindow(0)
 
 
 def get_window_rect(handle) -> list:
@@ -92,7 +126,7 @@ def get_window_rect(handle) -> list:
         [right, bottom]  # 右下角坐标
     """
     rect = wintypes.RECT()
-    ctypes.windll.user32.GetWindowRect(handle, ctypes.pointer(rect))
+    windll.user32.GetWindowRect(handle, pointer(rect))
     return [[rect.left, rect.top], [rect.left, rect.bottom], [rect.right, rect.top], [rect.right, rect.bottom]]
 
 
@@ -134,17 +168,17 @@ def get_handle_size(handle: int):
     :return:
     """
     try:
-        f = ctypes.windll.dwmapi.DwmGetWindowAttribute
+        f = windll.dwmapi.DwmGetWindowAttribute
     except Exception as e:
         f = None
     if f:
         pic_size = namedtuple("PicSize", ["width", "high"])
-        rect = ctypes.wintypes.RECT()
+        rect = wintypes.RECT()
         DWMWA_EXTENDED_FRAME_BOUNDS = 9
-        f(ctypes.wintypes.HWND(handle),
-          ctypes.wintypes.DWORD(DWMWA_EXTENDED_FRAME_BOUNDS),
-          ctypes.byref(rect),
-          ctypes.sizeof(rect)
+        f(wintypes.HWND(handle),
+          wintypes.DWORD(DWMWA_EXTENDED_FRAME_BOUNDS),
+          byref(rect),
+          sizeof(rect)
           )
         width, high = (rect.right - rect.left, rect.bottom - rect.top)
         pic_size(width=width, high=high)
@@ -165,7 +199,7 @@ def get_handle_size(handle: int):
 #     return w, h
 
 
-class windowsCap:
+class WindowsCapture:
 
     def __init__(self):
         self.GetDC = windll.user32.GetDC
@@ -179,9 +213,7 @@ class windowsCap:
         self.DeleteObject = windll.gdi32.DeleteObject
         self.ReleaseDC = windll.user32.ReleaseDC
 
-        self.pic_capture_content = namedtuple("PicCapture", ["pic_content", "pic_width", "pic_high"])
-
-    def capture(self, handle: int):
+    def capture(self, handle: int) -> PicCapture:
         """
         窗口区域显示在屏幕上的地方截图
         :param handle: 窗口句柄
@@ -190,8 +222,8 @@ class windowsCap:
 
         handle = int(handle)
 
-        r = RECT()
-        self.GetClientRect(handle, ctypes.byref(r))
+        r = wintypes.RECT()
+        self.GetClientRect(handle, byref(r))
         width, height = r.right, r.bottom
         # 开始截图
         dc = self.GetDC(handle)
@@ -208,22 +240,24 @@ class windowsCap:
         self.DeleteObject(cdc)
         self.ReleaseDC(handle, dc)
         # 返回截图数据为numpy.ndarray
-        return frombuffer(buffer, dtype=uint8).reshape(height, width, 4), width, height
 
-    def capture_and_clear_black_area(self, handle: int):
+        cap_pic = PicCapture(frombuffer(buffer, dtype=uint8).reshape(height, width, 4), width, height)
+        return cap_pic
+
+    def capture_and_clear_black_area(self, handle: int) -> PicCapture:
         """
-        切图并且去除黑边。此方法效率很慢
+        切图并且去除黑边。
         :param handle: 需要切图的窗口句柄
         :return: 处理后的图片，图片的宽， 图片的高
         """
-        handle = int(handle)
-        f_img, w, h = self.capture(handle)
-        return self.__clear_black_area2(f_img)
+        f_img = self.capture(handle)
+        return self.clear_black_area2(f_img.pic_content)
 
-    def __clear_blacK_area(self, read_img):
+    @staticmethod
+    def clear_black_area(read_img) -> PicCapture:
         """
         去除屏幕黑边，并返回去除后的分辨率。
-        由于是正序(从左上角(0,0)开始)遍历整张图片的所有像素，此方法效率很慢，只能用在不是很急的时候
+        由于是正序(从左上角(0,0)开始)遍历整张图片的所有分辨率的像素，此方法效率很慢，只能用在不是很急的时候
         :param read_img:
         :return: 图片，高，宽
         """
@@ -237,28 +271,33 @@ class windowsCap:
         b = cv2.threshold(img, 15, 255, cv2.THRESH_BINARY)  # 调整裁剪效果
         binary_image = b[1]  # 二值图--具有三通道
         binary_image = cv2.cvtColor(binary_image, cv2.COLOR_BGR2GRAY)
-        x = binary_image.shape[0]
-        y = binary_image.shape[1]
+        h: int = binary_image.shape[0]
+        w: int = binary_image.shape[1]
         # print("高度x=", x)
         # print("宽度y=", y)
         edges_x = []
         edges_y = []
-        for i in range(x):
-            for j in range(y):
-                if binary_image[i][j] == 255:
+        for i in range(h):
+            for j in range(w):
+                if binary_image[i][j] != 0:
+                    # 如果是非透明像素
                     edges_x.append(i)
                     edges_y.append(j)
 
         left = min(edges_x)  # 左边界
         right = max(edges_x)  # 右边界
         width = right - left  # 宽度
+
         bottom = min(edges_y)  # 底部
         top = max(edges_y)  # 顶部
         height = top - bottom  # 高度
-        pre1_picture = image[left:left + width, bottom:bottom + height]  # 图片截取
-        return pre1_picture, pre1_picture.shape[0], pre1_picture.shape[1]  # 返回图片数据
 
-    def __clear_black_area2(self, read_img):
+        pre1_picture = image[left:left + width, bottom:bottom + height]  # 图片截取
+        cap_pic = PicCapture(pre1_picture, pre1_picture.shape[1], pre1_picture.shape[0])
+        return cap_pic
+
+    @staticmethod
+    def clear_black_area2(read_img) -> PicCapture:
         """
         采用倒序的方式，去除透明图层。并返回去除后的分辨率。速度快很多
         :param read_img:
@@ -281,26 +320,24 @@ class windowsCap:
         # 先算高度，从底部侧往上算，左下角往上算，碰到非透明的就结束
         for i in range(h-1, -1, -1):
             edges_h.append(i)
-            if binary_image[i][0] != 0:
+            if binary_image[i][10] != 0:  # 偏移一下，从第10个像素开始取值，避免截图位移产生误差
                 #  如果是非透明像素，说明没有透明的了，就退出
                 break
         # 先算宽度，从右侧往左算，从右上角往左算，碰到非透明的就结束
         for j in range(w-1, -1, -1):
             edges_w.append(j)
-            if binary_image[0][j] != 0:
+            if binary_image[10][j] != 0:
                 # 如果是非透明像素，说明没有透明的了，就退出
                 break
         left = min(edges_w)  # 图片中，透明部分的开始的宽度
         bottom = min(edges_h)  # 图片中，透明部分的开始的高度
         pre1_picture = image[0:bottom, 0:left]  # 图片截取，只截图非透明的那部分
-        return pre1_picture, pre1_picture.shape[0], pre1_picture.shape[1]  # 返回图片数据， 格式为 图片内容，高度，宽度
-
+        cap_pic = PicCapture(pre1_picture, pre1_picture.shape[1], pre1_picture.shape[0])
+        return cap_pic
 
     def capture_by_coordinate(self, handle: int, height_top: int, height_down: int, width_left: int, width_right: int):
         """
         截图后，再次根据坐标二次截取
-        :param hwnd_high: 需要截图的窗口高度
-        :param hwnd_width: 需要截图的窗口宽度
         :param handle: 窗口handle
         :param height_top: 高度坐标(顶部)
         :param height_down: 高度坐标(底部)
@@ -308,7 +345,6 @@ class windowsCap:
         :param width_right: 宽度坐标(右侧)
         :return: 返回图片在窗口中的中心点坐标
         """
-        handle = int(handle)
         if height_top >= height_down or width_left >= width_right:
             """
             坐标错误
@@ -327,8 +363,7 @@ class windowsCap:
         :param y_offset: y轴的偏移量
         :return: 目标窗口内的坐标
         """
-        handle = int(handle)
-        cap_img,  width, high = self.capture(handle)
+        cap_img, width, high = self.capture(handle)
         if isinstance(img, str):
             """
             如果时字符串形式的，说明时本地图片，那么就读取吧
@@ -353,22 +388,18 @@ class windowsCap:
         :param y_offset: y轴的偏移量,在4K分辨率下建议 50
         :return: 图片在屏幕上的坐标
         """
-        handle = int(handle)
         x, y = self.find_coordinate(handle, img, x_offset, y_offset)
         return mapping_coordinates(handle, x, y)
 
-    def find_coordinate_to_rect_2(self, handle: int, img,  x_offset: int = 0, y_offset: int = 0):
+    def find_coordinate_to_rect_2(self, handle: int, img, x_offset: int = 0, y_offset: int = 0):
         """
         查找图片，在屏幕上的坐标, 方法2，以另一种逻辑实现
-        :param hwnd_high: 需要截图的窗口高度
-        :param hwnd_width: 需要截图的窗口宽度
         :param y_offset: y 坐标的便宜量
         :param x_offset: x 坐标的偏移量
         :param handle: 窗口ID
         :param img: 图片，可以时已经读取在内存中的，也可以是本地文件
         :return: 查找的图片的中心坐标点映射在屏幕上的坐标
         """
-        handle = int(handle)
         cap_img, width, high = self.capture(handle)
         if isinstance(img, str):
             """
