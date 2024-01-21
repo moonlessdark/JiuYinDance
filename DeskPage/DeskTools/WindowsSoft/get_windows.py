@@ -213,7 +213,7 @@ class WindowsCapture:
         self.DeleteObject = windll.gdi32.DeleteObject
         self.ReleaseDC = windll.user32.ReleaseDC
 
-    def capture(self, handle: int) -> PicCapture:
+    def capture(self, handle: int):
         """
         窗口区域显示在屏幕上的地方截图
         :param handle: 窗口句柄
