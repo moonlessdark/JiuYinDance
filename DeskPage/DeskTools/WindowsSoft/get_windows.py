@@ -320,13 +320,13 @@ class WindowsCapture:
         # 先算高度，从底部侧往上算，左下角往上算，碰到非透明的就结束
         for i in range(h-1, -1, -1):
             edges_h.append(i)
-            if binary_image[i][10] != 0:  # 偏移一下，从第10个像素开始取值，避免截图位移产生误差
+            if binary_image[i][int(h/2)] != 0:  # 偏移一下，从第10个像素开始取值，避免截图位移产生误差
                 #  如果是非透明像素，说明没有透明的了，就退出
                 break
         # 先算宽度，从右侧往左算，从右上角往左算，碰到非透明的就结束
         for j in range(w-1, -1, -1):
             edges_w.append(j)
-            if binary_image[10][j] != 0:
+            if binary_image[int(w/2)][j] != 0:
                 # 如果是非透明像素，说明没有透明的了，就退出
                 break
         left = min(edges_w)  # 图片中，透明部分的开始的宽度
