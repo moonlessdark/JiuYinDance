@@ -5,3 +5,4 @@ findimage
 PySide6
 pywin32
 pyinstaller
+PyYaml

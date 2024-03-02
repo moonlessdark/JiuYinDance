@@ -5,18 +5,16 @@ from PySide6 import QtWidgets, QtCore
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication
 
-from DeskPage.DeskTools.KeyEnumSoft.enum_key import IconEnum
-
 
 class MainGui(QtWidgets.QMainWindow):
 
     def __init__(self):
         super().__init__()
 
-        self.setFixedSize(280, 360)
-        self.setWindowTitle("蜗牛助手")
+        self.setFixedSize(280, 400)
+        self.setWindowTitle("蜗牛跳舞小助手")
         # 加载任务栏和窗口左上角图标
-        self.setWindowIcon(QIcon(IconEnum.app_logo.value))
+        self.setWindowIcon(QIcon("./_internal/Resources/logo/logo.ico"))
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("myappid")
         """
         底部状态栏显示区域
@@ -29,7 +27,7 @@ class MainGui(QtWidgets.QMainWindow):
         日志打印区      
         """
         self.text_browser_print_log = QtWidgets.QTextBrowser(self)
-        self.text_browser_print_log.setGeometry(QtCore.QRect(10, 190, 260, 148))
+        self.text_browser_print_log.setGeometry(QtCore.QRect(10, 190, 260, 188))
 
         """
         选择类型

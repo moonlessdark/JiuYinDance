@@ -1,5 +1,5 @@
-from DeskPage.DeskTools.DmSoft.dm_operation import GetKeyBordAndMouse, GetWindows
-from DeskPage.DeskTools.DmSoft.regsvr import reg_dm_soft
+from DeskPageV2.DeskTools.DmSoft.dm_operation import GetKeyBordAndMouse, GetWindows
+from DeskPageV2.DeskTools.DmSoft.regsvr import reg_dm_soft
 
 
 class getDM:

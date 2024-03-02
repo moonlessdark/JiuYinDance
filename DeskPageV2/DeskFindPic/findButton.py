@@ -1,8 +1,7 @@
 import cv2
-from numpy import uint8, fromfile
-
-from DeskPage.DeskTools.KeyEnumSoft.enum_key import IconEnum
-from DeskPage.DeskTools.WindowsSoft.get_windows import find_pic
+from DeskPageV2.Utils.dataClass import DancePic, WhzDancePic
+from DeskPageV2.Utils.load_res import GetConfig
+from DeskPageV2.DeskTools.WindowsSoft.get_windows import find_pic, WindowsCapture, PicCapture
 
 
 class FindButton:
@@ -10,18 +9,23 @@ class FindButton:
     大图找小图的方式查找按钮
     """
 
+    config = GetConfig()
+    dance_pic: DancePic = config.get_dance_pic()
+    whz_dance_pic: WhzDancePic = config.get_whz_dance_pic()
+
     def __init__(self):
-        self.j = cv2.imdecode(fromfile(IconEnum.j.value, dtype=uint8), -1)
-        self.k = cv2.imdecode(fromfile(IconEnum.k.value, dtype=uint8), -1)
-        self.l = cv2.imdecode(fromfile(IconEnum.L.value, dtype=uint8), -1)
-        self.up = cv2.imdecode(fromfile(IconEnum.up.value, dtype=uint8), -1)
-        self.down = cv2.imdecode(fromfile(IconEnum.down.value, dtype=uint8), -1)
-        self.left = cv2.imdecode(fromfile(IconEnum.left.value, dtype=uint8), -1)
-        self.right = cv2.imdecode(fromfile(IconEnum.right.value, dtype=uint8), -1)
-        self.whz_dance_up = cv2.imdecode(fromfile(IconEnum.whz_dance_up.value, dtype=uint8), -1)
-        self.whz_dance_down = cv2.imdecode(fromfile(IconEnum.whz_dance_down.value, dtype=uint8), -1)
-        self.whz_dance_left = cv2.imdecode(fromfile(IconEnum.whz_dance_left.value, dtype=uint8), -1)
-        self.whz_dance_right = cv2.imdecode(fromfile(IconEnum.whz_dance_right.value, dtype=uint8), -1)
+        self.j = cv2.imread(self.dance_pic.dance_J)
+        self.k = cv2.imread(self.dance_pic.dance_K)
+        self.l = cv2.imread(self.dance_pic.dance_L)
+        self.up = cv2.imread(self.dance_pic.dance_Up)
+        self.down = cv2.imread(self.dance_pic.dance_Down)
+        self.left = cv2.imread(self.dance_pic.dance_Left)
+        self.right = cv2.imread(self.dance_pic.dance_Right)
+
+        self.whz_dance_up = cv2.imread(self.whz_dance_pic.dance_Up)
+        self.whz_dance_down = cv2.imread(self.whz_dance_pic.dance_Down)
+        self.whz_dance_left = cv2.imread(self.whz_dance_pic.dance_Left)
+        self.whz_dance_right = cv2.imread(self.whz_dance_pic.dance_Right)
 
     def get_dance_pic(self) -> list:
         """
@@ -38,7 +42,8 @@ class FindButton:
         """
         return [("UP", self.whz_dance_up), ("Down", self.whz_dance_down), ("Left", self.whz_dance_left), ("Right", self.whz_dance_right)]
 
-    def sort_button(self, button_dict: dict):
+    @staticmethod
+    def sort_button(button_dict: dict):
         """
         给按钮排序
         :param button_dict:
@@ -48,8 +53,8 @@ class FindButton:
         button_key_list = []
         if len(button_dict) > 0:
             for key in button_dict:
-                for b in button_dict.get(key):
-                    x_list.append(b)
+                for bs in button_dict.get(key):
+                    x_list.append(bs)
             x_list.sort()  # 排序一下，默认按从小打到
             for n in x_list:
                 for kk, vv in button_dict.items():
@@ -57,10 +62,9 @@ class FindButton:
                         button_key_list.append(kk)
         return button_key_list
 
-    def find_pic_by_bigger(self, bigger_pic_cap: PicCapture, find_type="团练", threshold: float = 0.9) -> list:
+    def find_pic_by_bigger(self, bigger_pic_cap: PicCapture, find_type="团练") -> list:
         """
         从大图里面找小图，并进行从左到右排序
-        :param threshold:
         :param find_type: 查找方式，团练 或者 望辉洲
         :param bigger_pic_cap: 需要找的大图，是已经读取的图片
         :return: list[str]
@@ -95,8 +99,20 @@ class FindButton:
         return self.sort_button(button_dict)
 
 
-# if __name__ == '__main__':
-#     aa = cv2.imread("D:\SoftWare\Dev\Project\JiuYinDance\\21_31_11.png", 0)
-#     aa = cv2.cvtColor(aa, cv2.COLOR_BGR2RGB)
-#     b = FindButton().find_pic_by_bigger(bigger_pic=aa, pic_size=[1377, 2560], find_type="sss")
-#     print(str(b))
+if __name__ == '__main__':
+    import time
+    aa = cv2.imread("D:\\SoftWare\\Dev\\Project\\JiuYinDancingPyside6\\56.png", 0)
+    pic = cv2.cvtColor(aa, cv2.COLOR_BGR2RGB)
+
+    start_time = time.time()
+    pic = WindowsCapture().clear_black_area2(pic)
+    end_time = time.time()
+    execution_time = end_time - start_time
+    print("执行时间为: " + str(execution_time) + "秒")
+
+    start_time = time.time()
+    b = FindButton().find_pic_by_bigger(bigger_pic_cap=pic, find_type="团练")
+    print(f"查询到的按钮：{b}")
+    end_time = time.time()
+    execution_time = end_time - start_time
+    print("执行时间为: " + str(execution_time) + "秒")

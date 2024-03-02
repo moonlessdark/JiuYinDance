@@ -1,0 +1,30 @@
+# 一些配置
+# 执行模式，True表示开发模式，
+DevMode: True
+ProjectDir: "D:\\SoftWare\\Developed\\Projected\\JiuYinDance"
+
+# 团练、授业
+dancePic:
+  button_j: "/Resources/DancePic/J.png"
+  button_k: "/Resources/DancePic/K.png"
+  button_l: "/Resources/DancePic/L.png"
+  button_down: "/Resources/DancePic/down.png"
+  button_up: "/Resources/DancePic/up.png"
+  button_left: "/Resources/DancePic/left.png"
+  button_right: "/Resources/DancePic/right.png"
+
+# 势力、望辉州，修罗刀
+whzDancePic:
+  button_down: "/Resources/DancePic/whzDance_Down.png"
+  button_up: "/Resources/DancePic/whzDance_UP.png"
+  button_left: "/Resources/DancePic/whzDance_left.png"
+  button_right: "/Resources/DancePic/whzDance_right.png"
+
+# 大漠插件
+dmDll:
+  dm: '/Resources/KeyBoardDriver/dm.dll'
+  dm_reg: '/Resources/KeyBoardDriver/DmReg.dll'
+
+# 幽灵键鼠
+ghostDll:
+  ghost_dll: '/Resources/KeyBoardDriver/gbild64.dll'

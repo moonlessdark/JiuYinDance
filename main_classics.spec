@@ -5,10 +5,10 @@ block_cipher = None
 
 
 a = Analysis(
-    ['main.py'],
+    ['main_classics.py'],
     pathex=[],
     binaries=[],
-    datas=[('deskPage/resources/.', 'res/.')],
+    datas=[('DeskPageV2/Resources/.', 'Resources/.')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -26,7 +26,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='WoNiuDancing',
+    name='JiuDancing_classics',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -46,6 +46,6 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='WoNiuDancing',
-    icon='D:\\SoftWare\\Dev\\Project\\JiuYinDancingPlus\\DeskPage\\resources\\app_logo.ico',
+    name='JiuDancing',
+    icon='D:\SoftWare\Developed\Projected\JiuYinDance\DeskPageV2\Resources\logo\app_logo.ico',
 )

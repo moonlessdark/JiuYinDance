@@ -7,10 +7,19 @@ import numpy
 import win32gui
 from PySide6.QtCore import Signal, QThread, QWaitCondition, QMutex
 
-from DeskPage.DeskDance.findPicBySmallToBigger.findButton import FindButton
-from DeskPage.DeskTools.DmSoft.get_dm_driver import getKeyBoardMouse, getWindows
-from DeskPage.DeskTools.WindowsSoft.get_windows import WindowsCapture, GetHandleList
-from DeskPage.DeskTools.GhostSoft.get_driver_v3 import SetGhostBoards
+from DeskPageV2.DeskFindPic.findButton import FindButton
+from DeskPageV2.DeskTools.DmSoft.get_dm_driver import getKeyBoardMouse, getWindows
+from DeskPageV2.DeskTools.WindowsSoft.get_windows import WindowsCapture, GetHandleList
+from DeskPageV2.DeskTools.GhostSoft.get_driver_v3 import SetGhostBoards
+
+
+def save_pic(pic_content, pic_save_path: str):
+    time_str_m = time.strftime("%H_%M", time.localtime(int(time.time())))
+    pic_file_path = pic_save_path + "/JiuYinScreenPic/" + time_str_m + "/"
+    if not os.path.exists(pic_file_path):  # 如果主目录+小时+分钟这个文件路径不存在的话
+        os.makedirs(pic_file_path)
+    time_str_s = time.strftime("%S", time.localtime(int(time.time())))
+    cv2.imencode('.png', pic_content)[1].tofile(pic_file_path + time_str_s + '.png')
 
 
 def get_random_time(end_time):
@@ -59,15 +68,6 @@ def windows_is_mini_size(check_windows_handle: int) -> bool:
     return False
 
 
-def activate_windows(windows_handle: int):
-    """
-    激活窗口
-    :param windows_handle: 窗口id
-    :return:
-    """
-    GetHandleList().activate_windows(windows_handle)
-
-
 def input_key_by_ghost(key_list: list):
     """
     :param key_list:
@@ -76,7 +76,6 @@ def input_key_by_ghost(key_list: list):
     wait_time = 0.3
     for n in range(len(key_list)):
         key: str = key_list[n]
-        # 具体按钮code看 https://github.com/Gaoyongxian666/pydmdll
         if key == 'J':
             SetGhostBoards().click_press_and_release_by_key_name('J')
         elif key == 'K':
@@ -113,6 +112,8 @@ class DanceThByFindPic(QThread):
         self.mutex = QMutex()
 
         self.windows_handle_list = []
+
+        self.windows_opt = GetHandleList()
 
     def __del__(self):
         # 线程状态改为和线程终止
@@ -151,25 +152,25 @@ class DanceThByFindPic(QThread):
                 self.mutex.unlock()  # 解锁
                 return None
             for windows_this_handle in self.windows_handle_list:
-                wait_num_print = wait_num_print + 1 if wait_num_print < 6 else 0
+                wait_num_print: int = wait_num_print + 1 if wait_num_print < 6 else 0
                 try:
                     if windows_is_mini_size(windows_this_handle) is False:
-                        self.status_bar.emit(
-                            "窗口检测中 => %s %s" % (time.strftime("%H:%M:%S", time.localtime()), "." * wait_num_print))
-
+                        self.status_bar.emit(f"窗口检测中{"." * wait_num_print}")
                         pic_content = WindowsCapture().capture_and_clear_black_area(windows_this_handle)
                         key_list = FindButton().find_pic_by_bigger(bigger_pic_cap=pic_content, find_type=self.dance_type)
                         if len(key_list) > 0:
                             key_str_list = numpy.array(key_list)
-                            key_str_list[numpy.where(key_str_list == "UP")] = "上"
-                            key_str_list[numpy.where(key_str_list == "Down")] = "下"
-                            key_str_list[numpy.where(key_str_list == "Left")] = "左"
-                            key_str_list[numpy.where(key_str_list == "Right")] = "右"
-                            self.sin_out.emit("%s=>窗口(%s)按钮:%s" % (
-                            time.strftime("%H:%M:%S", time.localtime()), windows_this_handle, "".join(key_str_list)))
+                            key_str_list[numpy.where(key_str_list == "UP")] = "↑"
+                            key_str_list[numpy.where(key_str_list == "Down")] = "↓"
+                            key_str_list[numpy.where(key_str_list == "Left")] = "←"
+                            key_str_list[numpy.where(key_str_list == "Right")] = "→"
+                            self.sin_out.emit("%s>窗口(%s)按钮: %s" % (
+                                                                    time.strftime("%H:%M:%S", time.localtime()),
+                                                                    windows_this_handle,
+                                                                    "".join(key_str_list)))
 
                             if self.key_board_mouse_driver_type == "ghost":
-                                if GetHandleList().activate_windows(windows_this_handle):   # 激活窗口
+                                if self.windows_opt.activate_windows(windows_this_handle):  # 激活窗口
                                     input_key_by_ghost(key_list)  # 输入按钮
                                 else:
                                     self.sin_out.emit(f"出错了,窗口{windows_this_handle}激活失败,开始重试")
@@ -177,7 +178,6 @@ class DanceThByFindPic(QThread):
                             else:
                                 getWindows().set_window_state(hwnd=windows_this_handle, flag=12)  # 激活窗口
                                 input_key_by_dm(key_list)  # 输入按钮
-
                             time.sleep(0.3)
 
                     else:
@@ -232,21 +232,25 @@ class ScreenGameQth(QThread):
 
     def run(self):
         self.mutex.lock()  # 先加锁
+
+        # 先创建一个文件
+        time_str_m = time.strftime("%H_%M", time.localtime(int(time.time())))
+        pic_file_path = self.pic_save_path + "/JiuYinScreenPic/" + time_str_m + "/"
+        if not os.path.exists(pic_file_path):  # 如果主目录+小时+分钟这个文件路径不存在的话
+            os.makedirs(pic_file_path)
+
         while self.working:
             if self.working is False:
                 self.sin_work_status.emit("结束")
                 self.mutex.unlock()  # 解锁
                 return None
-            for i in range(len(self.windows_handle_list)):
-                self.status_bar.emit("%s => 窗口截图中..." % time.strftime("%H:%M:%S", time.localtime()))
+            for handle in range(len(self.windows_handle_list)):
+                self.status_bar.emit("窗口截图中...")
                 try:
-                    pic_content_obj = WindowsCapture().capture_and_clear_black_area(self.windows_handle_list[i])
+                    pic_content_obj = WindowsCapture().capture_and_clear_black_area(self.windows_handle_list[handle])
                     pic_content = pic_content_obj.pic_content
-                    time_str_m = time.strftime("%H_%M", time.localtime(int(time.time())))
-                    pic_file_path = self.pic_save_path + "/JiuYinScreenPic/" + time_str_m + "/"
-                    if not os.path.exists(pic_file_path):  # 如果主目录+小时+分钟这个文件路径不存在的话
-                        os.makedirs(pic_file_path)
-                    time_str_s = time.strftime("%S", time.localtime(int(time.time())))
+
+                    time_str_s = time.strftime("%H_%M_%S", time.localtime(int(time.time())))
                     cv2.imencode('.png', pic_content)[1].tofile(pic_file_path + time_str_s + '.png')
                 except Exception as e:
                     self.sin_out.emit("%s" % str(e))

@@ -2,7 +2,7 @@ import ctypes
 import sys
 
 from PySide6.QtWidgets import QApplication
-from DeskPage.DeskGUIConnect.connect_gui import Dance
+from DeskPageV2.DeskFindPic.connect_gui import Dance
 
 
 def is_admin():
@@ -33,7 +33,6 @@ if __name__ == '__main__':
     # else:
     #     ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv[1:]), None, 0)  # pyinstaller 打包模式
     #     # ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 0)  # 调试模式
-
     ctypes.windll.shcore.SetProcessDpiAwareness(False)
     app = QApplication(sys.argv)
     main_gui = Dance()

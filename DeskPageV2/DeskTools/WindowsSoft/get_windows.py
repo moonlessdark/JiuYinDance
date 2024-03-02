@@ -11,11 +11,11 @@ import win32com
 import win32con
 import win32gui
 import win32process
-from findimage import find_template, find_all_template
 from numpy import frombuffer, fromfile, uint8
 from win32com import client
 
-from DeskPage.DeskTools.WindowsSoft.windows import SetForegroundWindowInternal, AllowSetForegroundWindow
+from DeskPageV2.DeskTools.WindowsSoft.windows import SetForegroundWindowInternal, AllowSetForegroundWindow
+from DeskPageV2.DeskTools.findPicBySmallToBigger.findImage import find_all_template, find_template
 
 PicCapture = namedtuple("PicCapture", ["pic_content", "pic_width", "pic_height"])
 
@@ -213,7 +213,7 @@ class WindowsCapture:
         self.DeleteObject = windll.gdi32.DeleteObject
         self.ReleaseDC = windll.user32.ReleaseDC
 
-    def capture(self, handle: int):
+    def capture(self, handle: int) -> PicCapture:
         """
         窗口区域显示在屏幕上的地方截图
         :param handle: 窗口句柄
