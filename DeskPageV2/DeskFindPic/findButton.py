@@ -1,7 +1,14 @@
+from collections import namedtuple
+
 import cv2
-from DeskPageV2.Utils.dataClass import DancePic, WhzDancePic
+import numpy as np
+from numpy import fromfile
+
+from DeskPageV2.Utils.dataClass import DancePic, WhzDancePic, Config
 from DeskPageV2.Utils.load_res import GetConfig
-from DeskPageV2.DeskTools.WindowsSoft.get_windows import find_pic, WindowsCapture, PicCapture
+from DeskPageV2.DeskTools.WindowsSoft.get_windows import find_pic, WindowsCapture, PicCapture, find_area
+
+FindPicTemplate = namedtuple("FindPicTemplate", ["template_list", "pic_threshold"])
 
 
 class FindButton:
@@ -9,38 +16,55 @@ class FindButton:
     大图找小图的方式查找按钮
     """
 
-    config = GetConfig()
-    dance_pic: DancePic = config.get_dance_pic()
-    whz_dance_pic: WhzDancePic = config.get_whz_dance_pic()
-
     def __init__(self):
-        self.j = cv2.imread(self.dance_pic.dance_J)
-        self.k = cv2.imread(self.dance_pic.dance_K)
-        self.l = cv2.imread(self.dance_pic.dance_L)
-        self.up = cv2.imread(self.dance_pic.dance_Up)
-        self.down = cv2.imread(self.dance_pic.dance_Down)
-        self.left = cv2.imread(self.dance_pic.dance_Left)
-        self.right = cv2.imread(self.dance_pic.dance_Right)
 
-        self.whz_dance_up = cv2.imread(self.whz_dance_pic.dance_Up)
-        self.whz_dance_down = cv2.imread(self.whz_dance_pic.dance_Down)
-        self.whz_dance_left = cv2.imread(self.whz_dance_pic.dance_Left)
-        self.whz_dance_right = cv2.imread(self.whz_dance_pic.dance_Right)
+        config = GetConfig()
+        self.dance_pic: DancePic = config.get_dance_pic()
+        self.whz_dance_pic: WhzDancePic = config.get_whz_dance_pic()
+        self.find_pic_config: Config = config.get_find_pic_config()
 
-    def get_dance_pic(self) -> list:
+        self.dance_area = cv2.imdecode(fromfile(self.dance_pic.dance_area, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
+        self.j = cv2.imdecode(fromfile(self.dance_pic.dance_J, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
+        self.k = cv2.imdecode(fromfile(self.dance_pic.dance_K, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
+        self.l = cv2.imdecode(fromfile(self.dance_pic.dance_L, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
+        self.up = cv2.imdecode(fromfile(self.dance_pic.dance_Up, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
+        self.down = cv2.imdecode(fromfile(self.dance_pic.dance_Down, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
+        self.left = cv2.imdecode(fromfile(self.dance_pic.dance_Left, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
+        self.right = cv2.imdecode(fromfile(self.dance_pic.dance_Right, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
+
+        self.whz_dance_area = cv2.imdecode(fromfile(self.whz_dance_pic.dance_area, dtype=np.uint8),
+                                           cv2.IMREAD_UNCHANGED)
+        self.whz_dance_up = cv2.imdecode(fromfile(self.whz_dance_pic.dance_Up, dtype=np.uint8), -1)
+        self.whz_dance_down = cv2.imdecode(fromfile(self.whz_dance_pic.dance_Down, dtype=np.uint8), -1)
+        self.whz_dance_left = cv2.imdecode(fromfile(self.whz_dance_pic.dance_Left, dtype=np.uint8), -1)
+        self.whz_dance_right = cv2.imdecode(fromfile(self.whz_dance_pic.dance_Right, dtype=np.uint8), -1)
+
+        self.dance_threshold: float = self.find_pic_config.dance_threshold
+        self.whz_dance_threshold: float = self.find_pic_config.whz_dance_threshold
+
+        self.button_list: list = []
+        self.whz_dance_button_list: list = []
+
+    def get_dance_pic(self) -> tuple:
         """
         团练授业
         先将图标加载到内存中，方便后面调用
         :return:
         """
-        return [("J", self.j), ("K", self.k), ("L", self.l), ("UP", self.up), ("Down", self.down), ("Left", self.left), ("Right", self.right)]
+        if len(self.button_list) == 0:
+            self.button_list = [("J", self.j), ("K", self.k), ("L", self.l), ("上", self.up), ("下", self.down),
+                                ("左", self.left), ("右", self.right)]
+        return self.button_list, self.dance_threshold, True
 
-    def get_whz_dance_pic(self) -> list:
+    def get_whz_dance_pic(self) -> tuple:
         """
         获取望辉洲的图片
         :return:
         """
-        return [("UP", self.whz_dance_up), ("Down", self.whz_dance_down), ("Left", self.whz_dance_left), ("Right", self.whz_dance_right)]
+        if len(self.whz_dance_button_list) == 0:
+            self.whz_dance_button_list = [("上", self.whz_dance_up), ("下", self.whz_dance_down),
+                                          ("左", self.whz_dance_left), ("右", self.whz_dance_right)]
+        return self.whz_dance_button_list, self.whz_dance_threshold, False
 
     @staticmethod
     def sort_button(button_dict: dict):
@@ -70,30 +94,39 @@ class FindButton:
         :return: list[str]
         """
         bigger_pic = bigger_pic_cap.pic_content
-        width = bigger_pic_cap.pic_width
-        height = bigger_pic_cap.pic_height
+        width, height = bigger_pic_cap.pic_width, bigger_pic_cap.pic_height
         button_dict = {}
+        check_button_list, dance_threshold, edges = self.get_dance_pic() if find_type == "团练" else self.get_whz_dance_pic()
+        if width == 0 or height == 0:
+            return []
+        else:
+            bigger_pic = bigger_pic[int(height * 0.6):int(height * 0.85), int(width * 0.2):int(width * 0.8)]
+        if find_type == "团练":
+            button_area_list: list = find_area(self.dance_area, bigger_pic, threshold=0.5, edge=True)  # 去界面找一下按钮的坐标
+        else:
+            button_area_list: list = find_area(self.whz_dance_area, bigger_pic, threshold=0.5, edge=False)  # 去界面找一下按钮的坐标
 
-        if width > 0 and height > 0:
+        if len(button_area_list) == 5:
             """
-            裁剪一下区域，大致把按钮出现的区域放进来
+            如果只找到了一个，那么就是我需要的，如果找到了多个，那就说明精度有问题，太低了
+            bigger_pic = bigger_pic[int(height * 0.7):int(height * 0.85), int(width * 0.4):int(width * 0.6)]
             """
             if find_type == "团练":
-                bigger_pic = bigger_pic[int(height * 0.64):int(height * 0.85), int(width * 0.35):int(width * 0.65)]
-                threshold = 0.9
+                bigger_pic = bigger_pic[int(button_area_list[0][1]):int(button_area_list[1][1]), int(button_area_list[1][0]):int(button_area_list[3][0])]
             else:
-                bigger_pic = bigger_pic[int(height * 0.70):int(height * 0.78), int(width * 0.40):int(width * 0.60)]
-                threshold = 0.65
+                # 挖宝、修罗刀的按钮区域长度400
+                bigger_pic = bigger_pic[int(button_area_list[0][1]):int(button_area_list[1][1]), int(button_area_list[1][0]-10):int(button_area_list[3][0]+350)]
+
+            # print(f"区域的准确度为{button_area_list[4]}")
 
             # cv2.imshow("dd", bigger_pic)
             # cv2.waitKey()
-
-            button_list: list = self.get_dance_pic() if find_type == "团练" else self.get_whz_dance_pic()
-            for i in button_list:
-                button_num_list: list = find_pic(i[1], bigger_pic, threshold)  # 去界面找一下按钮的坐标
+            for i in check_button_list:
+                button_num_list: list = find_pic(i[1], bigger_pic, threshold=dance_threshold, edge=edges)  # 去界面找一下按钮的坐标
                 button_x = []
                 for bu in button_num_list:
                     button_x.append(bu[0])  # 把获取到的按钮 x(横坐标) 拿出来，待会要进行排序使用
+                    # print(f"按钮 {i[0]} 的相似度为 {bu[2]}")
                 if len(button_x) > 0:
                     button_dict[i[0]] = button_x  # {J:[123,456], K:[234,567]}
         return self.sort_button(button_dict)
@@ -101,9 +134,10 @@ class FindButton:
 
 if __name__ == '__main__':
     import time
-    aa = cv2.imread("D:\\SoftWare\\Dev\\Project\\JiuYinDancingPyside6\\56.png", 0)
-    pic = cv2.cvtColor(aa, cv2.COLOR_BGR2RGB)
 
+    pic_path = "22_42_57.png"
+    pic = cv2.imread(f"D:\\JiuYinScreenPic\\check\\{pic_path}", 1)
+    # pic = cv2.imread(f"D:\\SoftWare\\Developed\\Projected\\JiuYinDance\\JiuYinScreenPic\\{pic_path}", 1)
     start_time = time.time()
     pic = WindowsCapture().clear_black_area2(pic)
     end_time = time.time()
@@ -116,3 +150,13 @@ if __name__ == '__main__':
     end_time = time.time()
     execution_time = end_time - start_time
     print("执行时间为: " + str(execution_time) + "秒")
+
+    """
+    当前按钮模板的最低识别率：
+    up: 0.71
+    down: 0.71
+    right: 0.78
+    left: 0.81
+    J: 0.80
+    K:0.9
+    """
