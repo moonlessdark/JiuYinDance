@@ -1,25 +1,31 @@
 import os
 import random
 import time
-
 import cv2
-import numpy
 import win32gui
 from PySide6.QtCore import Signal, QThread, QWaitCondition, QMutex
 
 from DeskPageV2.DeskFindPic.findButton import FindButton
 from DeskPageV2.DeskTools.DmSoft.get_dm_driver import getKeyBoardMouse, getWindows
-from DeskPageV2.DeskTools.WindowsSoft.get_windows import WindowsCapture, GetHandleList
+from DeskPageV2.DeskTools.WindowsSoft.get_windows import WindowsCapture, GetHandleList, PicCapture
 from DeskPageV2.DeskTools.GhostSoft.get_driver_v3 import SetGhostBoards
 
 
-def save_pic(pic_content, pic_save_path: str):
-    time_str_m = time.strftime("%H_%M", time.localtime(int(time.time())))
-    pic_file_path = pic_save_path + "/JiuYinScreenPic/" + time_str_m + "/"
+def get_local_time():
+    """
+    获取当前时间
+    :return:
+    """
+    time_string: str = time.strftime("%H:%M:%S", time.localtime(int(time.time())))
+    return time_string
+
+
+def save_pic(pic_content):
+    time_str_m = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime(int(time.time())))
+    pic_file_path = f"./_internal/ErrorLog/"
     if not os.path.exists(pic_file_path):  # 如果主目录+小时+分钟这个文件路径不存在的话
         os.makedirs(pic_file_path)
-    time_str_s = time.strftime("%S", time.localtime(int(time.time())))
-    cv2.imencode('.png', pic_content)[1].tofile(pic_file_path + time_str_s + '.png')
+    cv2.imwrite(pic_file_path + time_str_m + '.png', pic_content)
 
 
 def get_random_time(end_time):
@@ -44,13 +50,13 @@ def input_key_by_dm(key_list: list):
             getKeyBoardMouse().key_down_char('j', hold_time=get_random_time(wait_time))
         elif key == 'K':
             getKeyBoardMouse().key_down_char('k', hold_time=get_random_time(wait_time))
-        elif key == 'UP':
+        elif key == '上':
             getKeyBoardMouse().key_down(38, hold_time=get_random_time(wait_time))
-        elif key == 'Down':
+        elif key == '下':
             getKeyBoardMouse().key_down(40, hold_time=get_random_time(wait_time))
-        elif key == 'Left':
+        elif key == '左':
             getKeyBoardMouse().key_down(37, hold_time=get_random_time(wait_time))
-        elif key == 'Right':
+        elif key == '右':
             getKeyBoardMouse().key_down(39, hold_time=get_random_time(wait_time))
         elif key == 'L':
             getKeyBoardMouse().key_down_char('l', hold_time=get_random_time(wait_time))
@@ -68,6 +74,35 @@ def windows_is_mini_size(check_windows_handle: int) -> bool:
     return False
 
 
+def check_windows_size(w: int, h: int) -> int:
+    """
+    检测屏幕分辨率是否符合要求
+    :param h: 高
+    :param w: 宽
+    :return: 1: 黑屏中，可能是在加载画面
+             2: 按钮按下之后的游戏画面
+             3: 正常的大于1366*768的游戏画面，可以用于正常识别画面
+             0: 不符合要求，游戏画面低于1366*768，无法继续执行
+    """
+    result_type: int = 0
+    if w >= 1366 or h >= 768:
+        """
+        窗口分辨率正常
+        """
+        result_type = 3
+    elif min(w, h) == 0 and max(w, h) > 768:
+        """
+        最小值是0，最大值有值，说明是在按下按钮后的画面
+        """
+        result_type = 2
+    elif w == 0 and h == 0:
+        """
+        截图的宽高都是0，表示窗口都是黑色的，可能是在过图或者单纯的游戏画面黑屏了,需要继续等待画面
+        """
+        result_type = 1
+    return result_type
+
+
 def input_key_by_ghost(key_list: list):
     """
     :param key_list:
@@ -80,13 +115,13 @@ def input_key_by_ghost(key_list: list):
             SetGhostBoards().click_press_and_release_by_key_name('J')
         elif key == 'K':
             SetGhostBoards().click_press_and_release_by_key_name("K")
-        elif key == 'UP':
+        elif key == '上':
             SetGhostBoards().click_press_and_release_by_code(38)
-        elif key == 'Down':
+        elif key == '下':
             SetGhostBoards().click_press_and_release_by_code(40)
-        elif key == 'Left':
+        elif key == '左':
             SetGhostBoards().click_press_and_release_by_code(37)
-        elif key == 'Right':
+        elif key == '右':
             SetGhostBoards().click_press_and_release_by_code(39)
         elif key == 'L':
             SetGhostBoards().click_press_and_release_by_key_name('L')
@@ -97,16 +132,18 @@ class DanceThByFindPic(QThread):
     """
     大图找小图的方式
     """
-    sin_out = Signal(str)
-    status_bar = Signal(str)
-    sin_work_status = Signal(str)
+    sin_out = Signal(str)  # 日志打印
+    status_bar = Signal(str, int)  # 底部状态栏打印
+    sin_work_status = Signal(bool)  # 运行状态是否正常
 
     def __init__(self, parent=None):
         # 设置工作状态和初始值
         super().__init__(parent)
-        self.key_board_mouse_driver_list: list = []
         self.dance_type = "团练"
         self.key_board_mouse_driver_type = "dm"
+
+        self.windows_cap = WindowsCapture()
+        self.find_button = FindButton()
         self.working = True
         self.cond = QWaitCondition()
         self.mutex = QMutex()
@@ -146,55 +183,99 @@ class DanceThByFindPic(QThread):
     def run(self):
         self.mutex.lock()  # 先加锁
         wait_num_print: int = 0
+        wait_game_pic: bool = False  # 是否在等待游戏界面正常
+        find_button_count: int = 0  # 本轮发现几个按钮了
         while self.working:
             if self.working is False:
-                self.sin_work_status.emit("结束")
-                self.mutex.unlock()  # 解锁
-                return None
+                break
             for windows_this_handle in self.windows_handle_list:
                 wait_num_print: int = wait_num_print + 1 if wait_num_print < 6 else 0
+                self.status_bar.emit("", find_button_count)
+                start_time = time.time()
                 try:
-                    if windows_is_mini_size(windows_this_handle) is False:
-                        self.status_bar.emit(f"窗口检测中{"." * wait_num_print}")
-                        pic_content = WindowsCapture().capture_and_clear_black_area(windows_this_handle)
-                        key_list = FindButton().find_pic_by_bigger(bigger_pic_cap=pic_content, find_type=self.dance_type)
-                        if len(key_list) > 0:
-                            key_str_list = numpy.array(key_list)
-                            key_str_list[numpy.where(key_str_list == "UP")] = "↑"
-                            key_str_list[numpy.where(key_str_list == "Down")] = "↓"
-                            key_str_list[numpy.where(key_str_list == "Left")] = "←"
-                            key_str_list[numpy.where(key_str_list == "Right")] = "→"
-                            self.sin_out.emit("%s>窗口(%s)按钮: %s" % (
-                                                                    time.strftime("%H:%M:%S", time.localtime()),
-                                                                    windows_this_handle,
-                                                                    "".join(key_str_list)))
-
-                            if self.key_board_mouse_driver_type == "ghost":
-                                if self.windows_opt.activate_windows(windows_this_handle):  # 激活窗口
-                                    input_key_by_ghost(key_list)  # 输入按钮
-                                else:
-                                    self.sin_out.emit(f"出错了,窗口{windows_this_handle}激活失败,开始重试")
-                                    break
-                            else:
-                                getWindows().set_window_state(hwnd=windows_this_handle, flag=12)  # 激活窗口
-                                input_key_by_dm(key_list)  # 输入按钮
-                            time.sleep(0.3)
-
-                    else:
-                        self.status_bar.emit("窗口(%s)未显示，请不要最小化窗口" % str(windows_this_handle))
-                        time.sleep(1)
+                    # 开始截图
+                    pic_contents: PicCapture = self.windows_cap.capture_and_clear_black_area(windows_this_handle)
                 except Exception as e:
-                    self.sin_out.emit("出错了:%s" % str(e))
-                    self.sin_work_status.emit("结束")
-                    self.mutex.unlock()
-                    return None
+                    if windows_is_mini_size(windows_this_handle) is True:
+                        """
+                        如果窗口时最小化
+                        """
+                        if wait_game_pic is False:
+                            self.sin_out.emit(f"游戏窗口({windows_this_handle}) 未显示画面，请不要最小化窗口。")
+                            self.sin_out.emit("等待窗口刷新...")
+                            wait_game_pic = True
+                        else:
+                            self.sin_out.emit(f"游戏窗口分辨率已经符合要求。\n"
+                                              f"继续检测游戏窗口...")
+                            wait_game_pic = False
+                        time.sleep(1)
+                        continue
+                    self.sin_out.emit(str(e))
+                    self.sin_work_status.emit(False)
+                    self.working = False
+                    break
+
+                # 开始检查分辨率是否正常
+                windows_check_result: int = check_windows_size(w=pic_contents.pic_width, h=pic_contents.pic_height)
+                if windows_check_result == 0:
+                    """
+                    如果分辨率太低了
+                    """
+                    if wait_game_pic is False:
+                        self.sin_out.emit(f"游戏窗口分辨率过低，请重新设置游戏窗口m分辨率大于1366*768。\n"
+                                          f"当前分辨率为 {pic_contents.pic_width}*{pic_contents.pic_height} 。")
+                        self.sin_out.emit("等待窗口刷新...")
+                    else:
+                        self.sin_out.emit("等待窗口刷新...")
+                    wait_game_pic = True
+                    time.sleep(1)
+                    continue
+                elif windows_check_result in [1, 2]:
+                    """
+                    1：表示在加载过程动画的黑屏或者其他的黑屏
+                    2：表示按钮之后的动画效果
+                    """
+                    time.sleep(1)
+                    continue
+                else:
+                    if wait_game_pic:
+                        wait_game_pic = False
+                        self.sin_out.emit(f"游戏窗口分辨率已经符合要求。\n"
+                                          f"当前分辨率为 {pic_contents.pic_width}*{pic_contents.pic_height} 。\n"
+                                          f"继续检测游戏窗口...")
+
+                # 开始检查是否有按钮出现
+                key_list: list = self.find_button.find_pic_by_bigger(bigger_pic_cap=pic_contents,
+                                                                     find_type=self.dance_type)
+                if len(key_list) > 0:
+                    if self.windows_opt.activate_windows(windows_this_handle):  # 激活窗口
+                        input_key_by_ghost(key_list)  # 输入按钮
+                        find_button_count += 1
+                        end_times = time.time()
+                        execution_time = end_times - start_time
+                        # print("总执行时间为: " + str(execution_time) + "秒")
+                        self.sin_out.emit(f"窗口按钮: {"".join(key_list)} 总耗时 {round(execution_time, 2)} 秒")
+                    else:
+                        self.sin_out.emit(f"出错了,窗口{windows_this_handle}激活失败,尝试再次激活")
+                        continue
+                if len(self.windows_handle_list) > 1:
+                    """
+                    如果此时有个以上窗口在扫描，那么就加快一点进度
+                    """
+                    time.sleep(0.1)
+                else:
+                    """
+                    如果现在是只有一个窗口在扫描，那么就慢一点，1秒一次
+                    """
+                    time.sleep(1)
         self.mutex.unlock()
+        self.status_bar.emit("等待执行", 0)
+        return None
 
 
 class ScreenGameQth(QThread):
     sin_out = Signal(str)
     status_bar = Signal(str)
-    sin_work_status = Signal(str)
 
     def __init__(self):
         super().__init__()
@@ -203,7 +284,7 @@ class ScreenGameQth(QThread):
         self.working = True
         self.cond = QWaitCondition()
         self.mutex = QMutex()
-
+        self.windows_cap = WindowsCapture()
         self.windows_handle_list = []
 
     def __del__(self):
@@ -241,24 +322,64 @@ class ScreenGameQth(QThread):
 
         while self.working:
             if self.working is False:
-                self.sin_work_status.emit("结束")
                 self.mutex.unlock()  # 解锁
                 return None
             for handle in range(len(self.windows_handle_list)):
                 self.status_bar.emit("窗口截图中...")
                 try:
-                    pic_content_obj = WindowsCapture().capture_and_clear_black_area(self.windows_handle_list[handle])
-                    pic_content = pic_content_obj.pic_content
-
+                    pic_content_obj = self.windows_cap.capture_and_clear_black_area(self.windows_handle_list[handle])
                     time_str_s = time.strftime("%H_%M_%S", time.localtime(int(time.time())))
-                    cv2.imencode('.png', pic_content)[1].tofile(pic_file_path + time_str_s + '.png')
+                    cv2.imwrite(f"{pic_file_path}{time_str_s}.png", pic_content_obj.pic_content)
+
                 except Exception as e:
                     self.sin_out.emit("%s" % str(e))
-                    self.sin_work_status.emit("结束")
                     self.mutex.unlock()
                     return None
-            time.sleep(1)
+                time.sleep(2)
         self.mutex.unlock()
+
+
+class QProgressBarQth(QThread):
+    # A signal that is emitted when the value of the counter changes.
+    thread_step = Signal(int)
+
+    def __init__(self):
+        """
+        A constructor. It is called when an object is created from a class and it allows the class to initialize the
+        attributes of a class.
+        """
+        super(QProgressBarQth, self).__init__()
+        self.working = True
+        self.step = 0  # 进度条跑马灯效果初始值设置为0
+        self.mutex = QMutex()
+
+    def __del__(self):
+        """
+        A destructor. It is called when the object is destroyed.
+        """
+        self.working = False
+
+    def start_init(self):
+        self.working = True
+        self.step = 0
+
+    def stop_init(self):
+        self.working = False
+        self.step = 0
+
+    def run(self):
+
+        self.mutex.lock()  # 先加锁
+        while self.working:
+            if self.step < 101:
+                self.step += 1
+                self.thread_step.emit(self.step)
+            else:
+                self.step = 0
+            time.sleep(0.001)
+        self.thread_step.emit(0)
+        self.mutex.unlock()
+        return None
 
 
 if __name__ == '__main__':
