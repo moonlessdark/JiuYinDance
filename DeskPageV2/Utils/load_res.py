@@ -1,7 +1,7 @@
 # encodings: utf-8
 import yaml
 
-from DeskPageV2.Utils.dataClass import DancePic, WhzDancePic, DmDll, GhostDll
+from DeskPageV2.Utils.dataClass import DancePic, WhzDancePic, DmDll, GhostDll, Config
 from DeskPageV2.Utils.project_path import PathUtil
 
 
@@ -36,6 +36,7 @@ class GetConfig:
         """
         pic_dance: DancePic = DancePic()
         # 赋值
+        pic_dance.dance_area = self.project_dir + self.datas["dancePic"]["button_find_area"]
         pic_dance.dance_J = self.project_dir + self.datas["dancePic"]["button_j"]
         pic_dance.dance_K = self.project_dir + self.datas["dancePic"]["button_k"]
         pic_dance.dance_L = self.project_dir + self.datas["dancePic"]["button_l"]
@@ -52,6 +53,7 @@ class GetConfig:
         """
         whz_dance: WhzDancePic = WhzDancePic()
         # 赋值
+        whz_dance.dance_area = self.project_dir + self.datas["whzDancePic"]["button_find_area"]
         whz_dance.dance_Left = self.project_dir + self.datas["whzDancePic"]["button_left"]
         whz_dance.dance_Right = self.project_dir + self.datas["whzDancePic"]["button_right"]
         whz_dance.dance_Up = self.project_dir + self.datas["whzDancePic"]["button_up"]
@@ -76,6 +78,16 @@ class GetConfig:
         ghost_dm = GhostDll()
         ghost_dm.dll_ghost = self.project_dir + self.datas["ghostDll"]["ghost_dll"]
         return ghost_dm
+
+    def get_find_pic_config(self) -> Config:
+        """
+        读取图片识别的配置
+        :return:
+        """
+        pic_config = Config()
+        pic_config.dance_threshold = self.datas["dance_threshold"]
+        pic_config.whz_dance_threshold = self.datas["whz_dance_threshold"]
+        return pic_config
 
 
 if __name__ == '__main__':
