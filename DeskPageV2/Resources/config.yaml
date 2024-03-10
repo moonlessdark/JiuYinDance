@@ -1,10 +1,11 @@
 # 一些配置
-# 执行模式，True表示开发模式，
-DevMode: True
-ProjectDir: "D:\\SoftWare\\Developed\\Projected\\JiuYinDance"
+# 图片最低识别率
+dance_threshold: 0.6
+whz_dance_threshold: 0.8
 
 # 团练、授业
 dancePic:
+  button_find_area: '/Resources/DancePic/find_dance_area.png'
   button_j: "/Resources/DancePic/J.png"
   button_k: "/Resources/DancePic/K.png"
   button_l: "/Resources/DancePic/L.png"
@@ -15,6 +16,7 @@ dancePic:
 
 # 势力、望辉州，修罗刀
 whzDancePic:
+  button_find_area: '/Resources/DancePic/find_whz_area.png'
   button_down: "/Resources/DancePic/whzDance_Down.png"
   button_up: "/Resources/DancePic/whzDance_UP.png"
   button_left: "/Resources/DancePic/whzDance_left.png"
