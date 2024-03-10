@@ -1,12 +1,11 @@
-import time
 from collections import namedtuple
 from ctypes import windll, c_ubyte, wintypes, pointer, byref, sizeof
 from typing import List
 
-
 import cv2
 import psutil
 import pythoncom
+import win32api
 import win32com
 import win32con
 import win32gui
@@ -53,17 +52,22 @@ class GetHandleList:
         :param windows_handle:
         :return:
         """
-        time.sleep(0.2)
-        return self.activate_windows_2(windows_handle)
+        return self.activate_windows_1(windows_handle)
 
-    def activate_windows_1(self, windows_handle: int):
+    @staticmethod
+    def activate_windows_1(windows_handle: int):
+        """
+        激活窗口
+        :param windows_handle:
+        :return:
+        """
         if windows_handle != win32gui.GetForegroundWindow():
-            if self.shell is None:
-                pythoncom.CoInitialize()
-                self.shell = client.Dispatch("WScript.Shell")
-            self.shell.SendKeys('%')
-            win32gui.ShowWindow(windows_handle, win32con.SW_SHOWNA)
-            win32gui.SetForegroundWindow(windows_handle)
+            try:
+                win32api.keybd_event(0xC, 0, 0, 0)
+                win32gui.ShowWindow(windows_handle, win32con.SW_SHOWNA)
+                win32gui.SetForegroundWindow(windows_handle)
+            except Exception as e:
+                return False
         return True
 
     @staticmethod
@@ -88,17 +92,21 @@ class GetHandleList:
     def activate_windows_3(windows_handle: int):
         """
         激活窗口方法3
+        注意，此方法完全无效
         :param windows_handle:
         :return:
         """
-        if windows_handle != win32gui.GetForegroundWindow():
-            for i in range(50):
-                try:
-                    SetForegroundWindowInternal(windows_handle)
-                    return True
-                except Exception as e:
-                    time.sleep(0.1)
-                    pass
+        try:
+            h_fore_wind: str = win32gui.GetForegroundWindow()
+            dw_curth_id: str= win32process.GetCurrentProcessId()
+            dw_fore_id = win32process.GetWindowThreadProcessId(h_fore_wind, None)
+            win32process.AttachThreadInput(dw_curth_id, dw_fore_id, True)
+            win32gui.SetWindowPos(windows_handle, win32con.HWND_TOPMOST, 0, 0, 0, 0, win32con.SWP_NOSIZE|win32con.SWP_NOMOVE)
+            win32gui.SetWindowPos(windows_handle, win32con.HWND_NOTOPMOST, 0, 0, 0, 0, win32con.SWP_NOSIZE|win32con.SWP_NOMOVE)
+            win32gui.SetForegroundWindow(windows_handle)
+            win32process.AttachThreadInput(dw_curth_id, dw_fore_id, False)
+            return True
+        except Exception as e:
             return False
 
     @staticmethod
@@ -142,23 +150,69 @@ def mapping_coordinates(handle, x, y):
     return rect[0][0] + x, rect[0][1] + y
 
 
-def find_pic(smaller_pic, bigger_img, threshold=0.7) -> list:
+def find_pic(smaller_pic, bigger_img, threshold=0.7, edge: bool = False) -> list:
     """
     大图里面找小图
+    :param edge:
     :param threshold: 相似度，0-1
     :param bigger_img: 大图
     :param smaller_pic: 小图'
-    :return [[x, y]]
+    :return [[x, y, confidence]]  #坐标和相似度
     """
-    match_result = find_all_template(bigger_img, smaller_pic, threshold)
+    match_result = find_all_template(bigger_img, smaller_pic, threshold, edge=edge)
     img_result = []
     if len(match_result) > 0:
         for mr in match_result:
             rect = mr['rectangle']
             x = (int(rect[1][0]) + int(rect[2][0])) / 2 + 0
             y = (int(rect[0][1]) + int(rect[1][1])) / 2 + 0
-            img_result.append([x, y])
+            confidence: float = mr['confidence']
+            confidence = round(confidence, 2)  # 相似度保留2位小数
+            img_result.append([x, y, confidence])
     return img_result
+
+
+def find_area(smaller_pic, bigger_img, threshold=0.7, edge: bool = False) -> list:
+    """
+    大图中寻找小区的坐标区域
+    :param smaller_pic:
+    :param bigger_img:
+    :param threshold:
+    :param edge:
+    :return: [(左上角，右上角，左下角，右下角)， 相似度]
+    """
+    match_result = find_all_template(bigger_img, smaller_pic, threshold, edge=edge)
+    img_result = []
+    if len(match_result) > 0:
+        for mr in match_result:
+            rect = mr['rectangle']
+
+            # img_result = bigger_img.copy()
+            # cv2.rectangle(img_result, (rect[0][0], rect[0][1]), (rect[3][0], rect[3][1]), (0, 0, 220), 2)
+            # cv2.imshow('find_all_template_result.en.png', img_result)
+            # cv2.waitKey()
+
+            confidence: float = mr['confidence']
+            confidence = round(confidence, 2)  # 相似度保留2位小数
+            img_result.append(
+                [(rect[0][0], rect[0][1]),  # 左上角
+                 (rect[1][0], rect[1][1]),  # 右上角
+                 (rect[2][0], rect[2][1]),  # 左下角
+                 (rect[3][0], rect[3][1]),  # 右上角
+                 confidence  # 相似度
+                 ]
+            )
+    img_result_check: list = []
+    if len(img_result) > 1:
+        # 如果找到了多个结果的时候,把匹配对最高的那个拿出来
+        confidence_check: float = 0
+        for area_li in img_result:
+            if area_li[4] > confidence_check:
+                img_result_check = area_li
+            confidence_check = area_li[4]
+    elif len(img_result) == 1:
+        img_result_check: list = img_result[0]
+    return img_result_check
 
 
 def get_handle_size(handle: int):
@@ -240,7 +294,7 @@ class WindowsCapture:
         self.DeleteObject(cdc)
         self.ReleaseDC(handle, dc)
         # 返回截图数据为numpy.ndarray
-
+        # cap_pic = PicCapture(frombuffer(buffer, dtype=uint8).reshape(height, width, 4)[:, :, :3], width, height)
         cap_pic = PicCapture(frombuffer(buffer, dtype=uint8).reshape(height, width, 4), width, height)
         return cap_pic
 
@@ -318,15 +372,15 @@ class WindowsCapture:
         edges_w: list = []
         edges_h: list = []
         # 先算高度，从底部侧往上算，左下角往上算，碰到非透明的就结束
-        for i in range(h-1, -1, -1):
+        for i in range(h - 1, -1, -1):
             edges_h.append(i)
-            if binary_image[i][int(h/2)] != 0:  # 偏移一下，从第10个像素开始取值，避免截图位移产生误差
+            if binary_image[i][int(h / 2)] != 0:  # 偏移一下，从第10个像素开始取值，避免截图位移产生误差
                 #  如果是非透明像素，说明没有透明的了，就退出
                 break
         # 先算宽度，从右侧往左算，从右上角往左算，碰到非透明的就结束
-        for j in range(w-1, -1, -1):
+        for j in range(w - 1, -1, -1):
             edges_w.append(j)
-            if binary_image[int(w/2)][j] != 0:
+            if binary_image[int(w / 2)][j] != 0:
                 # 如果是非透明像素，说明没有透明的了，就退出
                 break
         left = min(edges_w)  # 图片中，透明部分的开始的宽度
