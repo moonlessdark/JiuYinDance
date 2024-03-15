@@ -213,6 +213,9 @@ def find_all_template(im_source: ndarray, im_template: ndarray, threshold: float
     if edge:
         if debug:
             start_time = time.time()
+        gray_template = gray_template.astype(np.uint8)
+        gray_source = gray_source.astype(np.uint8)
+      
         gray_template = cv2.Canny(gray_template, 100, 200)
         gray_source = cv2.Canny(gray_source, 100, 200)
         if debug:
