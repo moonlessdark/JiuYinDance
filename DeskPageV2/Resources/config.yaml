@@ -6,6 +6,7 @@ whz_dance_threshold: 0.8
 # 团练、授业
 dancePic:
   button_find_area: '/Resources/DancePic/find_dance_area.png'
+  button_find_area_night: '/Resources/DancePic/find_dance_area_night.png'
   button_j: "/Resources/DancePic/J.png"
   button_k: "/Resources/DancePic/K.png"
   button_l: "/Resources/DancePic/L.png"
