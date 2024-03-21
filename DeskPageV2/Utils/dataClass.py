@@ -4,6 +4,7 @@ import dataclasses
 @dataclasses.dataclass
 class DancePic:
     dance_area: str = dataclasses.field(default_factory=str)
+    dance_area_night: str = dataclasses.field(default_factory=str)
     dance_J: str = dataclasses.field(default_factory=str)
     dance_K: str = dataclasses.field(default_factory=str)
     dance_L: str = dataclasses.field(default_factory=str)
