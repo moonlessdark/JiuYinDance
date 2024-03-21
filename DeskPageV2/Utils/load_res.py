@@ -37,6 +37,7 @@ class GetConfig:
         pic_dance: DancePic = DancePic()
         # 赋值
         pic_dance.dance_area = self.project_dir + self.datas["dancePic"]["button_find_area"]
+        pic_dance.dance_area_night = self.project_dir + self.datas["dancePic"]["button_find_area_night"]
         pic_dance.dance_J = self.project_dir + self.datas["dancePic"]["button_j"]
         pic_dance.dance_K = self.project_dir + self.datas["dancePic"]["button_k"]
         pic_dance.dance_L = self.project_dir + self.datas["dancePic"]["button_l"]
