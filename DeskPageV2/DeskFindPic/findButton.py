@@ -24,6 +24,7 @@ class FindButton:
         self.find_pic_config: Config = config.get_find_pic_config()
 
         self.dance_area = cv2.imdecode(fromfile(self.dance_pic.dance_area, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
+        self.dance_area_night = cv2.imdecode(fromfile(self.dance_pic.dance_area_night, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
         self.j = cv2.imdecode(fromfile(self.dance_pic.dance_J, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
         self.k = cv2.imdecode(fromfile(self.dance_pic.dance_K, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
         self.l = cv2.imdecode(fromfile(self.dance_pic.dance_L, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
@@ -86,7 +87,7 @@ class FindButton:
                         button_key_list.append(kk)
         return button_key_list
 
-    def find_pic_by_bigger(self, bigger_pic_cap: PicCapture, find_type="团练") -> list:
+    def find_pic_by_bigger(self, bigger_pic_cap: PicCapture, find_type="团练", debug: bool = False) -> list:
         """
         从大图里面找小图，并进行从左到右排序
         :param find_type: 查找方式，团练 或者 望辉洲
@@ -100,11 +101,44 @@ class FindButton:
         if width == 0 or height == 0:
             return []
         else:
-            bigger_pic = bigger_pic[int(height * 0.6):int(height * 0.85), int(width * 0.2):int(width * 0.8)]
+            bigger_pic = bigger_pic[int(height * 0.6):int(height * 1), int(width * 0.2):int(width * 1)]
         if find_type == "团练":
-            button_area_list: list = find_area(self.dance_area, bigger_pic, threshold=0.5, edge=True)  # 去界面找一下按钮的坐标
+            day: list = find_area(self.dance_area, bigger_pic, threshold=0.4, edge=True)  # 去界面找一下按钮的坐标
+            night: list = find_area(self.dance_area_night, bigger_pic, threshold=0.4, edge=True)  # 去界面找一下按钮的坐标
+
+            if len(day) == len(night) == 0:
+                """
+                如果白天和黑色都没有找到，那就可以放弃了
+                """
+                button_area_list = []
+            elif len(day) == len(night) == 5:
+                """
+                如果白天和黑色都满足条件，都找到了，那么就把相似度最高的拿出来用
+                """
+                if day[4] > night[4]:
+                    button_area_list = day
+                else:
+                    button_area_list = night
+                    dance_threshold = 0.4
+                if debug:
+                    print(f"区域识别率: 白天:{day[4]} 晚上:{night[4]}")
+            else:
+                """
+                如果2者找到一个，那么就谁值就用谁
+                """
+                if len(day) > len(night):
+                    button_area_list = day
+                else:
+                    button_area_list = night
+                    dance_threshold = 0.4
+                if debug:
+                    if len(day) > 0:
+                        print(f"区域识别率: 白天{day[4]} 晚上0")
+                    else:
+                        print(f"区域识别率: 白天0 晚上{night[4]}")
+                        
         else:
-            button_area_list: list = find_area(self.whz_dance_area, bigger_pic, threshold=0.5, edge=False)  # 去界面找一下按钮的坐标
+            button_area_list: list = find_area(self.whz_dance_area, bigger_pic, threshold=dance_threshold, edge=False)  # 去界面找一下按钮的坐标
 
         if len(button_area_list) == 5:
             """
@@ -126,7 +160,8 @@ class FindButton:
                 button_x = []
                 for bu in button_num_list:
                     button_x.append(bu[0])  # 把获取到的按钮 x(横坐标) 拿出来，待会要进行排序使用
-                    # print(f"按钮 {i[0]} 的相似度为 {bu[2]}")
+                    if debug:
+                        print(f"按钮 {i[0]} 的相似度为 {bu[2]}")
                 if len(button_x) > 0:
                     button_dict[i[0]] = button_x  # {J:[123,456], K:[234,567]}
         return self.sort_button(button_dict)
