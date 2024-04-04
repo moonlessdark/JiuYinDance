@@ -212,6 +212,7 @@ def find_area(smaller_pic, bigger_img, threshold=0.7, edge: bool = False) -> lis
             confidence_check = area_li[4]
     elif len(img_result) == 1:
         img_result_check: list = img_result[0]
+    img_result_check = [0, 0, 0, 0, 0] if len(img_result_check) == 0 else img_result_check
     return img_result_check
 
 
