@@ -1,13 +1,54 @@
 import ctypes
 import os
 import sys
-import time
-import winreg
 
 from PySide6 import QtWidgets, QtCore, QtGui
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QApplication
+from PySide6.QtCore import Qt, QObject, QEvent, QSettings
+from PySide6.QtGui import QIcon, QAction
+from PySide6.QtWidgets import QApplication, QListWidget, QMessageBox
+
+
+class ListWidgetItemEventFilter(QObject):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.list_widget: QListWidget = parent
+        self.event_key_str_list: list = []  # 本次所有按下的按键
+        self.event_key_sum: int = 0  # 按下的组合键数量
+
+    def eventFilter(self, watched: QObject, event: QEvent) -> bool:
+        if event.type() == QEvent.KeyPress:
+            """
+            如果是按钮按下
+            """
+            key_text = event.text()
+            if event.modifiers():
+                key_text = event.keyCombination().key().name.decode(encoding="utf-8")
+            if key_text not in self.event_key_str_list:
+                """
+                如果本次按下的键是没有被按过的，就加入队列
+                """
+                self.event_key_str_list.append(key_text)
+                self.event_key_sum += 1
+                # print(f"键盘按下了{key_text}_当前按钮数量{self.event_key_sum}")
+
+        elif event.type() == QEvent.KeyRelease:
+            """
+            如果是按钮弹起
+            """
+            self.event_key_sum -= 1
+            # print(f"键盘松开了一个键_当前按钮数量{self.event_key_sum}")
+            if self.event_key_sum == 0:
+                """
+                如果所有的按钮都弹起了，那么就说明已经输入完毕
+                """
+                if self.list_widget.selectedItems():
+                    item = self.list_widget.selectedItems()[0]
+                    event_key_str = "+".join(self.event_key_str_list)
+                    item.setText(event_key_str.upper())
+                    self.event_key_str_list = []
+            elif self.event_key_sum < 0:
+                self.event_key_sum = 0
+        return super().eventFilter(watched, event)
 
 
 class MainGui(QtWidgets.QMainWindow):
@@ -22,6 +63,14 @@ class MainGui(QtWidgets.QMainWindow):
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("myappid")
 
         """
+        加载事件筛选器
+        """
+        self.list_widget = QtWidgets.QListWidget()
+        self.list_widget.addItem(QtWidgets.QListWidgetItem(f"请输入按钮"))
+        event_filter = ListWidgetItemEventFilter(self.list_widget)
+        self.list_widget.installEventFilter(event_filter)
+
+        """
         顶部菜单栏
         """
         menu_bar = self.menuBar()
@@ -32,9 +81,13 @@ class MainGui(QtWidgets.QMainWindow):
         menu_bar.addMenu(file_menu)
         menu_bar.addMenu(about_menu)
 
-        action_open_config_file = QtGui.QAction("打开配置文件", self)
+        action_open_config_file = QtGui.QAction("打开资源文件目录", self)
         file_menu.addAction(action_open_config_file)
         action_open_config_file.triggered.connect(self.open_config_file)
+
+        action_edit_config_file = QtGui.QAction("修改配置", self)
+        file_menu.addAction(action_edit_config_file)
+        action_edit_config_file.triggered.connect(self.edit_config_file)
 
         action_open_url = QtGui.QAction("访问项目github", self)
         about_menu.addAction(action_open_url)
@@ -77,16 +130,10 @@ class MainGui(QtWidgets.QMainWindow):
         self.status_bar_print.setContentsMargins(8, 0, 0, 0)
 
         """
-        日志打印区      
-        """
-        self.text_browser_print_log = QtWidgets.QTextBrowser(self)
-        self.text_browser_print_log.setGeometry(QtCore.QRect(10, 210, 260, 188))
-
-        """
         选择类型
         """
         self.group_box_functional_area = QtWidgets.QGroupBox(self)  # 功能区
-        self.group_box_functional_area.setGeometry(QtCore.QRect(10, 30, 260, 60))
+        self.group_box_functional_area.setGeometry(QtCore.QRect(10, 25, 260, 70))
         self.group_box_functional_area.setTitle("选择功能")
 
         self.radio_button_school_dance = QtWidgets.QRadioButton()
@@ -99,18 +146,19 @@ class MainGui(QtWidgets.QMainWindow):
         self.radio_button_game_screen.setText("游戏截图")
         # 按键宏
         self.radio_button_key_auto = QtWidgets.QRadioButton()
-        self.radio_button_key_auto.setText("键鼠宏")
+        self.radio_button_key_auto.setText("键盘连按")
+        self.radio_button_key_auto.setEnabled(False)
 
         """
         增加一下布局框
         """
         # 一个网格布局
         self.gridLayout_group_box_functional_area = QtWidgets.QGridLayout(self.group_box_functional_area)
-        self.gridLayout_group_box_functional_area.setContentsMargins(0, 0, 0, 0)
+        self.gridLayout_group_box_functional_area.setContentsMargins(0, 0, 0, 5)
         self.gridLayout_group_box_functional_area.addWidget(self.radio_button_school_dance, 0, 0, QtCore.Qt.AlignRight)
         self.gridLayout_group_box_functional_area.addWidget(self.radio_button_party_dance, 0, 1, QtCore.Qt.AlignCenter)
         self.gridLayout_group_box_functional_area.addWidget(self.radio_button_game_screen, 0, 2, QtCore.Qt.AlignCenter)
-        # self.gridLayout_group_box_functional_area.addWidget(self.radio_button_key_auto, 1, 1, QtCore.Qt.AlignCenter)
+        self.gridLayout_group_box_functional_area.addWidget(self.radio_button_key_auto, 1, 0, QtCore.Qt.AlignRight)
 
         self.setLayout(self.gridLayout_group_box_functional_area)
 
@@ -118,7 +166,7 @@ class MainGui(QtWidgets.QMainWindow):
         选择游戏窗口与执行
         """
         self.group_box_get_windows = QtWidgets.QGroupBox(self)
-        self.group_box_get_windows.setGeometry(QtCore.QRect(10, 90, 260, 70))
+        self.group_box_get_windows.setGeometry(QtCore.QRect(10, 100, 260, 70))
         self.group_box_get_windows.setTitle("选择游戏窗口")
 
         # 获取窗口按钮
@@ -143,7 +191,7 @@ class MainGui(QtWidgets.QMainWindow):
 
         # 获取到的游戏窗口要如何加载
         self.group_box_select_windows = QtWidgets.QGroupBox(self)
-        self.group_box_select_windows.setGeometry(QtCore.QRect(10, 160, 260, 40))
+        self.group_box_select_windows.setGeometry(QtCore.QRect(10, 170, 260, 40))
 
         # 窗口A/B/C
         self.check_box_windows_one = QtWidgets.QCheckBox()
@@ -166,6 +214,76 @@ class MainGui(QtWidgets.QMainWindow):
         self.layout_group_box_select_windows.addStretch(1)
         self.setLayout(self.layout_group_box_select_windows)
 
+        """
+        日志打印区      
+        """
+        self.text_browser_print_log = QtWidgets.QTextBrowser(self)
+        self.text_browser_print_log.setGeometry(QtCore.QRect(10, 220, 260, 178))
+
+        """
+        按键连按
+        """
+        widget_key_press_auto = QtWidgets.QWidget()
+        # 最大随机等待事件
+        self.line_key_press_wait_time = QtWidgets.QDoubleSpinBox(widget_key_press_auto)
+        self.line_key_press_wait_time.setValue(0.02)  # 双精度
+        self.line_key_press_wait_time.setSuffix("秒")  # 单位
+
+        self.line_key_press_execute_sum = QtWidgets.QSpinBox(widget_key_press_auto)
+        self.line_key_press_execute_sum.setValue(10)
+        self.line_key_press_execute_sum.setSuffix("次")
+
+        lay_out_input = QtWidgets.QHBoxLayout()
+        lay_out_input.addWidget(self.line_key_press_execute_sum)
+        lay_out_input.addWidget(self.line_key_press_wait_time)
+
+        self.push_button_save_key_press_add = QtWidgets.QPushButton("新增", widget_key_press_auto)
+        self.push_button_save_key_press_delete = QtWidgets.QPushButton("删除", widget_key_press_auto)
+        self.push_button_save_key_press_save = QtWidgets.QPushButton("保存", widget_key_press_auto)
+
+        layout_input = QtWidgets.QGridLayout(widget_key_press_auto)
+        layout_input.addLayout(lay_out_input, 0, 0, 1, 1)
+        layout_input.addWidget(self.list_widget, 1, 0, 3, 1)
+        layout_input.addWidget(self.push_button_save_key_press_add, 1, 1)
+        layout_input.addWidget(self.push_button_save_key_press_delete, 2, 1)
+        layout_input.addWidget(self.push_button_save_key_press_save, 3, 1)
+        layout_input.setAlignment(QtCore.Qt.AlignHCenter)
+
+        self.widget_dock = QtWidgets.QDockWidget("按钮设置",self)
+        self.widget_dock.setWidget(widget_key_press_auto)
+        self.widget_dock.setFloating(True)  # 独立于主窗口之外
+        self.addDockWidget(QtCore.Qt.DockWidgetArea.RightDockWidgetArea, self.widget_dock)
+        self.widget_dock.setVisible(False)
+        self.widget_dock.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable)  # dockWidget窗口禁止回到主窗口
+
+        """
+        设置配置文件窗口
+        """
+        widget_setting = QtWidgets.QWidget()
+        self.label_dance_threshold = QtWidgets.QLabel("团练授业阈值", widget_setting)
+        self.line_dance_threshold = QtWidgets.QDoubleSpinBox(widget_setting)
+
+        self.label_whz_dance_threshold = QtWidgets.QLabel("势力修炼阈值", widget_setting)
+        self.line_whz_dance_threshold = QtWidgets.QDoubleSpinBox(widget_setting)
+
+        self.check_debug_mode = QtWidgets.QCheckBox("Debug", widget_setting)
+        self.push_button_save_setting = QtWidgets.QPushButton("保存设置", widget_setting)
+
+        layout_setting = QtWidgets.QGridLayout(widget_setting)
+        layout_setting.addWidget(self.label_dance_threshold, 0, 0)
+        layout_setting.addWidget(self.line_dance_threshold, 0, 1)
+        layout_setting.addWidget(self.label_whz_dance_threshold, 1, 0)
+        layout_setting.addWidget(self.line_whz_dance_threshold, 1, 1)
+        layout_setting.addWidget(self.check_debug_mode, 2, 0)
+        layout_setting.addWidget(self.push_button_save_setting, 2, 1)
+
+        self.widget_dock_setting = QtWidgets.QDockWidget("配置信息", self)
+        self.widget_dock_setting.setWidget(widget_setting)
+        self.widget_dock_setting.setFloating(True)  # 独立于主窗口之外
+        self.addDockWidget(QtCore.Qt.DockWidgetArea.RightDockWidgetArea, self.widget_dock_setting)
+        self.widget_dock_setting.setVisible(False)
+        self.widget_dock_setting.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable)  # dockWidget窗口禁止回到主窗口
+
     def open_config_file(self):
         """
         打开配置文件
@@ -176,6 +294,10 @@ class MainGui(QtWidgets.QMainWindow):
             config_file = ".\\DeskPageV2\\Resources\\"
         QtWidgets.QFileDialog.getOpenFileName(self, "资源文件", config_file,
                                               "Text Files (*.yaml;*.bat;*.png;*.ico;*.dll)")
+
+    def edit_config_file(self):
+        if self.widget_dock_setting.isVisible() is False:
+            self.widget_dock_setting.setVisible(True)
 
     @staticmethod
     def open_url_get_fore_ground_window_fail(self):
@@ -226,6 +348,16 @@ class MainGui(QtWidgets.QMainWindow):
             self.check_box_windows_one.setEnabled(False)
             self.check_box_windows_two.setCheckState(QtCore.Qt.CheckState.Unchecked)
             self.check_box_windows_two.setEnabled(False)
+
+    def set_ui_key_press_auto(self):
+        """
+        设置dockWidget是否显示
+        :return:
+        """
+        if self.radio_button_key_auto.isChecked():
+            self.widget_dock.setVisible(True)
+        else:
+            self.widget_dock.setVisible(False)
 
 
 if __name__ == '__main__':
