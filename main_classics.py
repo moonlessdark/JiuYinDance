@@ -1,5 +1,6 @@
 import ctypes
 import sys
+import platform
 
 from PySide6.QtWidgets import QApplication
 from DeskPageV2.DeskFindPic.connect_gui import Dance
@@ -16,13 +17,21 @@ def is_admin():
 
 
 if __name__ == '__main__':
+    windows_release: int = int(platform.release())
+    # 需要在渲染GUI前执行，False表示不启用获取显示器真是分辨率。得到的结果是缩放分辨率(例如4K进行缩放到150%的分辨率变成了2K)
     try:
-        # >= win8.1
-        # 需要在渲染GUI前执行，False表示不启用获取显示器真是分辨率。得到的结果是缩放分辨率(例如4K进行缩放到150%的分辨率变成了2K)
-        ctypes.windll.shcore.SetProcessDpiAwareness(False)
-    except:
-        # win7
-        ctypes.windll.user32.SetProcessDpiAware()
+        """
+        请参考
+        https://learn.microsoft.com/zh-cn/windows/win32/hidpi/setting-the-default-dpi-awareness-for-a-process
+        """
+        if windows_release >= 10:
+            ctypes.windll.shcore.SetProcessDpiAwarenessContext(False)
+        elif windows_release >= 8:
+            ctypes.windll.shcore.SetProcessDpiAwareness(False)
+        else:
+            ctypes.windll.user32.SetProcessDpiAware()
+    except RuntimeError as e:
+        raise e
     finally:
         app = QApplication(sys.argv)
         main_gui = Dance()
