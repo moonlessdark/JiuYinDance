@@ -133,6 +133,28 @@ class SetGhostBoards(SetGhostDriver):
         result_int: int = self.ghost_driver.pressandreleasekeybyvalue(key_code)
         return True if result_int > 0 else False
 
+    def click_all_press_and_release_by_key_name(self, key_str_list: list) -> bool:
+        """
+        按下多个组合键，并释放
+        :param key_str_list:
+        :return:
+        """
+        for key in key_str_list:
+            self.ghost_driver.presskeybyname(key)
+        result_int: int = self.ghost_driver.releaseallkey()
+        return True if result_int > 0 else False
+
+    def click_all_press_and_release_by_key_code(self, key_code_list: list) -> bool:
+        """
+        按下多个组合键，并释放
+        :param key_code_list:
+        :return:
+        """
+        for key in key_code_list:
+            self.ghost_driver.presskeybyvalue(key)
+        result_int: int = self.ghost_driver.releaseallkey()
+        return True if result_int > 0 else False
+
     def set_press_key_delay(self, min_delay: int, max_delay: int):
         """
         设置按钮直接的随机等待时间
