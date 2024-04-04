@@ -1,6 +1,13 @@
 import collections
 from ctypes import c_char_p, windll
 
+def get_random_time(end_time):
+    """
+    随机一个保留2位小数
+    :param end_time:
+    :return:
+    """
+    return round(random.uniform(0.05, end_time), 2)
 
 def reg_dll(dll_path: str):
     """
@@ -141,6 +148,7 @@ class SetGhostBoards(SetGhostDriver):
         """
         for key in key_str_list:
             self.ghost_driver.presskeybyname(key)
+            time.sleep(get_random_time(0.3))
         result_int: int = self.ghost_driver.releaseallkey()
         return True if result_int > 0 else False
 
@@ -152,6 +160,7 @@ class SetGhostBoards(SetGhostDriver):
         """
         for key in key_code_list:
             self.ghost_driver.presskeybyvalue(key)
+            time.sleep(get_random_time(0.3))
         result_int: int = self.ghost_driver.releaseallkey()
         return True if result_int > 0 else False
 
