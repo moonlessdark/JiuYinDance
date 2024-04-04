@@ -140,13 +140,15 @@ class DanceThByFindPic(QThread):
         # 设置工作状态和初始值
         super().__init__(parent)
         self.dance_type = "团练"
-        self.key_board_mouse_driver_type = "dm"
-
+        self.key_board_mouse_driver_type = None
+        self.dm_windows = getWindows()
         self.windows_cap = WindowsCapture()
         self.find_button = FindButton()
         self.working = True
         self.cond = QWaitCondition()
         self.mutex = QMutex()
+
+        self.debug: bool = False
 
         self.windows_handle_list = []
 
@@ -165,12 +167,13 @@ class DanceThByFindPic(QThread):
         self.working = False
         self.sin_out.emit("窗口停止检测")
 
-    def start_execute_init(self, windows_handle_list: list, dance_type: str, key_board_mouse_driver_type: str):
+    def start_execute_init(self, windows_handle_list: list, dance_type: str, key_board_mouse_driver_type: str, debug: bool):
         """
         线程用到的参数初始化一下
         :param key_board_mouse_driver_type: dm or ghost
         :param windows_handle_list: 窗口handle列表
         :param dance_type: 团练 or 望辉洲
+        :param debug:
         :return:
         """
         self.windows_handle_list = []
@@ -179,6 +182,7 @@ class DanceThByFindPic(QThread):
         self.windows_handle_list = windows_handle_list
         self.key_board_mouse_driver_type: str = key_board_mouse_driver_type
         self.dance_type = dance_type
+        self.debug = debug
 
     def run(self):
         self.mutex.lock()  # 先加锁
@@ -246,15 +250,25 @@ class DanceThByFindPic(QThread):
 
                 # 开始检查是否有按钮出现
                 key_list: list = self.find_button.find_pic_by_bigger(bigger_pic_cap=pic_contents,
-                                                                     find_type=self.dance_type)
+                                                                     find_type=self.dance_type,
+                                                                     debug=self.debug,
+                                                                     single=self.sin_out)
                 if len(key_list) > 0:
-                    if self.windows_opt.activate_windows(windows_this_handle):  # 激活窗口
+                    if self.debug:
+                        end_time = time.time()
+                        execution_time = end_time - start_time
+                        self.sin_out.emit(f"识别时间为: {round(execution_time, 2)}秒")
+
+                    if self.windows_opt.activate_windows(windows_this_handle):
                         input_key_by_ghost(key_list)  # 输入按钮
                         find_button_count += 1
-                        end_times = time.time()
-                        execution_time = end_times - start_time
-                        # print("总执行时间为: " + str(execution_time) + "秒")
-                        self.sin_out.emit(f"窗口按钮: {"".join(key_list)} 总耗时 {round(execution_time, 2)} 秒")
+                        key_arr: str = "".join(key_list)
+                        self.sin_out.emit(f"窗口按钮: {key_arr}")
+                        if self.debug:
+                            end_time = time.time()
+                            execution_time = end_time - start_time
+                            self.sin_out.emit(f"执行时间为: {round(execution_time, 2)}秒 \n")
+
                     else:
                         self.sin_out.emit(f"出错了,窗口{windows_this_handle}激活失败,尝试再次激活")
                         continue
