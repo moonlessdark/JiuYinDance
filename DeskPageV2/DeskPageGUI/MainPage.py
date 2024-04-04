@@ -29,7 +29,7 @@ class ListWidgetItemEventFilter(QObject):
                 """
                 self.event_key_str_list.append(key_text)
                 self.event_key_sum += 1
-                # print(f"键盘按下了{key_text}_当前按钮数量{self.event_key_sum}")
+                # print(f"键盘按下了 {key_text} {event.key()} 当前按钮数量{self.event_key_sum}")
 
         elif event.type() == QEvent.KeyRelease:
             """
@@ -66,7 +66,6 @@ class MainGui(QtWidgets.QMainWindow):
         加载事件筛选器
         """
         self.list_widget = QtWidgets.QListWidget()
-        self.list_widget.addItem(QtWidgets.QListWidgetItem(f"请输入按钮"))
         event_filter = ListWidgetItemEventFilter(self.list_widget)
         self.list_widget.installEventFilter(event_filter)
 
@@ -147,7 +146,6 @@ class MainGui(QtWidgets.QMainWindow):
         # 按键宏
         self.radio_button_key_auto = QtWidgets.QRadioButton()
         self.radio_button_key_auto.setText("键盘连按")
-        self.radio_button_key_auto.setEnabled(False)
 
         """
         增加一下布局框
@@ -226,11 +224,13 @@ class MainGui(QtWidgets.QMainWindow):
         widget_key_press_auto = QtWidgets.QWidget()
         # 最大随机等待事件
         self.line_key_press_wait_time = QtWidgets.QDoubleSpinBox(widget_key_press_auto)
-        self.line_key_press_wait_time.setValue(0.02)  # 双精度
+        self.line_key_press_wait_time.setValue(1.5)  # 双精度
+        self.line_key_press_wait_time.setRange(0.5, 99)  # 双精度
         self.line_key_press_wait_time.setSuffix("秒")  # 单位
 
         self.line_key_press_execute_sum = QtWidgets.QSpinBox(widget_key_press_auto)
         self.line_key_press_execute_sum.setValue(10)
+        self.line_key_press_execute_sum.setRange(1, 999999)
         self.line_key_press_execute_sum.setSuffix("次")
 
         lay_out_input = QtWidgets.QHBoxLayout()
@@ -249,7 +249,7 @@ class MainGui(QtWidgets.QMainWindow):
         layout_input.addWidget(self.push_button_save_key_press_save, 3, 1)
         layout_input.setAlignment(QtCore.Qt.AlignHCenter)
 
-        self.widget_dock = QtWidgets.QDockWidget("按钮设置",self)
+        self.widget_dock = QtWidgets.QDockWidget("键盘按钮设置",self)
         self.widget_dock.setWidget(widget_key_press_auto)
         self.widget_dock.setFloating(True)  # 独立于主窗口之外
         self.addDockWidget(QtCore.Qt.DockWidgetArea.RightDockWidgetArea, self.widget_dock)
@@ -262,9 +262,11 @@ class MainGui(QtWidgets.QMainWindow):
         widget_setting = QtWidgets.QWidget()
         self.label_dance_threshold = QtWidgets.QLabel("团练授业阈值", widget_setting)
         self.line_dance_threshold = QtWidgets.QDoubleSpinBox(widget_setting)
+        self.line_dance_threshold.setRange(0.01, 1.00)
 
         self.label_whz_dance_threshold = QtWidgets.QLabel("势力修炼阈值", widget_setting)
         self.line_whz_dance_threshold = QtWidgets.QDoubleSpinBox(widget_setting)
+        self.line_whz_dance_threshold.setRange(0.01, 1.00)
 
         self.check_debug_mode = QtWidgets.QCheckBox("Debug", widget_setting)
         self.push_button_save_setting = QtWidgets.QPushButton("保存设置", widget_setting)
