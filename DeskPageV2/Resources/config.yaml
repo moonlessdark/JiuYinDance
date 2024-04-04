@@ -2,6 +2,7 @@
 # 图片最低识别率
 dance_threshold: 0.6
 whz_dance_threshold: 0.8
+debug: False
 
 # 团练、授业
 dancePic:
