@@ -1,5 +1,6 @@
 
 九阴真经OL团练/授业脚本  
+![Image text](https://github.com/moonlessdark/JiuYinDance/blob/master/DeskPageV2/Resources/cover.png)
 
 # 前言:  
 本项目是本人用于学习opencv的实操作品，仅供学习。请勿用于商业。请不要花钱购买此脚本。如果你真的想花钱，请去淘宝购买“麦卡助手”，那个功能更多，还很稳定没有BUG。  
