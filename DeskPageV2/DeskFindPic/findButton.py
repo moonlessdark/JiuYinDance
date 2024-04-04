@@ -205,12 +205,7 @@ class FindButton:
             find_param_type: str = "day" if day[4] > night[4] else "night"
             button_area_list: list = day if day[4] > night[4] else night
             if find_param_type == "night":
-                if button_area_list[4] == 0:
-                    """
-                    如果没有找到,匹配值为0
-                    """
-                    button_area_list = []
-                else:
+                if button_area_list[4] > 0:
                     dance_threshold = dance_threshold - 0.1  # 说明切换了画质，识别阈值降低10%
                     if debug:
                         print_log(f"启用识别模式二(当前区域最高阈值: {button_area_list[4]},设置按钮最低匹配阈值: {dance_threshold})")
