@@ -9,6 +9,7 @@ from DeskPageV2.DeskFindPic.findButton import FindButton
 from DeskPageV2.DeskTools.DmSoft.get_dm_driver import getKeyBoardMouse, getWindows
 from DeskPageV2.DeskTools.WindowsSoft.get_windows import WindowsCapture, GetHandleList, PicCapture
 from DeskPageV2.DeskTools.GhostSoft.get_driver_v3 import SetGhostBoards
+from DeskPageV2.Utils.keyEvenQTAndGhost import check_qt_key_no_init
 
 
 def get_local_time():
@@ -167,7 +168,8 @@ class DanceThByFindPic(QThread):
         self.working = False
         self.sin_out.emit("窗口停止检测")
 
-    def start_execute_init(self, windows_handle_list: list, dance_type: str, key_board_mouse_driver_type: str, debug: bool):
+    def start_execute_init(self, windows_handle_list: list, dance_type: str, key_board_mouse_driver_type: str,
+                           debug: bool):
         """
         线程用到的参数初始化一下
         :param key_board_mouse_driver_type: dm or ghost
@@ -341,7 +343,8 @@ class ScreenGameQth(QThread):
             for handle in range(len(self.windows_handle_list)):
                 self.status_bar.emit("窗口截图中...")
                 try:
-                    pic_content_obj = self.windows_cap.capture_and_clear_black_area(self.windows_handle_list[handle])
+                    pic_content_obj: PicCapture = self.windows_cap.capture_and_clear_black_area(
+                        self.windows_handle_list[handle])
                     if min(pic_content_obj.pic_height, pic_content_obj.pic_width) > 0:
                         time_str_s = time.strftime("%H_%M_%S", time.localtime(int(time.time())))
                         cv2.imwrite(f"{pic_file_path}{time_str_s}.png", pic_content_obj.pic_content)
@@ -393,6 +396,70 @@ class QProgressBarQth(QThread):
             time.sleep(0.001)
         self.thread_step.emit(0)
         self.mutex.unlock()
+        return None
+
+
+class AutoPressKeyQth(QThread):
+    """
+    键盘连点器
+    """
+    sin_out = Signal(str)
+    status_bar = Signal(str)
+    sin_work_status = Signal(bool)
+
+    def __init__(self):
+        super().__init__()
+
+        self.working = True
+        self.cond = QWaitCondition()
+
+        self.windows_opt = GetHandleList()
+
+        self.mutex = QMutex()
+        self.windows_handle = 0
+        self.key_press_list: str = None
+        self.press_count: int = 0
+        self.press_wait_time: int = 0
+
+    def __del__(self):
+        # 线程状态改为和线程终止
+        # self.wait()
+        self.working = False
+
+    def stop_execute_init(self):
+        """
+        线程暂停,所有参数重置为null
+        :return:
+        """
+        self.working = False
+        self.windows_handle = 0
+
+    def get_param(self, windows_handle: int, key_press_list: str, press_count: int, press_wait_time: float):
+        """
+        线程用到的参数初始化一下
+        :return:
+        """
+        self.working = True
+        self.cond.wakeAll()
+        self.windows_handle = windows_handle
+        self.key_press_list = key_press_list
+        self.press_count = press_count
+        self.press_wait_time = press_wait_time
+
+    def run(self):
+        self.mutex.lock()  # 先加锁
+        key_code_list = check_qt_key_no_init(self.key_press_list)
+        print(key_code_list)
+        for count_i in range(self.press_count):
+            if self.working is False:
+                break
+            wait_time: float = random.uniform(0.2, self.press_wait_time)
+            time.sleep(round(wait_time, 2))
+            if self.windows_opt.activate_windows(self.windows_handle):
+                SetGhostBoards().click_all_press_and_release_by_key_code(key_code_list)
+            self.sin_out.emit(f"已经执行了 {count_i + 1} 次按钮")
+        self.mutex.unlock()
+        self.sin_work_status.emit(False)
         return None
 
 
