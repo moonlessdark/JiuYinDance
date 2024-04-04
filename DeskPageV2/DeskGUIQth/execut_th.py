@@ -342,9 +342,9 @@ class ScreenGameQth(QThread):
                 self.status_bar.emit("窗口截图中...")
                 try:
                     pic_content_obj = self.windows_cap.capture_and_clear_black_area(self.windows_handle_list[handle])
-                    time_str_s = time.strftime("%H_%M_%S", time.localtime(int(time.time())))
-                    cv2.imwrite(f"{pic_file_path}{time_str_s}.png", pic_content_obj.pic_content)
-
+                    if min(pic_content_obj.pic_height, pic_content_obj.pic_width) > 0:
+                        time_str_s = time.strftime("%H_%M_%S", time.localtime(int(time.time())))
+                        cv2.imwrite(f"{pic_file_path}{time_str_s}.png", pic_content_obj.pic_content)
                 except Exception as e:
                     self.sin_out.emit("%s" % str(e))
                     self.mutex.unlock()
