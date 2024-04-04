@@ -1,16 +1,16 @@
-import datetime
+import ctypes
 import platform
 import time
 
 from PySide6.QtGui import QTextCursor
-from PySide6.QtWidgets import QLabel
+from PySide6.QtWidgets import QLabel, QMessageBox, QDialog
 
 from DeskPageV2.DeskGUIQth.execut_th import DanceThByFindPic, ScreenGameQth, QProgressBarQth
 from DeskPageV2.DeskPageGUI.MainPage import MainGui
 from DeskPageV2.DeskTools.DmSoft.get_dm_driver import getDM, getWindows, getKeyBoardMouse
 from DeskPageV2.DeskTools.GhostSoft.get_driver_v3 import GetGhostDriver, SetGhostBoards
 from DeskPageV2.DeskTools.WindowsSoft.get_windows import GetHandleList
-from DeskPageV2.Utils.dataClass import DmDll, GhostDll
+from DeskPageV2.Utils.dataClass import DmDll, GhostDll, Config
 from DeskPageV2.Utils.load_res import GetConfig
 
 
@@ -39,11 +39,16 @@ class Dance(MainGui):
         self.handle_dict: dict = {}
         self.execute_button_status_bool: bool = False  # 按钮状态，用于判断文字显示
 
+        self.keyboard_type = None  # 加载的键盘驱动类型
+
+        self.is_debug = False
+
         # 初始化一些控件的内容
         self.radio_button_school_dance.setChecked(True)
 
         # 初始化一些对象
         self.loading_driver()
+        self.load_config()
         self.progress_bar_action(0)  # 先把进度条隐藏了
 
         # 信号槽连接
@@ -60,6 +65,11 @@ class Dance(MainGui):
         self.push_button_start_or_stop_execute.clicked.connect(self.click_execute_button)
         self.push_button_get_windows_handle.clicked.connect(self.get_windows_handle)
         self.push_button_test_windows.clicked.connect(self.test_windows_handle)
+        self.radio_button_key_auto.toggled.connect(self.set_ui_key_press_auto)
+
+        # 其他的
+        self.widget_dock_setting.visibilityChanged.connect(self.load_config)
+        self.push_button_save_setting.clicked.connect(self.update_config)
 
     @staticmethod
     def get_windows_release() -> int:
@@ -78,23 +88,65 @@ class Dance(MainGui):
         time_string: str = time.strftime("%H:%M:%S", time.localtime(int(time.time())))
         return time_string
 
+    def load_config(self, is_top_level=True):
+        """
+        加载配置文件
+        :return:
+        """
+        if is_top_level:
+            config_ini: Config = self.file_config.get_find_pic_config()
+            is_debug: bool = config_ini.is_debug
+            dance_threshold: float = config_ini.dance_threshold
+            whz_dance_threshold: float = config_ini.whz_dance_threshold
+
+            self.line_dance_threshold.setValue(dance_threshold)
+            self.line_whz_dance_threshold.setValue(whz_dance_threshold)
+
+            if is_debug:
+                self.check_debug_mode.setChecked(True)
+            else:
+                self.check_debug_mode.setChecked(False)
+
+    def update_config(self):
+        """
+        更新配置文件
+        :return:
+        """
+
+        def show_dialog():
+            # 创建一个警告级别的消息框，并显示
+            QMessageBox.information(self, '提示', '更新成功！')
+
+        dance_threshold = self.line_dance_threshold.value()
+        whz_dance_threshold = self.line_whz_dance_threshold.value()
+        is_debug = True if self.check_debug_mode.isChecked() else False
+
+        self.file_config.update_find_pic_config(dance_threshold=dance_threshold, whz_dance_threshold=whz_dance_threshold, debug=is_debug)
+
+        show_dialog()
+
     def loading_driver(self):
         """
         加载驱动
         :return:
         """
         self.push_button_get_windows_handle.setEnabled(False)
-        if self.get_windows_release() == 7:
-            # 如果当前系统是win7，那么就启用大漠插件，那么优先检查是否有幽灵键鼠，没有的话就使用大漠插件
-            if self._loading_driver_dm():
-                is_load_keyboard_driver = True
-            else:
-                self.print_logs("开始尝试加载幽灵键鼠")
-                self._loading_driver_ghost()
-                is_load_keyboard_driver = True
-        else:
-            self._loading_driver_ghost()
+        is_load_keyboard_driver: bool = False
+
+        self.print_logs("开始尝试加载幽灵键鼠")
+        if self._loading_driver_ghost():
             is_load_keyboard_driver = True
+        else:
+            pass
+            # if self.get_windows_release() == 7:
+            #     if ctypes.windll.shell32.IsUserAnAdmin() == 1:
+            #         self.print_logs("\n当前系统是win7，开始尝试加载大漠插件")
+            #         # 如果当前系统是win7，那么就启用大漠插件，那么优先检查是否有幽灵键鼠，没有的话就使用大漠插件
+            #         if self._loading_driver_dm():
+            #             is_load_keyboard_driver = True
+            #     else:
+            #         QMessageBox.critical(None, "Error", "当前系统是win7，请以“管理员”权限运行此脚本")
+            #         self.print_logs("\n")
         if is_load_keyboard_driver is True:
             self.push_button_get_windows_handle.setEnabled(True)
 
@@ -109,6 +161,7 @@ class Dance(MainGui):
             SetGhostBoards().open_device()  # 启动幽灵键鼠标
             if SetGhostBoards().check_usb_connect():
                 self.print_logs("幽灵键鼠加载成功")
+                self.keyboard_type = "ghost"
                 return True
             else:
                 self.print_logs("未检测到usb设备,请检查后重试")
@@ -128,10 +181,9 @@ class Dance(MainGui):
         dm_release: str = self.dm_driver.get_version()
         if dm_release is not None:
             self.print_logs("大漠驱动免注册加载成功")
+            self.keyboard_type = "dm"
             return True
         else:
-            self.print_logs(
-                "大漠插件加载失败，请检查驱动文件是否存在或杀毒软件误杀.或者请鼠标右键以'管理员权限'执行本程序")
             return False
 
     def print_logs(self, text, is_clear=False):
@@ -245,9 +297,11 @@ class Dance(MainGui):
         if len(windows_list) == 0:
             self.print_logs("请选择您需要执行的游戏窗口")
         else:
-            self.print_logs("开始执行", is_clear=True)
-            key_board: str = "dm" if int(self.get_windows_release()) <= 7 else "ghost"
-
+            self.is_debug = True if self.check_debug_mode.isChecked() else False
+            start_log_string: str = "开始执行"
+            if self.is_debug:
+                start_log_string: str = "开始执行,Debug模式已经启用"
+            self.print_logs(start_log_string, is_clear=True)
             if self.radio_button_school_dance.isChecked() or self.radio_button_party_dance.isChecked():
                 """
                 如果是团练/授业
@@ -256,9 +310,10 @@ class Dance(MainGui):
                     dance_type = "团练"
                 else:
                     dance_type = "望辉洲"
-
-                self.th.start_execute_init(windows_handle_list=windows_list, dance_type=dance_type,
-                                           key_board_mouse_driver_type=key_board)
+                self.th.start_execute_init(windows_handle_list=windows_list,
+                                           dance_type=dance_type,
+                                           key_board_mouse_driver_type=self.keyboard_type,
+                                           debug=self.is_debug)
                 self.th.start()
                 self.changed_execute_button_text_and_status(True)
                 self.th_progress_bar.start_init()
@@ -336,7 +391,7 @@ class Dance(MainGui):
                         self.print_logs(f"{i} 激活失败，正在进行第{execute_num}次重试")
                         continue
                     else:
-                        if windows_release > 7:
+                        if self.keyboard_type == "ghost":
                             SetGhostBoards().click_press_and_release_by_key_name("K")
                         else:
                             getKeyBoardMouse().key_press_char("K")
