@@ -2,10 +2,11 @@ import ctypes
 import platform
 import time
 
+from PySide6 import QtWidgets
 from PySide6.QtGui import QTextCursor
 from PySide6.QtWidgets import QLabel, QMessageBox, QDialog
 
-from DeskPageV2.DeskGUIQth.execut_th import DanceThByFindPic, ScreenGameQth, QProgressBarQth
+from DeskPageV2.DeskGUIQth.execut_th import DanceThByFindPic, ScreenGameQth, QProgressBarQth, AutoPressKeyQth
 from DeskPageV2.DeskPageGUI.MainPage import MainGui
 from DeskPageV2.DeskTools.DmSoft.get_dm_driver import getDM, getWindows, getKeyBoardMouse
 from DeskPageV2.DeskTools.GhostSoft.get_driver_v3 import GetGhostDriver, SetGhostBoards
@@ -27,6 +28,8 @@ class Dance(MainGui):
         self.th = DanceThByFindPic()
         self.th_screen = ScreenGameQth()
         self.th_progress_bar = QProgressBarQth()
+        self.th_key_press_auto = AutoPressKeyQth()
+
         # # 键盘驱动对象
         self.dm_window = getWindows()
         self.dm_key_board = getKeyBoardMouse()
@@ -54,10 +57,13 @@ class Dance(MainGui):
         # 信号槽连接
         self.th.status_bar.connect(self.print_status_bar)
         self.th.sin_out.connect(self.print_logs)
-        self.th.sin_work_status.connect(self._th_execute_sop)
+        self.th.sin_work_status.connect(self._th_execute_stop)
         self.th_screen.status_bar.connect(self.print_status_bar)
         self.th_screen.sin_out.connect(self.print_logs)
         self.th_progress_bar.thread_step.connect(self.progress_bar_action)
+
+        self.th_key_press_auto.sin_out.connect(self.print_logs)
+        self.th_key_press_auto.sin_work_status.connect(self._th_execute_stop)
 
         self.text_browser_print_log.textChanged.connect(lambda: self.text_browser_print_log.moveCursor(QTextCursor.End))
 
@@ -67,9 +73,15 @@ class Dance(MainGui):
         self.push_button_test_windows.clicked.connect(self.test_windows_handle)
         self.radio_button_key_auto.toggled.connect(self.set_ui_key_press_auto)
 
+        # 按钮设置
+        self.push_button_save_key_press_add.clicked.connect(self.key_press_even_add)
+        self.push_button_save_key_press_delete.clicked.connect(self.key_press_even_del)
+        self.push_button_save_key_press_save.clicked.connect(self.key_press_even_save)
+
         # 其他的
         self.widget_dock_setting.visibilityChanged.connect(self.load_config)
         self.push_button_save_setting.clicked.connect(self.update_config)
+        self.widget_dock.visibilityChanged.connect(self.on_top_level_changed)
 
     @staticmethod
     def get_windows_release() -> int:
@@ -107,15 +119,19 @@ class Dance(MainGui):
             else:
                 self.check_debug_mode.setChecked(False)
 
+    def show_dialog(self, tips: str):
+        """
+        创建一个消息框，并显示
+        :param tips:
+        :return:
+        """
+        QMessageBox.information(self, '提示', tips)
+
     def update_config(self):
         """
         更新配置文件
         :return:
         """
-
-        def show_dialog():
-            # 创建一个警告级别的消息框，并显示
-            QMessageBox.information(self, '提示', '更新成功！')
 
         dance_threshold = self.line_dance_threshold.value()
         whz_dance_threshold = self.line_whz_dance_threshold.value()
@@ -123,7 +139,7 @@ class Dance(MainGui):
 
         self.file_config.update_find_pic_config(dance_threshold=dance_threshold, whz_dance_threshold=whz_dance_threshold, debug=is_debug)
 
-        show_dialog()
+        self.show_dialog("更新成功")
 
     def loading_driver(self):
         """
@@ -280,11 +296,13 @@ class Dance(MainGui):
             如果当前是截图模式
             """
             self.th_screen.stop_execute_init()
-        else:
+        elif self.radio_button_school_dance.isChecked() or self.radio_button_party_dance.isChecked():
             """
             如果当前团练授业模式
             """
             self.th.stop_execute_init()
+        elif self.radio_button_key_auto.isChecked():
+            self.th_key_press_auto.stop_execute_init()
         self.th_progress_bar.stop_init()
         self.changed_execute_button_text_and_status(False)
 
@@ -300,7 +318,7 @@ class Dance(MainGui):
             self.is_debug = True if self.check_debug_mode.isChecked() else False
             start_log_string: str = "开始执行"
             if self.is_debug:
-                start_log_string: str = "开始执行,Debug模式已经启用"
+                start_log_string: str = "开始执行Debug模式(仅限团练授业)"
             self.print_logs(start_log_string, is_clear=True)
             if self.radio_button_school_dance.isChecked() or self.radio_button_party_dance.isChecked():
                 """
@@ -326,10 +344,29 @@ class Dance(MainGui):
                 self.th_screen.get_param(windows_handle_list=windows_list, pic_save_path="./")
                 self.th_screen.start()
                 self.changed_execute_button_text_and_status(True)
+            elif self.radio_button_key_auto.isChecked():
+                """
+                如果是键盘连点器
+                """
+                key_selected_str = self.list_widget.currentItem()
+                if key_selected_str is not None:
+                    key_selected_str = key_selected_str.text()
+                    if len(windows_list) == 1:
+                        self.th_key_press_auto.get_param(windows_handle=windows_list[0],
+                                                         key_press_list=key_selected_str,
+                                                         press_count=self.line_key_press_execute_sum.value(),
+                                                         press_wait_time=self.line_key_press_wait_time.value())
+                        self.th_key_press_auto.start()
+                        self.changed_execute_button_text_and_status(True)
+                    else:
+                        self.print_logs("键盘连按功能暂时只支持1个窗口运行")
+                else:
+                    self.print_logs("请选择需要执行的键盘按钮")
+
             else:
                 self.print_logs("还未选择需要执行的功能")
 
-    def _th_execute_sop(self, execute_status: bool):
+    def _th_execute_stop(self, execute_status: bool):
         """
         进程的停止状态
         :param execute_status:
@@ -379,7 +416,6 @@ class Dance(MainGui):
         :return:
         """
         handle_list = self.check_handle_is_selected()
-        windows_release: int = self.get_windows_release()
         if len(handle_list) == 0:
             self.print_logs("请勾选需要测试的窗口", is_clear=True)
         else:
@@ -399,3 +435,63 @@ class Dance(MainGui):
                         break
                 time.sleep(1)
                 GetHandleList().set_allow_set_foreground_window()  # 取消置顶
+
+    def key_press_even_add(self):
+        """
+        新增列表
+        :return:
+        """
+        self.list_widget.addItem(QtWidgets.QListWidgetItem(f"请输入按钮"))
+
+    def key_press_even_del(self):
+        """
+        删除
+        :return:
+        """
+        if self.list_widget.selectedItems():
+            item = self.list_widget.currentRow()
+            self.list_widget.takeItem(item)
+        else:
+            self.show_dialog("请选择需要删除的记录")
+
+    def key_press_even_save(self):
+        """
+        保存按钮
+        :return:
+        """
+
+        def get_all_items(list_widget):
+            items = []
+            for i in range(list_widget.count()):
+                item = list_widget.item(i)
+                items.append(item.text())
+            return items
+
+        key_list: list = []
+        all_items = get_all_items(self.list_widget)
+
+        if all_items is not None:
+            for item in all_items:
+                key_word: str = str(item)
+                if key_word != "请输入按钮":
+                    key_list.append(key_word)
+            if len(key_list) > 0:
+                self.file_config.save_key_even_code_auto_list(key_list)
+                self.show_dialog("保存成功")
+            else:
+                self.show_dialog("请先设置按钮再保存")
+        else:
+            self.show_dialog("没有需要保存的按钮")
+        self.on_top_level_changed()
+
+    def on_top_level_changed(self):
+        """
+        加载一下配置文件
+        :return:
+        """
+        self.list_widget.clear()
+        if self.widget_dock.isTopLevel():
+            res_file: str = self.file_config.get_key_even_code_auto_list()
+            res_list: list = list(eval(res_file))
+            for res in res_list:
+                self.list_widget.addItem(res)
