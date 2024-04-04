@@ -88,7 +88,20 @@ class GetConfig:
         pic_config = Config()
         pic_config.dance_threshold = self.datas["dance_threshold"]
         pic_config.whz_dance_threshold = self.datas["whz_dance_threshold"]
+        pic_config.is_debug = self.datas["debug"]
         return pic_config
+
+    def update_find_pic_config(self, *args, **kwargs):
+        """
+        更新配置文件
+        :param kwargs: dance_threshold, whz_dance_threshold, is_debug
+
+        :return:
+        """
+        for item_key in kwargs:
+            self.datas[item_key] = kwargs.get(item_key)
+            with open(_get_dir_path(), 'w', encoding='utf-8') as f:
+                yaml.dump(self.datas, f, allow_unicode=True)  # allow_unicode=True，解决存储时unicode编码问题。
 
 
 if __name__ == '__main__':
