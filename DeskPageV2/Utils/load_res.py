@@ -14,6 +14,15 @@ def _get_dir_path() -> str:
     return PathUtil().get_path_from_resources("config.yaml")
 
 
+def _get_dir_key_even_path() -> str:
+    """
+    获取项目目录
+    :return:
+    """
+    # return PathUtil().get_path_from_resources("../Resources/config.yaml")
+    return PathUtil().get_path_from_resources("KeyEvenList.ini")
+
+
 def _get_project_path() -> str:
     """
     项目目录
@@ -24,10 +33,12 @@ def _get_project_path() -> str:
 
 class GetConfig:
     def __init__(self):
-        fs = open(_get_dir_path(), encoding="UTF-8")
-        self.datas = yaml.load(fs, Loader=yaml.FullLoader)  # 添加后就不警告了
-        fs.close()
+        self.fs = open(_get_dir_path(), encoding="UTF-8")
+        self.datas = yaml.load(self.fs, Loader=yaml.FullLoader)  # 添加后就不警告了
         self.project_dir: str = _get_project_path()
+
+    def __del__(self):
+        self.fs.close()
 
     def get_dance_pic(self) -> DancePic:
         """
@@ -98,12 +109,38 @@ class GetConfig:
 
         :return:
         """
+
         for item_key in kwargs:
+
             self.datas[item_key] = kwargs.get(item_key)
             with open(_get_dir_path(), 'w', encoding='utf-8') as f:
                 yaml.dump(self.datas, f, allow_unicode=True)  # allow_unicode=True，解决存储时unicode编码问题。
 
+    @staticmethod
+    def get_key_even_code_auto_list():
+        """
+        获取配置文件中的按钮列表
+        :return:
+        """
+        with open(_get_dir_key_even_path(), "r", encoding="UTF-8") as f:
+            res = f.readlines()
+            return res[0]
+
+    @staticmethod
+    def save_key_even_code_auto_list(key_list: list):
+        """
+        保存配置
+        :return:
+        """
+        try:
+            with open(_get_dir_key_even_path(), "w", encoding="UTF-8") as f:
+                f.writelines(str(key_list))
+                return True
+        except RuntimeError as e:
+            raise e
+
 
 if __name__ == '__main__':
-    s = GetConfig().get_dance_pic()
+    GetConfig().save_key_even_code_auto_list([123, 123, 123])
+    s = GetConfig().get_key_even_code_auto_list()
     print(s)
