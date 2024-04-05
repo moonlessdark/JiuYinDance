@@ -453,7 +453,7 @@ class AutoPressKeyQth(QThread):
         for count_i in range(self.press_count):
             if self.working is False:
                 break
-            wait_time: float = random.uniform(0.2, self.press_wait_time)
+            wait_time: float = random.uniform(self.press_wait_time, self.press_wait_time + 2)
             time.sleep(round(wait_time, 2))
             if self.windows_opt.activate_windows(self.windows_handle):
                 SetGhostBoards().click_all_press_and_release_by_key_code(key_code_list)
