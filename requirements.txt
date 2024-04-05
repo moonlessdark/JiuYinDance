@@ -1,8 +1,8 @@
 opencv-python
 numpy
 comtypes
-findimage
-PySide6
+PySide6==6.1.3
 pywin32
 pyinstaller
 PyYaml
+psutil

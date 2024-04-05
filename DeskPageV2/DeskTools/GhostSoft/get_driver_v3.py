@@ -1,5 +1,8 @@
 import collections
+import random
+import time
 from ctypes import c_char_p, windll
+
 
 def get_random_time(end_time):
     """
@@ -8,6 +11,7 @@ def get_random_time(end_time):
     :return:
     """
     return round(random.uniform(0.05, end_time), 2)
+
 
 def reg_dll(dll_path: str):
     """
@@ -22,8 +26,8 @@ def reg_dll(dll_path: str):
         dll.getproductiondate.restype = c_char_p
         dll.getfirmwareversion.restype = c_char_p
         return dll
-    except Exception as e:
-        return None
+    except RuntimeError as e:
+        raise e
 
 
 class GetGhostDriver:

@@ -47,5 +47,5 @@ coll = COLLECT(
     upx=True,
     upx_exclude=[],
     name='JiuDancing',
-    icon='D:\SoftWare\Developed\Projected\JiuYinDance\DeskPageV2\Resources\logo\app_logo.ico',
+    icon='.\DeskPageV2\Resources\logo\app_logo.ico',
 )

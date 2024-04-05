@@ -1,34 +1,24 @@
-# 一些配置
-# 图片最低识别率
-dance_threshold: 0.6
-whz_dance_threshold: 0.8
-debug: False
-
-# 团练、授业
 dancePic:
-  button_find_area: '/Resources/DancePic/find_dance_area.png'
-  button_find_area_night: '/Resources/DancePic/find_dance_area_night.png'
-  button_j: "/Resources/DancePic/J.png"
-  button_k: "/Resources/DancePic/K.png"
-  button_l: "/Resources/DancePic/L.png"
-  button_down: "/Resources/DancePic/down.png"
-  button_up: "/Resources/DancePic/up.png"
-  button_left: "/Resources/DancePic/left.png"
-  button_right: "/Resources/DancePic/right.png"
-
-# 势力、望辉州，修罗刀
-whzDancePic:
-  button_find_area: '/Resources/DancePic/find_whz_area.png'
-  button_down: "/Resources/DancePic/whzDance_Down.png"
-  button_up: "/Resources/DancePic/whzDance_UP.png"
-  button_left: "/Resources/DancePic/whzDance_left.png"
-  button_right: "/Resources/DancePic/whzDance_right.png"
-
-# 大漠插件
+  button_down: /Resources/DancePic/down.png
+  button_find_area: /Resources/DancePic/find_dance_area.png
+  button_find_area_night: /Resources/DancePic/find_dance_area_night.png
+  button_j: /Resources/DancePic/J.png
+  button_k: /Resources/DancePic/K.png
+  button_l: /Resources/DancePic/L.png
+  button_left: /Resources/DancePic/left.png
+  button_right: /Resources/DancePic/right.png
+  button_up: /Resources/DancePic/up.png
+dance_threshold: 0.9
+debug: true
 dmDll:
-  dm: '/Resources/KeyBoardDriver/dm.dll'
-  dm_reg: '/Resources/KeyBoardDriver/DmReg.dll'
-
-# 幽灵键鼠
+  dm: /Resources/KeyBoardDriver/dm.dll
+  dm_reg: /Resources/KeyBoardDriver/DmReg.dll
 ghostDll:
-  ghost_dll: '/Resources/KeyBoardDriver/gbild64.dll'
+  ghost_dll: /Resources/KeyBoardDriver/gbild64.dll
+whzDancePic:
+  button_down: /Resources/DancePic/whzDance_Down.png
+  button_find_area: /Resources/DancePic/find_whz_area.png
+  button_left: /Resources/DancePic/whzDance_left.png
+  button_right: /Resources/DancePic/whzDance_right.png
+  button_up: /Resources/DancePic/whzDance_UP.png
+whz_dance_threshold: 0.8
