@@ -9,7 +9,7 @@ from DeskPageV2.DeskFindPic.findButton import FindButton
 from DeskPageV2.DeskTools.DmSoft.get_dm_driver import getKeyBoardMouse, getWindows
 from DeskPageV2.DeskTools.WindowsSoft.get_windows import WindowsCapture, GetHandleList, PicCapture
 from DeskPageV2.DeskTools.GhostSoft.get_driver_v3 import SetGhostBoards
-from DeskPageV2.Utils.keyEvenQTAndGhost import check_qt_key_no_init
+from DeskPageV2.Utils.keyEvenQTAndGhost import qt_key_get_ghost_key_code
 
 
 def get_local_time():
@@ -448,7 +448,7 @@ class AutoPressKeyQth(QThread):
 
     def run(self):
         self.mutex.lock()  # 先加锁
-        key_code_list = check_qt_key_no_init(self.key_press_list)
+        key_code_list = qt_key_get_ghost_key_code(self.key_press_list)
         print(key_code_list)
         for count_i in range(self.press_count):
             if self.working is False:

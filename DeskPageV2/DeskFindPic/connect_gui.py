@@ -12,6 +12,7 @@ from DeskPageV2.DeskTools.DmSoft.get_dm_driver import getDM, getWindows, getKeyB
 from DeskPageV2.DeskTools.GhostSoft.get_driver_v3 import GetGhostDriver, SetGhostBoards
 from DeskPageV2.DeskTools.WindowsSoft.get_windows import GetHandleList
 from DeskPageV2.Utils.dataClass import DmDll, GhostDll, Config
+from DeskPageV2.Utils.keyEvenQTAndGhost import check_ghost_code_is_def
 from DeskPageV2.Utils.load_res import GetConfig
 
 
@@ -485,8 +486,15 @@ class Dance(MainGui):
                 if key_word != "请输入按钮":
                     key_list.append(key_word)
             if len(key_list) > 0:
-                self.file_config.save_key_even_code_auto_list(key_list)
-                self.show_dialog("保存成功")
+
+                # 判断一下输入的 按钮我有没有定义
+                res_list: list = check_ghost_code_is_def(key_list)
+                if len(res_list) == 0:
+                    self.file_config.save_key_even_code_auto_list(key_list)
+                    self.show_dialog("保存成功")
+                else:
+                    error_key: str = " 和 ".join(res_list)
+                    self.show_dialog(f"按钮 {error_key} 暂不支持,请更换按钮")
             else:
                 self.show_dialog("请先设置按钮再保存")
         else:

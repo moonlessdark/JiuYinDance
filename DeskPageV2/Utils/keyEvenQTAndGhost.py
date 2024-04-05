@@ -70,7 +70,7 @@ key_even: any = [
 ]
 
 
-def get_ghost_key_code(*args):
+def _get_ghost_key_code(*args):
     """
 
     :param args: key
@@ -96,21 +96,42 @@ def get_ghost_key_code(*args):
     return ghost_code
 
 
-def check_qt_key_no_init(key: str):
+def qt_key_get_ghost_key_code(key: str):
     """
+    通过Pyside6获取的键盘key_name获取对应 幽灵键鼠的 code
     :param key:
     :return:
     """
+
     res_list: list = []
     if "+" in key:
         key = key.split("+")
     if type(key) is str:
         key = [key]
-    res_key: list = get_ghost_key_code(key)
+    res_key: list = _get_ghost_key_code(key)
     if len(res_key) == len(key):
         res_list = res_key
     return res_list
 
 
+def check_ghost_code_is_def(key_list: list) -> list:
+    """
+    检查QT输入的key是否存在于我的表格
+    :return: 全部都在就返回个空数组
+    """
+    res_list: list = []
+
+    for key_line in key_list:
+        if "+" in key_line:
+            key_line = key_line.split("+")
+        if type(key_line) is str:
+            key_line = [key_line]
+        for key_name in key_line:
+            res_key: list = _get_ghost_key_code(key_name)
+            if len(res_key) == 0:
+                res_list.append(key_name)
+    return res_list
+
+
 if __name__ == '__main__':
-    print(check_qt_key_no_init("KEY_CONTROL+KEY_2"))
+    print(qt_key_get_ghost_key_code("KEY_CONTROL+KEY_2"))
