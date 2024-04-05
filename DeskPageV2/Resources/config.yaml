@@ -9,7 +9,7 @@ dancePic:
   button_right: /Resources/DancePic/right.png
   button_up: /Resources/DancePic/up.png
 dance_threshold: 0.9
-debug: true
+debug: false
 dmDll:
   dm: /Resources/KeyBoardDriver/dm.dll
   dm_reg: /Resources/KeyBoardDriver/DmReg.dll
