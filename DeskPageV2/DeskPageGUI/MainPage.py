@@ -254,7 +254,7 @@ class MainGui(QtWidgets.QMainWindow):
         self.widget_dock.setFloating(True)  # 独立于主窗口之外
         self.addDockWidget(QtCore.Qt.DockWidgetArea.RightDockWidgetArea, self.widget_dock)
         self.widget_dock.setVisible(False)
-        self.widget_dock.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable)  # dockWidget窗口禁止回到主窗口
+        self.widget_dock.setFeatures(QtWidgets.QDockWidget.DockWidgetFloatable)  # dockWidget窗口禁止回到主窗口，且屏蔽关闭按钮
 
         """
         设置配置文件窗口
