@@ -334,6 +334,7 @@ class Dance(MainGui):
                                            debug=self.is_debug)
                 self.th.start()
                 self.changed_execute_button_text_and_status(True)
+                # 开始执行跑马灯效果
                 self.th_progress_bar.start_init()
                 self.th_progress_bar.start()
 
@@ -344,6 +345,10 @@ class Dance(MainGui):
                 self.th_screen.get_param(windows_handle_list=windows_list, pic_save_path="./")
                 self.th_screen.start()
                 self.changed_execute_button_text_and_status(True)
+                # 开始执行跑马灯效果
+                self.th_progress_bar.start_init()
+                self.th_progress_bar.start()
+
             elif self.radio_button_key_auto.isChecked():
                 """
                 如果是键盘连点器
@@ -358,6 +363,10 @@ class Dance(MainGui):
                                                          press_wait_time=self.line_key_press_wait_time.value())
                         self.th_key_press_auto.start()
                         self.changed_execute_button_text_and_status(True)
+                        # 开始执行跑马灯效果
+                        self.th_progress_bar.start_init()
+                        self.th_progress_bar.start()
+
                     else:
                         self.print_logs("键盘连按功能暂时只支持1个窗口运行")
                 else:
