@@ -123,29 +123,39 @@ class FindButton:
 
         res_button_dict: list = []
         button_key_list: list = []
-        if dance_type == "团练":
-            button_sum: int = get_key_count(images)
-            button_area_x_list: list = button_area_x(button_sum)  # 得到一个大致的范围
-            if len(button_dict) > 0:
+
+        if len(button_dict) > 0:
+            """
+            过滤一下，把识别率太低的按钮排除掉
+            """
+            button_dict_reverse = sorted(button_dict, reverse=True)  # 排个序，从大到小，拿出匹配最大的值，用于排除掉匹配度错误的数值
+            max_threshold_x = button_dict_reverse[0][1]  # 最大匹配值的X坐标
+            for line in button_dict_reverse:
                 """
-                过滤一下，把识别率太低的按钮排除掉
+                先把匹配对最高的一个按钮，按 40像素一个按钮切割，把值拿出来
                 """
-                button_dict_reverse = sorted(button_dict, reverse=True)  # 排个序，从大到小，拿出匹配最大的值，用于排除掉匹配度错误的数值
-                max_threshold_x = button_dict_reverse[0][1]  # 最大匹配值的X坐标
-                res_button_dict: list = []
-                res_button_dict_step1: list = []
-                for line in button_dict_reverse:
+                if abs(line[1] - max_threshold_x) % 40 == 0:  # 对40取余
+                    res_button_dict.append([line[1], line[0], line[2]])
+
+            if dance_type == "团练":
+                button_sum: int = get_key_count(images)
+                button_area_x_list: list = button_area_x(button_sum)  # 得到一个大致的范围
+                if len(res_button_dict) > 0:
                     """
-                    先把匹配对最高的一个按钮，按 40像素一个按钮切割，把值拿出来
+                    过滤一下，把不在按钮范围内的排除掉
                     """
-                    if abs(line[1] - max_threshold_x) % 40 == 0:  # 对40取余
-                        res_button_dict_step1.append([line[1], line[0], line[2]])
-                for line in res_button_dict_step1:
-                    if min(button_area_x_list) <= line[0] <= max(button_area_x_list):
-                        res_button_dict.append([line[0], line[1], line[2]])
-        else:
-            for line in button_dict:
-                res_button_dict.append([line[1], line[0], line[2]])
+                    res_button_dict_step1: list = []
+                    for line in res_button_dict:
+                        if min(button_area_x_list) <= line[0] <= max(button_area_x_list):
+                            res_button_dict_step1.append([line[0], line[1], line[2]])
+                    if len(res_button_dict_step1) == button_sum:
+                        res_button_dict = res_button_dict_step1
+            else:
+                """
+                那就是授业了
+                """
+                for line in button_dict:
+                    res_button_dict.append([line[1], line[0], line[2]])
 
         if len(res_button_dict) > 0:
             res_button_dict.sort()  # 排个序，从小到大
@@ -247,7 +257,7 @@ if __name__ == '__main__':
     pic_path = "20_06_12.png"
     # pic = cv2.imread(f"D:\\SoftWare\\Developed\\Projected\\JiuYinDancing\\JiuYinScreenPic\\20_04\\{pic_path}", 1)
 
-    pic = cv2.imread(f"D:\\JiuYinScreenPic\\19_48\\55.png", 1)  # 黑色
+    pic = cv2.imread(f"D:\\JiuYinScreenPic\\dao\\44.png", 1)  # 黑色
 
     start_time = time.time()
     pic = WindowsCapture().clear_black_area2(pic)
@@ -256,7 +266,7 @@ if __name__ == '__main__':
     print("执行时间为: " + str(execution_time) + "秒")
 
     start_time = time.time()
-    b = FindButton().find_pic_by_bigger(bigger_pic_cap=pic, find_type="团练", debug=False)
+    b = FindButton().find_pic_by_bigger(bigger_pic_cap=pic, find_type="团练1", debug=False)
     print(f"查询到的按钮：{b}")
     end_time = time.time()
     execution_time = end_time - start_time

@@ -361,19 +361,13 @@ class QProgressBarQth(QThread):
     thread_step = Signal(int)
 
     def __init__(self):
-        """
-        A constructor. It is called when an object is created from a class and it allows the class to initialize the
-        attributes of a class.
-        """
+
         super(QProgressBarQth, self).__init__()
         self.working = True
         self.step = 0  # 进度条跑马灯效果初始值设置为0
         self.mutex = QMutex()
 
     def __del__(self):
-        """
-        A destructor. It is called when the object is destroyed.
-        """
         self.working = False
 
     def start_init(self):
