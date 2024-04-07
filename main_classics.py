@@ -24,9 +24,7 @@ if __name__ == '__main__':
         请参考
         https://learn.microsoft.com/zh-cn/windows/win32/hidpi/setting-the-default-dpi-awareness-for-a-process
         """
-        if windows_release >= 10:
-            ctypes.windll.shcore.SetProcessDpiAwarenessContext(False)
-        elif windows_release >= 8:
+        if windows_release >= 8:
             ctypes.windll.shcore.SetProcessDpiAwareness(False)
         else:
             ctypes.windll.user32.SetProcessDpiAware()
