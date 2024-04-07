@@ -352,7 +352,7 @@ class ScreenGameQth(QThread):
                     self.sin_out.emit("%s" % str(e))
                     self.mutex.unlock()
                     return None
-                time.sleep(2)
+                time.sleep(1)
         self.mutex.unlock()
 
 
