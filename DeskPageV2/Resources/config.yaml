@@ -1,24 +1,32 @@
+config:
+  dance_threshold_area: 0.3
+  dance_threshold_tl: 0.9
+  dance_threshold_whz: 0.8
+  debug: false
 dancePic:
-  button_down: /Resources/DancePic/down.png
-  button_find_area: /Resources/DancePic/find_dance_area.png
-  button_find_area_night: /Resources/DancePic/find_dance_area_night.png
-  button_j: /Resources/DancePic/J.png
-  button_k: /Resources/DancePic/K.png
-  button_l: /Resources/DancePic/L.png
-  button_left: /Resources/DancePic/left.png
-  button_right: /Resources/DancePic/right.png
-  button_up: /Resources/DancePic/up.png
-dance_threshold: 0.9
-debug: false
-dmDll:
-  dm: /Resources/KeyBoardDriver/dm.dll
-  dm_reg: /Resources/KeyBoardDriver/DmReg.dll
-ghostDll:
-  ghost_dll: /Resources/KeyBoardDriver/gbild64.dll
-whzDancePic:
-  button_down: /Resources/DancePic/whzDance_Down.png
-  button_find_area: /Resources/DancePic/find_whz_area.png
-  button_left: /Resources/DancePic/whzDance_left.png
-  button_right: /Resources/DancePic/whzDance_right.png
-  button_up: /Resources/DancePic/whzDance_UP.png
-whz_dance_threshold: 0.8
+  tlDancePic:
+    button_down: /Resources/DancePic/down.png
+    button_find_area: /Resources/DancePic/find_dance_area.png
+    button_find_area_night: /Resources/DancePic/find_dance_area_night.png
+    button_j: /Resources/DancePic/J.png
+    button_k: /Resources/DancePic/K.png
+    button_l: /Resources/DancePic/L.png
+    button_left: /Resources/DancePic/left.png
+    button_right: /Resources/DancePic/right.png
+    button_up: /Resources/DancePic/up.png
+  whzDancePic:
+    button_down: /Resources/DancePic/whzDance_Down.png
+    button_find_area: /Resources/DancePic/find_whz_area.png
+    button_left: /Resources/DancePic/whzDance_left.png
+    button_right: /Resources/DancePic/whzDance_right.png
+    button_up: /Resources/DancePic/whzDance_UP.png
+keyBoardMouseDll:
+  dmDll:
+    dm: /Resources/KeyBoardDriver/dm.dll
+    dm_reg: /Resources/KeyBoardDriver/DmReg.dll
+  ghostDll:
+    ghost_dll: /Resources/KeyBoardDriver/gbild64.dll
+team:
+  create_team: /Resources/Team/创建队伍.png
+  flag_team: /Resources/Team/team_mark.png
+  leave_team: /Resources/Team/离开队伍.png

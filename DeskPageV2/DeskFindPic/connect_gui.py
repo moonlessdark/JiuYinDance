@@ -111,9 +111,10 @@ class Dance(MainGui):
             is_debug: bool = config_ini.is_debug
             dance_threshold: float = config_ini.dance_threshold
             whz_dance_threshold: float = config_ini.whz_dance_threshold
-
+            area_dance_threshold: float = config_ini.area_dance_threshold
             self.line_dance_threshold.setValue(dance_threshold)
             self.line_whz_dance_threshold.setValue(whz_dance_threshold)
+            self.line_area_dance_threshold.setValue(area_dance_threshold)
 
             if is_debug:
                 self.check_debug_mode.setChecked(True)
@@ -136,9 +137,13 @@ class Dance(MainGui):
 
         dance_threshold = self.line_dance_threshold.value()
         whz_dance_threshold = self.line_whz_dance_threshold.value()
+        area_dance_threshold = self.line_area_dance_threshold.value()
         is_debug = True if self.check_debug_mode.isChecked() else False
 
-        self.file_config.update_find_pic_config(dance_threshold=dance_threshold, whz_dance_threshold=whz_dance_threshold, debug=is_debug)
+        self.file_config.update_find_pic_config(dance_threshold_tl=dance_threshold,
+                                                dance_threshold_whz=whz_dance_threshold,
+                                                dance_threshold_area=area_dance_threshold,
+                                                debug=is_debug)
 
         self.show_dialog("更新成功")
 

@@ -262,11 +262,18 @@ class MainGui(QtWidgets.QMainWindow):
         widget_setting = QtWidgets.QWidget()
         self.label_dance_threshold = QtWidgets.QLabel("团练授业阈值", widget_setting)
         self.line_dance_threshold = QtWidgets.QDoubleSpinBox(widget_setting)
+        self.line_dance_threshold.setToolTip("最低匹配阈值，影响团练授业")
         self.line_dance_threshold.setRange(0.01, 1.00)
 
         self.label_whz_dance_threshold = QtWidgets.QLabel("势力修炼阈值", widget_setting)
         self.line_whz_dance_threshold = QtWidgets.QDoubleSpinBox(widget_setting)
+        self.line_whz_dance_threshold.setToolTip("最低匹配阈值，影响挖宝的修罗刀、天涯海阁的瀑布修炼和钓鱼、望辉洲的跳舞")
         self.line_whz_dance_threshold.setRange(0.01, 1.00)
+
+        self.label_area_dance_threshold = QtWidgets.QLabel("按钮区域阈值", widget_setting)
+        self.line_area_dance_threshold = QtWidgets.QDoubleSpinBox(widget_setting)
+        self.line_area_dance_threshold.setToolTip("最低匹配阈值，影响按钮区域的识别率，越低越好。")
+        self.line_area_dance_threshold.setRange(0.01, 1.00)
 
         self.check_debug_mode = QtWidgets.QCheckBox("Debug", widget_setting)
         self.push_button_save_setting = QtWidgets.QPushButton("保存设置", widget_setting)
@@ -276,8 +283,10 @@ class MainGui(QtWidgets.QMainWindow):
         layout_setting.addWidget(self.line_dance_threshold, 0, 1)
         layout_setting.addWidget(self.label_whz_dance_threshold, 1, 0)
         layout_setting.addWidget(self.line_whz_dance_threshold, 1, 1)
-        layout_setting.addWidget(self.check_debug_mode, 2, 0)
-        layout_setting.addWidget(self.push_button_save_setting, 2, 1)
+        layout_setting.addWidget(self.label_area_dance_threshold, 2, 0)
+        layout_setting.addWidget(self.line_area_dance_threshold, 2, 1)
+        layout_setting.addWidget(self.check_debug_mode, 3, 0)
+        layout_setting.addWidget(self.push_button_save_setting, 3, 1)
 
         self.widget_dock_setting = QtWidgets.QDockWidget("配置信息", self)
         self.widget_dock_setting.setWidget(widget_setting)

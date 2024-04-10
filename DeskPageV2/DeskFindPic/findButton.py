@@ -62,6 +62,7 @@ class FindButton:
 
         self.dance_threshold: float = self.find_pic_config.dance_threshold
         self.whz_dance_threshold: float = self.find_pic_config.whz_dance_threshold
+        self.area_dance_threshold: float = self.find_pic_config.area_dance_threshold
 
         self.button_list: list = []
         self.whz_dance_button_list: list = []
@@ -209,8 +210,8 @@ class FindButton:
             """
             先分开查一下白天和黑夜的，看看哪个的识别率高就用哪个
             """
-            day: list = find_area(self.dance_area, bigger_pic, threshold=0.5, edge=True)  # 去界面找一下按钮的坐标
-            night: list = find_area(self.dance_area_night, bigger_pic, threshold=0.4, edge=True)  # 去界面找一下按钮的坐标
+            day: list = find_area(self.dance_area, bigger_pic, threshold=self.area_dance_threshold, edge=True)
+            night: list = find_area(self.dance_area_night, bigger_pic, threshold=self.area_dance_threshold, edge=True)
 
             find_param_type: str = "day" if day[4] > night[4] else "night"
             button_area_list: list = day if day[4] > night[4] else night
@@ -254,10 +255,10 @@ class FindButton:
 if __name__ == '__main__':
     import time
 
-    pic_path = "20_06_12.png"
-    # pic = cv2.imread(f"D:\\SoftWare\\Developed\\Projected\\JiuYinDancing\\JiuYinScreenPic\\20_04\\{pic_path}", 1)
+    pic_path = "02.png"
+    pic = cv2.imread(f"D:\\JiuYinScreenPic\\19_29\\{pic_path}", 1)
 
-    pic = cv2.imread(f"D:\\JiuYinScreenPic\\dao\\44.png", 1)  # 黑色
+    # pic = cv2.imread(f"D:\\JiuYinScreenPic\\dao\\44.png", 1)  # 黑色
 
     start_time = time.time()
     pic = WindowsCapture().clear_black_area2(pic)
@@ -266,7 +267,7 @@ if __name__ == '__main__':
     print("执行时间为: " + str(execution_time) + "秒")
 
     start_time = time.time()
-    b = FindButton().find_pic_by_bigger(bigger_pic_cap=pic, find_type="团练1", debug=False)
+    b = FindButton().find_pic_by_bigger(bigger_pic_cap=pic, find_type="团练", debug=False)
     print(f"查询到的按钮：{b}")
     end_time = time.time()
     execution_time = end_time - start_time
