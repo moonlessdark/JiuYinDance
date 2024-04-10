@@ -4,7 +4,7 @@ import time
 import cv2
 import win32gui
 from PySide6.QtCore import Signal, QThread, QWaitCondition, QMutex
-
+from DeskPageV2.Utils.Log import Logger
 from DeskPageV2.DeskFindPic.findButton import FindButton
 from DeskPageV2.DeskTools.DmSoft.get_dm_driver import getKeyBoardMouse, getWindows
 from DeskPageV2.DeskTools.WindowsSoft.get_windows import WindowsCapture, GetHandleList, PicCapture
@@ -136,6 +136,7 @@ class DanceThByFindPic(QThread):
     sin_out = Signal(str)  # 日志打印
     status_bar = Signal(str, int)  # 底部状态栏打印
     sin_work_status = Signal(bool)  # 运行状态是否正常
+    log = Logger()
 
     def __init__(self, parent=None):
         # 设置工作状态和初始值
@@ -259,8 +260,7 @@ class DanceThByFindPic(QThread):
                     if self.debug:
                         end_time = time.time()
                         execution_time = end_time - start_time
-                        self.sin_out.emit(f"识别时间为: {round(execution_time, 2)}秒")
-
+                        self.log.write_log(f"识别时间为: {round(execution_time, 2)}秒")
                     if self.windows_opt.activate_windows(windows_this_handle):
                         input_key_by_ghost(key_list)  # 输入按钮
                         find_button_count += 1
@@ -269,7 +269,7 @@ class DanceThByFindPic(QThread):
                         if self.debug:
                             end_time = time.time()
                             execution_time = end_time - start_time
-                            self.sin_out.emit(f"执行时间为: {round(execution_time, 2)}秒 \n")
+                            self.log.write_log(f"执行时间为: {round(execution_time, 2)}秒 \n")
 
                     else:
                         self.sin_out.emit(f"出错了,窗口{windows_this_handle}激活失败,尝试再次激活")

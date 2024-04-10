@@ -26,8 +26,9 @@ def local_image(image):
                                thresholdType=cv.THRESH_BINARY, blockSize=25, C=10)  # blockSize必须是奇数  C 常量
 
     # cv.imshow('local binary image', dst)
-    cv.imwrite("../02.png", dst, [int(cv.IMWRITE_PNG_COMPRESSION), 0])
-    cv.imshow('local_image', dst)
+    # cv.imwrite("../02.png", dst, [int(cv.IMWRITE_PNG_COMPRESSION), 0])
+    # cv.imshow('local_image', dst)
+    return dst
 
 
 # 自定义   均值作为阈值
@@ -36,10 +37,11 @@ def custom_image(image):
     h, w = gray.shape[:2]
     m = np.reshape(gray, [1, h * w])
     mean = m.sum() / (w * h)
-    print(f'mean：{mean}')
+    # print(f'mean：{mean}')
     ret, binary = cv.threshold(gray, mean, 255, cv.THRESH_BINARY)
-    cv.imshow('custom binary image', binary)
-    cv.imwrite("../03.png", binary, [int(cv.IMWRITE_PNG_COMPRESSION), 0])
+    # cv.imshow('custom binary image', binary)
+    # cv.imwrite("../03.png", binary, [int(cv.IMWRITE_PNG_COMPRESSION), 0])
+    return binary
 
 
 if __name__ == '__main__':

@@ -324,7 +324,7 @@ class Dance(MainGui):
             self.is_debug = True if self.check_debug_mode.isChecked() else False
             start_log_string: str = "开始执行"
             if self.is_debug:
-                start_log_string: str = "开始执行Debug模式(仅限团练授业)"
+                start_log_string: str = "开始执行Debug模式(仅限团练授业)，详情请查看程序根目录生成的日志文件"
             self.print_logs(start_log_string, is_clear=True)
             if self.radio_button_school_dance.isChecked() or self.radio_button_party_dance.isChecked():
                 """

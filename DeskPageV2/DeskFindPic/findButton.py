@@ -1,10 +1,13 @@
 from collections import namedtuple
 
+from DeskPageV2.Utils.Log import Logger
+
 import cv2
 import numpy as np
 from PySide6.QtCore import Signal
 from numpy import fromfile
 
+from DeskPageV2.DeskTools.WindowsSoft.ThresholdImage import threshold_image, local_image
 from DeskPageV2.Utils.dataClass import DancePic, WhzDancePic, Config
 from DeskPageV2.Utils.load_res import GetConfig
 from DeskPageV2.DeskTools.WindowsSoft.get_windows import find_pic, WindowsCapture, PicCapture, find_area
@@ -35,7 +38,7 @@ class FindButton:
     """
 
     def __init__(self):
-
+        self.log = Logger()
         config = GetConfig()
         self.dance_pic: DancePic = config.get_dance_pic()
         self.whz_dance_pic: WhzDancePic = config.get_whz_dance_pic()
@@ -88,8 +91,7 @@ class FindButton:
                                           ("左", self.whz_dance_left), ("右", self.whz_dance_right)]
         return self.whz_dance_button_list, self.whz_dance_threshold, False
 
-    @staticmethod
-    def sort_button(button_dict: list, images, debug: bool, single: Signal, dance_type: str):
+    def sort_button(self, button_dict: list, images, debug: bool, single: Signal, dance_type: str):
         """
         给按钮排序。
 
@@ -111,16 +113,15 @@ class FindButton:
             :return:
             """
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            ret, binary = cv2.threshold(gray, 160, 255, cv2.THRESH_BINARY)  # 阈值化
+            ret, binary = cv2.threshold(gray, 200, 255, cv2.THRESH_BINARY)  # 阈值化
+
             contours, hierarchy = cv2.findContours(binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)  # 寻找轮廓线
             i = 0
             for contour in contours:  # 遍历所有轮廓
                 area: float = cv2.contourArea(contour)  # 轮廓图面积
-                if area > 600:  # 轮廓面积大于600的做 mask
+                if area > 2000:  # 轮廓面积大于600的做 mask
                     i += 1
-            if i == 0:
-                return i
-            return i - 1
+            return i
 
         res_button_dict: list = []
         button_key_list: list = []
@@ -138,45 +139,24 @@ class FindButton:
                 if abs(line[1] - max_threshold_x) % 40 == 0:  # 对40取余
                     res_button_dict.append([line[1], line[0], line[2]])
 
-            if dance_type == "团练":
-                button_sum: int = get_key_count(images)
-                button_area_x_list: list = button_area_x(button_sum)  # 得到一个大致的范围
-                if len(res_button_dict) > 0:
-                    """
-                    过滤一下，把不在按钮范围内的排除掉
-                    """
-                    res_button_dict_step1: list = []
-                    for line in res_button_dict:
-                        if min(button_area_x_list) <= line[0] <= max(button_area_x_list):
-                            res_button_dict_step1.append([line[0], line[1], line[2]])
-                    if len(res_button_dict_step1) == button_sum:
-                        res_button_dict = res_button_dict_step1
-            else:
-                """
-                那就是授业了
-                """
-                for line in button_dict:
-                    res_button_dict.append([line[1], line[0], line[2]])
-
         if len(res_button_dict) > 0:
             res_button_dict.sort()  # 排个序，从小到大
             res_button_dict.append([None, None, None])  # 增加一个结束表示，循环到他的时候就可以结束了
             button_x, button_p, button_name = 0, 0, ""
-
-            if debug:
-                single.emit(f"当前界面识别到 {button_sum} 个按钮")
-
             for button_param in res_button_dict:
                 x, t, n = button_param
                 if x is None or x > button_x > 0:
                     # 说明是下一个按钮，先保存上一个按钮
                     button_key_list.append(button_name)
-                    if debug:
-                        single.emit(f"识别按钮 {button_name} 的最高阈值: {button_p}")
-                    button_x, button_p, button_name = x, t, n
-                    continue
                 # 好了，这个按钮已经处理了，更新一下
                 button_x, button_p, button_name = x, t, n
+                if debug:
+                    if button_x is not None:
+                        self.log.write_log(f"识别到 X轴({button_x}) 阈值最高的按钮是 {button_name} 阈值: {button_p}")
+                continue
+            if debug:
+                self.log.write_log(f"本次识别到了 {len(button_key_list)} 个按钮")
+                self.log.write_log(f"本次识别到的按钮为 {button_key_list}")
         return button_key_list
 
     def find_pic_by_bigger(self, bigger_pic_cap: PicCapture, find_type="团练", debug: bool = False, single: Signal = None) -> list:
@@ -219,10 +199,15 @@ class FindButton:
                 if button_area_list[4] > 0:
                     dance_threshold = dance_threshold - 0.1  # 说明切换了画质，识别阈值降低10%
                     if debug:
-                        print_log(f"启用识别模式二(当前区域最高阈值: {button_area_list[4]},设置按钮最低匹配阈值: {dance_threshold})")
+                        print_log(f"启用识别模式二(阈值：{button_area_list[4]})")
+                        self.log.write_log(f"启用识别模式二，当前按钮区域的最高阈值为 {button_area_list[4]}。按钮的识别阈值设置为 {dance_threshold}。\n"
+                                           f"其中模式一的最高阈值为 {day[4]}，模式二的最高阈值为 {night[4]}。")
             else:
                 if debug:
-                    print_log(f"启用识别模式一(当前区域最高阈值: {button_area_list[4]},设置按钮最低匹配阈值: {dance_threshold})")
+                    print_log(f"启用识别模式一(阈值：{button_area_list[4]})")
+                    self.log.write_log(
+                        f"启用识别模式一，当前按钮区域的最高阈值为 {button_area_list[4]}。按钮的识别阈值设置为 {dance_threshold}。\n"
+                        f"其中模式一的最高阈值为 {day[4]}，模式二的最高阈值为 {night[4]}。")
         else:
             """
             望辉洲，势力，挖宝
@@ -255,8 +240,8 @@ class FindButton:
 if __name__ == '__main__':
     import time
 
-    pic_path = "02.png"
-    pic = cv2.imread(f"D:\\JiuYinScreenPic\\19_29\\{pic_path}", 1)
+    pic_path = "30.png"
+    pic = cv2.imread(f"D:\\JiuYinScreenPic\\19_50\\{pic_path}", 1)
 
     # pic = cv2.imread(f"D:\\JiuYinScreenPic\\dao\\44.png", 1)  # 黑色
 

@@ -2,7 +2,7 @@ config:
   dance_threshold_area: 0.3
   dance_threshold_tl: 0.9
   dance_threshold_whz: 0.8
-  debug: false
+  debug: true
 dancePic:
   tlDancePic:
     button_down: /Resources/DancePic/down.png
