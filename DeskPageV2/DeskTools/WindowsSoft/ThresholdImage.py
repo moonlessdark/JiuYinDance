@@ -11,9 +11,10 @@ def threshold_image(image):
     # ret, binary = cv.threshold(src=gray, thresh=127, maxval=255, type=cv.THRESH_BINARY_INV)  # 相反
     # ret, binary = cv.threshold(src=gray, thresh=127, maxval=255, type=cv.THRESH_TRUNC)
     # ret, binary = cv.threshold(src=gray, thresh=115, maxval=255, type=cv.THRESH_TOZERO)
-    print(f'threshold value：{ret}')  # 阈值    看图像信息丢失情况
-    cv.imshow('threshold binary image', binary)
-    # cv.imwrite("D:\\threshold_image.png", binary, [int(cv.IMWRITE_PNG_COMPRESSION), 0])
+    # print(f'threshold value：{ret}')  # 阈值    看图像信息丢失情况
+    # cv.imshow('threshold binary image', binary)
+    # cv.imwrite("./01.png", binary, [int(cv.IMWRITE_PNG_COMPRESSION), 0])
+    return binary
 
 
 # 局部  自适应阈值
@@ -25,7 +26,8 @@ def local_image(image):
                                thresholdType=cv.THRESH_BINARY, blockSize=25, C=10)  # blockSize必须是奇数  C 常量
 
     # cv.imshow('local binary image', dst)
-    cv.imwrite("D:\\local_image.png", dst, [int(cv.IMWRITE_PNG_COMPRESSION), 0])
+    cv.imwrite("../02.png", dst, [int(cv.IMWRITE_PNG_COMPRESSION), 0])
+    cv.imshow('local_image', dst)
 
 
 # 自定义   均值作为阈值
@@ -36,21 +38,19 @@ def custom_image(image):
     mean = m.sum() / (w * h)
     print(f'mean：{mean}')
     ret, binary = cv.threshold(gray, mean, 255, cv.THRESH_BINARY)
-    # cv.imshow('custom binary image', binary)
-    cv.imwrite("D:\\custom_image.png", binary, [int(cv.IMWRITE_PNG_COMPRESSION), 0])
+    cv.imshow('custom binary image', binary)
+    cv.imwrite("../03.png", binary, [int(cv.IMWRITE_PNG_COMPRESSION), 0])
 
 
 if __name__ == '__main__':
-    # src = cv.imread(r'D:\\JiuYinScreenPic\\23_19\\23_24_24.png')
-    src = cv.imread(r'D:\\JiuYinScreenPic\\21_33_52.png')
-    # src = cv.imread(r'D:\\SoftWare\\Developed\\Projected\\JiuYinDance\\DeskPageV2\\Resources\\DancePic\\whzDance_Down.png')
+    pic_name: str = "D"
+    src = cv.imread(f'/Users/luojun/Downloads/Doa/{pic_name}.PNG')
     height, width = src.shape[:2]
 
-    src = src[int(height * 0.70):int(height * 0.78), int(width * 0.35):int(width * 0.65)]
-    cv.imshow('input image', src)
+    # src = src[int(height * 0.70):int(height * 0.78), int(width * 0.35):int(width * 0.65)]
+    # cv.imshow('input image', src)
     threshold_image(src)
     # local_image(src)
     # custom_image(src)
-    cv.waitKey(0)
+    # cv.waitKey(0)
     cv.destroyAllWindows()
-

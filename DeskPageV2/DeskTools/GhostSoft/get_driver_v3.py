@@ -144,6 +144,42 @@ class SetGhostBoards(SetGhostDriver):
         result_int: int = self.ghost_driver.pressandreleasekeybyvalue(key_code)
         return True if result_int > 0 else False
 
+    def click_press_by_key_name(self, key_str: str) -> bool:
+        """
+        按下键盘上的键
+        :param key_str: 按键字符,不区分大小写
+        :return:
+        """
+        result_int: int = self.ghost_driver.presskeybyname(key_str)
+        return True if result_int > 0 else False
+
+    def click_press_by_code(self, key_code: int) -> bool:
+        """
+        按下键盘上的键
+        :param key_code: 按键code
+        :return:
+        """
+        result_int: int = self.ghost_driver.presskeybyvalue(key_code)
+        return True if result_int > 0 else False
+
+    def release_by_key_name(self, key_code: int) -> bool:
+        """
+        释放键盘上的键
+        :param key_code: 按键code
+        :return:
+        """
+        result_int: int = self.ghost_driver.releasekeybyname(key_code)
+        return True if result_int > 0 else False
+
+    def release_by_code(self, key_code: int) -> bool:
+        """
+        释放键盘上的键
+        :param key_code: 按键code
+        :return:
+        """
+        result_int: int = self.ghost_driver.releasekeybyvalue(key_code)
+        return True if result_int > 0 else False
+
     def click_all_press_and_release_by_key_name(self, key_str_list: list) -> bool:
         """
         按下多个组合键，并释放

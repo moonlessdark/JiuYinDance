@@ -4,7 +4,6 @@ from typing import List
 
 import cv2
 import psutil
-import pythoncom
 import win32api
 import win32com
 import win32con
@@ -13,8 +12,8 @@ import win32process
 from numpy import frombuffer, fromfile, uint8
 from win32com import client
 
-from DeskPageV2.DeskTools.WindowsSoft.windows import SetForegroundWindowInternal, AllowSetForegroundWindow
-from DeskPageV2.DeskTools.findPicBySmallToBigger.findImage import find_all_template, find_template
+from DeskPageV2.DeskTools.WindowsSoft.windows import AllowSetForegroundWindow
+from DeskPageV2.DeskTools.WindowsSoft.findImage import find_all_template, find_template
 
 PicCapture = namedtuple("PicCapture", ["pic_content", "pic_width", "pic_height"])
 
@@ -431,7 +430,7 @@ class WindowsCapture:
             rect = match_result['rectangle']
             x = (int(rect[1][0]) + int(rect[2][0])) / 2 + x_offset
             y = (int(rect[0][1]) + int(rect[1][1])) / 2 + y_offset
-            return x, y
+            return int(x), int(y)
         return 0, 0
 
     def find_coordinate_to_rect(self, handle: int, img, x_offset: int = 0, y_offset: int = 0):
