@@ -16,6 +16,10 @@ class Logger:
         now: str = time.strftime("%Y_%m_%d", time.localtime())
         log_file_path = f'./Log/{now}.log'
         if not os.path.exists(log_file_path):
+            """
+            如果文件目录不存在
+            """
+            os.makedirs("./Log")
             text_file = open(log_file_path, "w")
             os.chmod(log_file_path, stat.S_IRWXU)
             text_file.close()

@@ -199,12 +199,12 @@ class FindButton:
                 if button_area_list[4] > 0:
                     dance_threshold = dance_threshold - 0.1  # 说明切换了画质，识别阈值降低10%
                     if debug:
-                        print_log(f"启用识别模式二(阈值：{button_area_list[4]})")
+                        print_log(f"启用识别模式二(阈值:{button_area_list[4]})")
                         self.log.write_log(f"启用识别模式二，当前按钮区域的最高阈值为 {button_area_list[4]}。按钮的识别阈值设置为 {dance_threshold}。\n"
                                            f"其中模式一的最高阈值为 {day[4]}，模式二的最高阈值为 {night[4]}。")
             else:
                 if debug:
-                    print_log(f"启用识别模式一(阈值：{button_area_list[4]})")
+                    print_log(f"启用识别模式一(阈值:{button_area_list[4]})")
                     self.log.write_log(
                         f"启用识别模式一，当前按钮区域的最高阈值为 {button_area_list[4]}。按钮的识别阈值设置为 {dance_threshold}。\n"
                         f"其中模式一的最高阈值为 {day[4]}，模式二的最高阈值为 {night[4]}。")
@@ -241,9 +241,9 @@ if __name__ == '__main__':
     import time
 
     pic_path = "30.png"
-    pic = cv2.imread(f"D:\\JiuYinScreenPic\\19_50\\{pic_path}", 1)
+    # pic = cv2.imread(f"D:\\JiuYinScreenPic\\19_50\\{pic_path}", 1)
 
-    # pic = cv2.imread(f"D:\\JiuYinScreenPic\\dao\\44.png", 1)  # 黑色
+    pic = cv2.imread(f"D:\\SoftWare\\Developed\\Projected\\JiuYinDance\\dist\\JiuDancing\\JiuYinScreenPic\\23_19\\23_19_22.png", 1)  # 黑色
 
     start_time = time.time()
     pic = WindowsCapture().clear_black_area2(pic)
