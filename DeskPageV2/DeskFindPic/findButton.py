@@ -27,8 +27,8 @@ def button_area_x(count: int) -> list:
     7: 119 - 359
     :return:
     """
-    min_x: int = 259-count*20 - 5  # 偏移量
-    max_x: int = min_x + 40*(count-1) + 10  # 偏移量
+    min_x: int = 259 - count * 20 - 5  # 偏移量
+    max_x: int = min_x + 40 * (count - 1) + 10  # 偏移量
     return [min_x, max_x]
 
 
@@ -159,7 +159,8 @@ class FindButton:
                 self.log.write_log(f"本次识别到的按钮为 {button_key_list}")
         return button_key_list
 
-    def find_pic_by_bigger(self, bigger_pic_cap: PicCapture, find_type="团练", debug: bool = False, single: Signal = None) -> list:
+    def find_pic_by_bigger(self, bigger_pic_cap: PicCapture, find_type="团练", debug: bool = False,
+                           single: Signal = None) -> list:
         """
         从大图里面找小图，并进行从左到右排序
         :param single:
@@ -186,6 +187,7 @@ class FindButton:
             return []
         else:
             bigger_pic = bigger_pic[int(height * 0.6):int(height * 1), int(width * 0.2):int(width * 1)]
+        find_param_type, day, night = "", [], []
         if find_type == "团练":
             """
             先分开查一下白天和黑夜的，看看哪个的识别率高就用哪个
@@ -198,16 +200,6 @@ class FindButton:
             if find_param_type == "night":
                 if button_area_list[4] > 0:
                     dance_threshold = dance_threshold - 0.1  # 说明切换了画质，识别阈值降低10%
-                    if debug:
-                        print_log(f"启用识别模式二(阈值:{button_area_list[4]})")
-                        self.log.write_log(f"启用识别模式二，当前按钮区域的最高阈值为 {button_area_list[4]}。按钮的识别阈值设置为 {dance_threshold}。\n"
-                                           f"其中模式一的最高阈值为 {day[4]}，模式二的最高阈值为 {night[4]}。")
-            else:
-                if debug:
-                    print_log(f"启用识别模式一(阈值:{button_area_list[4]})")
-                    self.log.write_log(
-                        f"启用识别模式一，当前按钮区域的最高阈值为 {button_area_list[4]}。按钮的识别阈值设置为 {dance_threshold}。\n"
-                        f"其中模式一的最高阈值为 {day[4]}，模式二的最高阈值为 {night[4]}。")
         else:
             """
             望辉洲，势力，挖宝
@@ -233,7 +225,20 @@ class FindButton:
                 button_num_list: list = find_pic(i[1], bigger_pic, threshold=dance_threshold, edge=edges)  # 去界面找一下按钮的坐标
                 for bu in button_num_list:
                     button_dict.append([bu[2], bu[0], i[0]])  # 把获取到的按钮 x(横坐标) 拿出来，待会要进行排序使用 [相似度， X， 按钮]
-        button_dict_result: list = self.sort_button(button_dict, bigger_pic, debug=debug, single=single, dance_type=find_type)
+        button_dict_result: list = self.sort_button(button_dict, bigger_pic, debug=debug, single=single,
+                                                    dance_type=find_type)
+        if debug:
+            if len(button_dict_result) > 0:
+                if find_param_type == "night":
+                    print_log(f"启用识别模式二(阈值:{button_area_list[4]})")
+                    self.log.write_log(
+                        f"启用识别模式二，当前按钮区域的最高阈值为 {button_area_list[4]}。按钮的识别阈值设置为 {dance_threshold}。\n"
+                        f"其中模式一的最高阈值为 {day[4]}，模式二的最高阈值为 {night[4]}。")
+                else:
+                    print_log(f"启用识别模式一(阈值:{button_area_list[4]})")
+                    self.log.write_log(
+                        f"启用识别模式一，当前按钮区域的最高阈值为 {button_area_list[4]}。按钮的识别阈值设置为 {dance_threshold}。\n"
+                        f"其中模式一的最高阈值为 {day[4]}，模式二的最高阈值为 {night[4]}。")
         return button_dict_result
 
 
@@ -243,7 +248,9 @@ if __name__ == '__main__':
     pic_path = "30.png"
     # pic = cv2.imread(f"D:\\JiuYinScreenPic\\19_50\\{pic_path}", 1)
 
-    pic = cv2.imread(f"D:\\SoftWare\\Developed\\Projected\\JiuYinDance\\dist\\JiuDancing\\JiuYinScreenPic\\23_19\\23_19_22.png", 1)  # 黑色
+    pic = cv2.imread(
+        f"D:\\SoftWare\\Developed\\Projected\\JiuYinDance\\dist\\JiuDancing\\JiuYinScreenPic\\23_19\\23_19_22.png",
+        1)  # 黑色
 
     start_time = time.time()
     pic = WindowsCapture().clear_black_area2(pic)
