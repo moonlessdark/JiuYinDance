@@ -218,7 +218,7 @@ class FindButton:
             else:
                 # 挖宝、修罗刀的按钮区域长度400
                 bigger_pic = bigger_pic[int(button_area_list[0][1]):int(button_area_list[1][1]),
-                             int(button_area_list[1][0] - 10):int(button_area_list[3][0] + 350)]
+                                        int(button_area_list[1][0] - 10):int(button_area_list[3][0] + 350)]
             # cv2.imshow("dd", bigger_pic)
             # cv2.waitKey()
             for i in check_button_list:
