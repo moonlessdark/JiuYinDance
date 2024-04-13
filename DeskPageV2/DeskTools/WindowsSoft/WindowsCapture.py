@@ -1,13 +1,16 @@
 
-from ctypes import c_ubyte, windll
+from ctypes import c_ubyte, windll, wintypes
 
 import cv2
+import win32gui
+from _ctypes import byref
 from numpy import fromfile, uint8, frombuffer
 
-from DeskPageV2.DeskTools.WindowsSoft.MonitorDisplay import display_windows_detection
+from DeskPageV2.DeskTools.WindowsSoft.MonitorDisplay import display_windows_detection, coordinate_change_from_windows
 from DeskPageV2.DeskTools.WindowsSoft.ThresholdImage import threshold_image
 from DeskPageV2.DeskTools.WindowsSoft.WindowsHandle import PicCapture
-from DeskPageV2.DeskTools.WindowsSoft.findImage import find_all_template
+from DeskPageV2.DeskTools.WindowsSoft.findImage import find_all_template, find_template
+from DeskPageV2.DeskTools.WindowsSoft.get_windows import get_window_rect
 
 
 class WindowsCapture:
@@ -24,17 +27,18 @@ class WindowsCapture:
         self.DeleteObject = windll.gdi32.DeleteObject
         self.ReleaseDC = windll.user32.ReleaseDC
 
-    def capture(self, handle: int, binational: bool = False) -> PicCapture:
+    def capture(self, handle: int) -> PicCapture:
         """
         窗口区域显示在屏幕上的地方截图
-        :param binational: 是否二值化
         :param handle: 窗口句柄
         :return: 截图数据 numpy.ndarray格式 和 图片宽度, 图片高度
         """
 
-        # 窗口模式，高度减30
-        width, height = display_windows_detection(handle)
+        handle = int(handle)
 
+        r = wintypes.RECT()
+        self.GetClientRect(handle, byref(r))
+        width, height = r.right, r.bottom
         # 开始截图
         dc = self.GetDC(handle)
         cdc = self.CreateCompatibleDC(dc)
@@ -50,14 +54,8 @@ class WindowsCapture:
         self.DeleteObject(cdc)
         self.ReleaseDC(handle, dc)
         # 返回截图数据为numpy.ndarray
-        # cap_pic_content = frombuffer(buffer, dtype=uint8).reshape(height, width, 4)
-        cap_pic_content = frombuffer(buffer, dtype=uint8).reshape(height, width, 4)
-        if binational:
-            """
-            二值化
-            """
-            cap_pic_content = threshold_image(cap_pic_content)
-        cap_pic = PicCapture(cap_pic_content, width, height)
+        # cap_pic = PicCapture(frombuffer(buffer, dtype=uint8).reshape(height, width, 4)[:, :, :3], width, height)
+        cap_pic = PicCapture(frombuffer(buffer, dtype=uint8).reshape(height, width, 4), width, height)
         return cap_pic
 
     def capture_and_clear_black_area(self, handle: int) -> PicCapture:
@@ -201,6 +199,20 @@ class WindowsCapture:
         find_all_list = self.__find_area(smaller_pic=source_img, bigger_img=cap_img, threshold=threshold, edge=edge)
         return find_all_list
 
+    def find_windows_coordinate_rect(self, handle: int, img, threshold: float = 0.5, edge: bool = False):
+        """
+        在windows窗口中寻找目标的坐标，需要映射坐标
+        :param handle: 句柄
+        :param img: 需要寻找的模板图
+        :param threshold: 阈值
+        :param edge: 是否支持边缘查找
+        """
+        res = self.find_coordinate_area(handle=handle, img=img, threshold=threshold, edge=edge)
+        if len(res) > 0:
+            co = coordinate_change_from_windows(handle, res)
+            return co
+        return None
+
     @staticmethod
     def __find_area(smaller_pic, bigger_img, threshold: float, edge: bool) -> list:
         """
@@ -228,47 +240,29 @@ class WindowsCapture:
                 )
         return img_result
 
-    def find_coordinate(self, smaller_pic, bigger_img, threshold, edge: bool = False) -> list:
+    def find_coordinate_to_rect_2(self, handle: int, img, x_offset: int = 0, y_offset: int = 0):
         """
-        大图里面找小图,返回匹配度最高的
-        :param edge:
-        :param threshold: 相似度，0-1
-        :param bigger_img: 大图
-        :param smaller_pic: 小图'
-        :return [[x, y, confidence]]  #坐标和相似度
+        查找图片，在屏幕上的坐标, 方法2，以另一种逻辑实现
+        :param y_offset: y 坐标的便宜量
+        :param x_offset: x 坐标的偏移量
+        :param handle: 窗口ID
+        :param img: 图片，可以时已经读取在内存中的，也可以是本地文件
+        :return: 查找的图片的中心坐标点映射在屏幕上的坐标
         """
-        img_result = self.find_all_coordinate(smaller_pic=smaller_pic, bigger_img=bigger_img, threshold=threshold,
-                                              edge=edge)
-        img_result_check: list = []
-        if len(img_result) > 1:
-            # 如果找到了多个结果的时候,把匹配对最高的那个拿出来
-            confidence_check: float = 0
-            for area_li in img_result:
-                if area_li[4] > confidence_check:
-                    img_result_check = area_li
-                confidence_check = area_li[4]
-        elif len(img_result) == 1:
-            img_result_check: list = img_result[0]
-        return img_result_check
-
-    @staticmethod
-    def find_all_coordinate(smaller_pic, bigger_img, threshold, edge: bool = False) -> list:
-        """
-        大图里面找小图
-        :param edge:
-        :param threshold: 相似度，0-1
-        :param bigger_img: 大图
-        :param smaller_pic: 小图'
-        :return [[x, y, confidence]]  #坐标和相似度
-        """
-        match_result = find_all_template(bigger_img, smaller_pic, threshold, edge=edge)
-        img_result = []
-        if len(match_result) > 0:
-            for mr in match_result:
-                rect = mr['rectangle']
-                x = (int(rect[1][0]) + int(rect[2][0])) / 2 + 0
-                y = (int(rect[0][1]) + int(rect[1][1])) / 2 + 0
-                confidence: float = mr['confidence']
-                confidence = round(confidence, 2)  # 相似度保留2位小数
-                img_result.append([x, y, confidence])
-        return img_result
+        cap_img, width, high = self.capture(handle)
+        if isinstance(img, str):
+            """
+            如果时字符串形式的，说明时本地图片，那么就读取吧
+            """
+            source_img = cv2.imdecode(fromfile(img, dtype=uint8), -1)
+        else:
+            source_img = img
+        match_result = find_template(cap_img, source_img, threshold=0.5)
+        cop: list = get_window_rect(handle)
+        l, t, r, b = win32gui.GetWindowRect(handle)
+        if match_result is not None:
+            rect = match_result['rectangle']
+            x = (int(rect[1][0] + int(cop[1][0])) + int(rect[2][0]) + cop[1][0]) / 2 + x_offset
+            y = (int(rect[0][1] + int(cop[0][1])) + int(rect[1][1]) + cop[0][1]) / 2 + y_offset
+            return x, y
+        return 0, 0

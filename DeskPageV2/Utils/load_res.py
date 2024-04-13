@@ -1,7 +1,8 @@
 # encodings: utf-8
 import yaml
 
-from DeskPageV2.Utils.dataClass import DancePic, WhzDancePic, DmDll, GhostDll, Config, Team
+from DeskPageV2.Utils.dataClass import DancePic, WhzDancePic, DmDll, GhostDll, Config, Team, TruckCarPic, \
+    FindTruckCarTask
 from DeskPageV2.Utils.project_path import PathUtil
 
 
@@ -34,7 +35,7 @@ def _get_project_path() -> str:
 class GetConfig:
     def __init__(self):
         self.fs = open(_get_dir_path(), encoding="UTF-8")
-        self.datas = yaml.load(self.fs, Loader=yaml.FullLoader)  # 添加后就不警告了
+        self.__datas = yaml.load(self.fs, Loader=yaml.FullLoader)  # 添加后就不警告了
         self.project_dir: str = _get_project_path()
 
     def __del__(self):
@@ -47,15 +48,15 @@ class GetConfig:
         """
         pic_dance: DancePic = DancePic()
         # 赋值
-        pic_dance.dance_area = self.project_dir + self.datas["dancePic"]["tlDancePic"]["button_find_area"]
-        pic_dance.dance_area_night = self.project_dir + self.datas["dancePic"]["tlDancePic"]["button_find_area_night"]
-        pic_dance.dance_J = self.project_dir + self.datas["dancePic"]["tlDancePic"]["button_j"]
-        pic_dance.dance_K = self.project_dir + self.datas["dancePic"]["tlDancePic"]["button_k"]
-        pic_dance.dance_L = self.project_dir + self.datas["dancePic"]["tlDancePic"]["button_l"]
-        pic_dance.dance_Up = self.project_dir + self.datas["dancePic"]["tlDancePic"]["button_up"]
-        pic_dance.dance_Down = self.project_dir + self.datas["dancePic"]["tlDancePic"]["button_down"]
-        pic_dance.dance_Left = self.project_dir + self.datas["dancePic"]["tlDancePic"]["button_left"]
-        pic_dance.dance_Right = self.project_dir + self.datas["dancePic"]["tlDancePic"]["button_right"]
+        pic_dance.dance_area = self.project_dir + self.__datas["dancePic"]["tlDancePic"]["button_find_area"]
+        pic_dance.dance_area_night = self.project_dir + self.__datas["dancePic"]["tlDancePic"]["button_find_area_night"]
+        pic_dance.dance_J = self.project_dir + self.__datas["dancePic"]["tlDancePic"]["button_j"]
+        pic_dance.dance_K = self.project_dir + self.__datas["dancePic"]["tlDancePic"]["button_k"]
+        pic_dance.dance_L = self.project_dir + self.__datas["dancePic"]["tlDancePic"]["button_l"]
+        pic_dance.dance_Up = self.project_dir + self.__datas["dancePic"]["tlDancePic"]["button_up"]
+        pic_dance.dance_Down = self.project_dir + self.__datas["dancePic"]["tlDancePic"]["button_down"]
+        pic_dance.dance_Left = self.project_dir + self.__datas["dancePic"]["tlDancePic"]["button_left"]
+        pic_dance.dance_Right = self.project_dir + self.__datas["dancePic"]["tlDancePic"]["button_right"]
         return pic_dance
 
     def get_whz_dance_pic(self) -> WhzDancePic:
@@ -65,11 +66,11 @@ class GetConfig:
         """
         whz_dance: WhzDancePic = WhzDancePic()
         # 赋值
-        whz_dance.dance_area = self.project_dir + self.datas["dancePic"]["whzDancePic"]["button_find_area"]
-        whz_dance.dance_Left = self.project_dir + self.datas["dancePic"]["whzDancePic"]["button_left"]
-        whz_dance.dance_Right = self.project_dir + self.datas["dancePic"]["whzDancePic"]["button_right"]
-        whz_dance.dance_Up = self.project_dir + self.datas["dancePic"]["whzDancePic"]["button_up"]
-        whz_dance.dance_Down = self.project_dir + self.datas["dancePic"]["whzDancePic"]["button_down"]
+        whz_dance.dance_area = self.project_dir + self.__datas["dancePic"]["whzDancePic"]["button_find_area"]
+        whz_dance.dance_Left = self.project_dir + self.__datas["dancePic"]["whzDancePic"]["button_left"]
+        whz_dance.dance_Right = self.project_dir + self.__datas["dancePic"]["whzDancePic"]["button_right"]
+        whz_dance.dance_Up = self.project_dir + self.__datas["dancePic"]["whzDancePic"]["button_up"]
+        whz_dance.dance_Down = self.project_dir + self.__datas["dancePic"]["whzDancePic"]["button_down"]
         return whz_dance
 
     def get_dll_dm(self) -> DmDll:
@@ -78,8 +79,8 @@ class GetConfig:
         :return:
         """
         dll_dm = DmDll()
-        dll_dm.dll_dm = self.project_dir + self.datas["keyBoardMouseDll"]["dmDll"]["dm"]
-        dll_dm.dll_dm_reg = self.project_dir + self.datas["keyBoardMouseDll"]["dmDll"]["dm_reg"]
+        dll_dm.dll_dm = self.project_dir + self.__datas["keyBoardMouseDll"]["dmDll"]["dm"]
+        dll_dm.dll_dm_reg = self.project_dir + self.__datas["keyBoardMouseDll"]["dmDll"]["dm_reg"]
         return dll_dm
 
     def get_dll_ghost(self) -> GhostDll:
@@ -88,7 +89,7 @@ class GetConfig:
         :return:
         """
         ghost_dm = GhostDll()
-        ghost_dm.dll_ghost = self.project_dir + self.datas["keyBoardMouseDll"]["ghostDll"]["ghost_dll"]
+        ghost_dm.dll_ghost = self.project_dir + self.__datas["keyBoardMouseDll"]["ghostDll"]["ghost_dll"]
         return ghost_dm
 
     def get_find_pic_config(self) -> Config:
@@ -97,10 +98,10 @@ class GetConfig:
         :return:
         """
         pic_config = Config()
-        pic_config.dance_threshold = self.datas["config"]["dance_threshold_tl"]
-        pic_config.whz_dance_threshold = self.datas["config"]["dance_threshold_whz"]
-        pic_config.area_dance_threshold = self.datas["config"]["dance_threshold_area"]
-        pic_config.is_debug = self.datas["config"]["debug"]
+        pic_config.dance_threshold = self.__datas["config"]["dance_threshold_tl"]
+        pic_config.whz_dance_threshold = self.__datas["config"]["dance_threshold_whz"]
+        pic_config.area_dance_threshold = self.__datas["config"]["dance_threshold_area"]
+        pic_config.is_debug = self.__datas["config"]["debug"]
         return pic_config
 
     def update_find_pic_config(self, *args, **kwargs):
@@ -113,9 +114,9 @@ class GetConfig:
 
         for item_key in kwargs:
 
-            self.datas["config"][item_key] = kwargs.get(item_key)
+            self.__datas["config"][item_key] = kwargs.get(item_key)
             with open(_get_dir_path(), 'w', encoding='utf-8') as f:
-                yaml.dump(self.datas, f, allow_unicode=True)  # allow_unicode=True，解决存储时unicode编码问题。
+                yaml.dump(self.__datas, f, allow_unicode=True)  # allow_unicode=True，解决存储时unicode编码问题。
 
     @staticmethod
     def get_key_even_code_auto_list():
@@ -145,9 +146,43 @@ class GetConfig:
         队伍
         """
         team = Team()
-        team.create_team = self.datas["team"]["create_team"]
-        team.leave_team = self.datas["team"]["leave_team"]
-        team.flag_team = self.datas["team"]["flag_team"]
+        team.create_team = self.__datas["team"]["create_team"]
+        team.leave_team = self.__datas["team"]["leave_team"]
+        team.flag_team = self.__datas["team"]["flag_team"]
+        team.flag_team_status = self.__datas["team"]["flag_team_status"]
+        return team
+
+    def get_track_car(self):
+        """
+        获取镖车
+        """
+        truck_car = TruckCarPic()
+        truck_car.receive_task_talk = self.__datas["TruckCarPic"]["receive_task_talk"]
+        truck_car.receive_task = self.__datas["TruckCarPic"]["receive_task"]
+        truck_car.receive_task_confirm = self.__datas["TruckCarPic"]["receive_task_confirm"]
+        truck_car.task_chengdu_GaiBang = self.__datas["TruckCarPic"]["task_chengdu_GaiBang"]
+        truck_car.task_chengdu_NanGongShiJia = self.__datas["TruckCarPic"]["task_chengdu_NanGongShiJia"]
+        truck_car.task_chengdu_QianDengZheng = self.__datas["TruckCarPic"]["task_chengdu_QianDengZheng"]
+        truck_car.task_chengdu_ShenJiaBao = self.__datas["TruckCarPic"]["task_chengdu_ShenJiaBao"]
+        truck_car.car_type_little = self.__datas["TruckCarPic"]["car_type_little"]
+        truck_car.car_type_medium = self.__datas["TruckCarPic"]["car_type_medium"]
+        truck_car.car_type_big = self.__datas["TruckCarPic"]["car_type_big"]
+        truck_car.task_flag_status = self.__datas["TruckCarPic"]["task_flag_status"]
+        truck_car.task_flags_yellow_car = self.__datas["TruckCarPic"]["task_flags_yellow_car"]
+        truck_car.task_star_mode = self.__datas["TruckCarPic"]["task_star_mode"]
+        truck_car.task_monster_fight = self.__datas["TruckCarPic"]["task_star_mode"]
+        truck_car.task_monster_target = self.__datas["TruckCarPic"]["task_monster_target"]
+        return truck_car
+
+    def find_track_car_task(self):
+        """
+        寻找地图上的接镖NPC
+        """
+        truck_car_task = FindTruckCarTask()
+        truck_car_task.qin_xiu = self.__datas["TruckCarFindTask"]["qin_xiu"]
+        truck_car_task.qin_xiu_truck_car_task = self.__datas["TruckCarFindTask"]["qin_xiu_truck_car_task"]
+        truck_car_task.qin_xiu_truck_car_npc_chengdu = self.__datas["TruckCarFindTask"]["qin_xiu_truck_car_npc_chengdu"]
+        return truck_car_task
 
 
 if __name__ == '__main__':

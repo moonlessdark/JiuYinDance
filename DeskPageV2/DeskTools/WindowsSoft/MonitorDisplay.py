@@ -3,6 +3,7 @@
 https://learn.microsoft.com/zh-cn/windows/win32/gdi/multiple-display-monitors-functions
 """
 import ctypes
+import ctypes.wintypes
 from collections import namedtuple
 from ctypes import windll, c_ubyte, wintypes, pointer, byref, sizeof
 import win32api
@@ -11,6 +12,7 @@ import win32gui
 import win32print
 from screeninfo import get_monitors
 from typing import List
+
 
 monitorSize = namedtuple("monitorSize", ["windows_desk_handle", "width", "height", "x", "y", "is_primary"])
 
@@ -84,6 +86,7 @@ def display_windows_border_size(hwnd):
     title_bar_width = win32api.GetSystemMetrics(win32con.SM_CXFRAME) + win32api.GetSystemMetrics(win32con.SM_CXSIZE)
 
     return title_bar_width, title_bar_height
+
 
 def get_window_dpi_scale(hwnd: int) -> float:
     """
@@ -171,7 +174,7 @@ def coordinate_change_from_windows(hwnd: int, coordinate: tuple):
     :return:
     """
 
-    def get_window_rect(handle) -> list:
+    def get_window_rect(handle) -> tuple:
         """
         获取窗口在屏幕上的位置
         :param handle: 窗口的handle
@@ -182,14 +185,39 @@ def coordinate_change_from_windows(hwnd: int, coordinate: tuple):
             [right, top],  # 右上角坐标
             [right, bottom]  # 右下角坐标
         """
-        handle_rect = wintypes.RECT()
-        windll.user32.GetWindowRect(handle, pointer(handle_rect))
-        return [[handle_rect.left, handle_rect.top], [handle_rect.left, handle_rect.bottom],
-                [handle_rect.right, handle_rect.top], [handle_rect.right, handle_rect.bottom]]
+        handle = int(handle)
+        try:
+            f = ctypes.windll.dwmapi.DwmGetWindowAttribute
+        except WindowsError as e:
+            f = None
+        if f:
+            rect = ctypes.wintypes.RECT()
+            DWMWA_EXTENDED_FRAME_BOUNDS = 9
+            f(ctypes.wintypes.HWND(handle),
+              ctypes.wintypes.DWORD(DWMWA_EXTENDED_FRAME_BOUNDS),
+              ctypes.byref(rect),
+              ctypes.sizeof(rect)
+              )
+            return (rect.left, rect.top), (rect.right, rect.bottom)
 
-    width, height = display_windows_border_size(hwnd)
-    left_top, left_bottom, right_top, right_bottom = get_window_rect(hwnd)
-    return left_top[0] + coordinate[0], left_top[1] + coordinate[1] + height
+    def client_to_screen(hwnd_id: int, x, y):
+        """
+        映射为桌面坐标
+        """
+        hwnd_id = int(hwnd_id)
+        rec = win32gui.ClientToScreen(hwnd_id, (x, y))
+        return rec
+
+    # 获取中心点坐标
+    x_center = int((coordinate[0][0] + coordinate[3][0])//2)
+    y_center = int((coordinate[0][1] + coordinate[3][1])//2)
+
+    rs = client_to_screen(hwnd, x_center, y_center)
+    return rs
+
+
+
+
 
 
 if __name__ == '__main__':

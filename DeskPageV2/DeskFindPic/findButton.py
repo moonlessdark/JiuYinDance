@@ -219,8 +219,8 @@ class FindButton:
                 # 挖宝、修罗刀的按钮区域长度400
                 bigger_pic = bigger_pic[int(button_area_list[0][1]):int(button_area_list[1][1]),
                                         int(button_area_list[1][0] - 10):int(button_area_list[3][0] + 350)]
-            # cv2.imshow("dd", bigger_pic)
-            # cv2.waitKey()
+            cv2.imshow("dd", bigger_pic)
+            cv2.waitKey()
             for i in check_button_list:
                 button_num_list: list = find_pic(i[1], bigger_pic, threshold=dance_threshold, edge=edges)  # 去界面找一下按钮的坐标
                 for bu in button_num_list:
@@ -249,7 +249,7 @@ if __name__ == '__main__':
     # pic = cv2.imread(f"D:\\JiuYinScreenPic\\19_50\\{pic_path}", 1)
 
     pic = cv2.imread(
-        f"D:\\SoftWare\\Game\\SnailGames\\JiuDancing\\JiuYinScreenPic\\10_35\\10_39_05.png",
+        f"D:\\SoftWare\\Game\\SnailGames\\JiuDancing\\JiuYinScreenPic\\10_35\\10_39_08.png",
         1)  # 黑色
 
     start_time = time.time()

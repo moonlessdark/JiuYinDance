@@ -54,6 +54,7 @@ class Team:
     create_team: str = dataclasses.field(default_factory=str)
     leave_team: str = dataclasses.field(default_factory=str)
     flag_team: str = dataclasses.field(default_factory=str)
+    flag_team_status: str = dataclasses.field(default_factory=str)
 
 
 @dataclasses.dataclass
@@ -73,8 +74,9 @@ class TruckCarPic:
     """
     运镖
     """
-    task_get: str = dataclasses.field(default_factory=str)  # 接镖
-    task_confirm_get: str = dataclasses.field(default_factory=str)  # 确定接镖
+    receive_task_talk: str = dataclasses.field(default_factory=str)  # 接镖_和NPC的对话
+    receive_task: str = dataclasses.field(default_factory=str)  # 接镖
+    receive_task_confirm: str = dataclasses.field(default_factory=str)  # 确定接镖
     task_chengdu_GaiBang: str = dataclasses.field(default_factory=str)  # 选择目的地：成都丐帮
     task_chengdu_NanGongShiJia: str = dataclasses.field(default_factory=str)  # 选择目的地：南宫世家
     task_chengdu_QianDengZheng: str = dataclasses.field(default_factory=str)  # 选择目的地：千灯镇
@@ -83,10 +85,20 @@ class TruckCarPic:
     car_type_medium: str = dataclasses.field(default_factory=str)  # 镖车类型：中镖车
     car_type_big: str = dataclasses.field(default_factory=str)  # 镖车类型：大镖车
     task_flag_status: str = dataclasses.field(default_factory=str)  # 运镖状态，有此图标表示任务进行中
-    task_flags_car: list = dataclasses.field(default_factory=list)  # 镖车上的黄色小旗子，用于判断车的位置
+    task_flags_yellow_car: list = dataclasses.field(default_factory=list)  # 镖车上的黄色小旗子，用于判断车的位置
     task_star_mode: str = dataclasses.field(default_factory=str)  # 运镖方式，驾车还是赶路
     task_monster_fight: str = dataclasses.field(default_factory=str)  # 进入战斗，劫匪或者垃圾四害
     task_monster_target: list = dataclasses.field(default_factory=list)  # 劫匪，数组，有多个判断标志,头像
+
+
+@dataclasses.dataclass
+class FindTruckCarTask:
+    """
+    寻找运镖NPC
+    """
+    qin_xiu: str = dataclasses.field(default_factory=str)  # 勤修图标
+    qin_xiu_truck_car_task: str = dataclasses.field(default_factory=str)  # 日常运镖
+    qin_xiu_truck_car_npc_chengdu: str = dataclasses.field(default_factory=str)  # 成都接镖NPC
 
 
 @dataclasses.dataclass

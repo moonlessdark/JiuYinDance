@@ -4,6 +4,8 @@ import time
 import cv2
 import win32gui
 from PySide6.QtCore import Signal, QThread, QWaitCondition, QMutex
+
+from DeskPageV2.DeskFindPic.findCars import TruckCar
 from DeskPageV2.Utils.Log import Logger
 from DeskPageV2.DeskFindPic.findButton import FindButton
 from DeskPageV2.DeskTools.DmSoft.get_dm_driver import getKeyBoardMouse, getWindows
@@ -455,6 +457,66 @@ class AutoPressKeyQth(QThread):
                 SetGhostBoards().click_all_press_and_release_by_key_code(key_code_list)
             self.sin_out.emit(f"已经执行了 {count_i + 1} 次按钮")
         self.mutex.unlock()
+        self.sin_work_status.emit(False)
+        return None
+
+
+class TruckCarTaskQth(QThread):
+    """
+    键盘连点器
+    """
+    sin_out = Signal(str)
+    status_bar = Signal(str)
+    sin_work_status = Signal(bool)
+
+    def __init__(self):
+        super().__init__()
+
+        self.truck_count = None
+        self.working = True
+        self.cond = QWaitCondition()
+
+        self.windows_opt = GetHandleList()
+
+        self.mutex = QMutex()
+        self.windows_handle = 0
+
+        self.truck = TruckCar()
+
+    def __del__(self):
+        # 线程状态改为和线程终止
+        # self.wait()
+        self.working = False
+
+    def stop_execute_init(self):
+        """
+        线程暂停,所有参数重置为null
+        :return:
+        """
+        self.working = False
+        self.windows_handle = 0
+
+    def get_param(self, windows_handle: int, truck_count: int):
+        """
+        线程用到的参数初始化一下
+        :return:
+        """
+        self.working = True
+        self.windows_handle = windows_handle
+        self.truck_count = truck_count
+
+    def run(self):
+        self.mutex.lock()  # 先加锁
+
+        for count_i in range(self.truck_count):
+            if self.working is False:
+                self.mutex.unlock()  # 解锁
+                self.sin_work_status.emit(False)
+                return None
+            self.truck.create_team(self.windows_handle)
+            time.sleep(5)
+            self.truck.find_truck_task_npc(self.windows_handle)
+        self.mutex.unlock()  # 解锁
         self.sin_work_status.emit(False)
         return None
 

@@ -1,8 +1,33 @@
+TruckCarFindTask:
+  qin_xiu: ./DeskPageV2/Resources/TruckCarFindTask/勤修.png
+  qin_xiu_truck_car_npc_chengdu: ./DeskPageV2/Resources/TruckCarFindTask/成都接镖npc.png
+  qin_xiu_truck_car_task: ./DeskPageV2/Resources/TruckCarFindTask/日常运镖.png
+TruckCarPic:
+  car_type_big: ./DeskPageV2/Resources/TruckCarPic/大镖车.png
+  car_type_little: ./DeskPageV2/Resources/TruckCarPic/小镖车.png
+  car_type_medium: ./DeskPageV2/Resources/TruckCarPic/中镖车.png
+  receive_task: ./DeskPageV2/Resources/TruckCarPic/接镖.png
+  receive_task_confirm: ./DeskPageV2/Resources/TruckCarPic/确定接镖.png
+  receive_task_talk: ./DeskPageV2/Resources/TruckCarPic/接镖_对话.png
+  task_chengdu_GaiBang: ./DeskPageV2/Resources/TruckCarPic/丐帮驻地.png
+  task_chengdu_NanGongShiJia: ./DeskPageV2/Resources/TruckCarPic/南宫世家.png
+  task_chengdu_QianDengZheng: ./DeskPageV2/Resources/TruckCarPic/千灯镇.png
+  task_chengdu_ShenJiaBao: ./DeskPageV2/Resources/TruckCarPic/沈家堡.png
+  task_flag_status: ./DeskPageV2/Resources/TruckCarPic/CarFlag.png
+  task_flags_yellow_car:
+  - ./DeskPageV2/Resources/TruckCarPic/镖旗1.png
+  - ./DeskPageV2/Resources/TruckCarPic/镖旗.png
+  task_monster_fight: ./DeskPageV2/Resources/TruckCarPic/进入战斗.png
+  task_monster_target:
+  - ./DeskPageV2/Resources/TruckCarPic/镖车劫匪.png
+  - ./DeskPageV2/Resources/TruckCarPic/镖车劫匪2.png
+  - ./DeskPageV2/Resources/TruckCarPic/镖车劫匪3.png
+  task_star_mode: ./DeskPageV2/Resources/TruckCarPic/运镖方式.png
 config:
   dance_threshold_area: 0.3
   dance_threshold_tl: 0.9
   dance_threshold_whz: 0.8
-  debug: true
+  debug: false
 dancePic:
   tlDancePic:
     button_down: /Resources/DancePic/down.png
@@ -27,6 +52,7 @@ keyBoardMouseDll:
   ghostDll:
     ghost_dll: /Resources/KeyBoardDriver/gbild64.dll
 team:
-  create_team: /Resources/Team/创建队伍.png
-  flag_team: /Resources/Team/team_mark.png
-  leave_team: /Resources/Team/离开队伍.png
+  create_team: ./DeskPageV2/Resources/Team/创建队伍.png
+  flag_team: ./DeskPageV2/Resources/Team/team_mark.png
+  flag_team_status: ./DeskPageV2/Resources/Team/队伍标志.png
+  leave_team: ./DeskPageV2/Resources/Team/离开队伍.png

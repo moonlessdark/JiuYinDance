@@ -6,7 +6,9 @@ from PySide6 import QtWidgets
 from PySide6.QtGui import QTextCursor
 from PySide6.QtWidgets import QLabel, QMessageBox, QDialog
 
-from DeskPageV2.DeskGUIQth.execut_th import DanceThByFindPic, ScreenGameQth, QProgressBarQth, AutoPressKeyQth
+from DeskPageV2.DeskFindPic.findCars import TruckCar
+from DeskPageV2.DeskGUIQth.execut_th import DanceThByFindPic, ScreenGameQth, QProgressBarQth, AutoPressKeyQth, \
+    TruckCarTaskQth
 from DeskPageV2.DeskPageGUI.MainPage import MainGui
 from DeskPageV2.DeskTools.DmSoft.get_dm_driver import getDM, getWindows, getKeyBoardMouse
 from DeskPageV2.DeskTools.GhostSoft.get_driver_v3 import GetGhostDriver, SetGhostBoards
@@ -30,6 +32,7 @@ class Dance(MainGui):
         self.th_screen = ScreenGameQth()
         self.th_progress_bar = QProgressBarQth()
         self.th_key_press_auto = AutoPressKeyQth()
+        self.th_truck_task = TruckCarTaskQth()
 
         # # 键盘驱动对象
         self.dm_window = getWindows()
@@ -65,6 +68,9 @@ class Dance(MainGui):
 
         self.th_key_press_auto.sin_out.connect(self.print_logs)
         self.th_key_press_auto.sin_work_status.connect(self._th_execute_stop)
+
+        self.th_truck_task.sin_out.connect(self.print_logs)
+        self.th_truck_task.sin_work_status.connect(self._th_execute_stop)
 
         self.text_browser_print_log.textChanged.connect(lambda: self.text_browser_print_log.moveCursor(QTextCursor.End))
 
@@ -377,6 +383,19 @@ class Dance(MainGui):
                         self.print_logs("键盘连按功能暂时只支持1个窗口运行")
                 else:
                     self.print_logs("请选择需要执行的键盘按钮")
+            elif self.radio_button_truck_car_task.isChecked():
+                """
+                如果是押镖
+                """
+                if len(windows_list) == 1:
+                    TruckCar().create_team(windows_list[0])
+                    TruckCar().find_truck_task_npc(windows_list[0])
+                    # self.th_truck_task.get_param(windows_handle=windows_list[0], truck_count=5)
+                    # self.th_truck_task.start()
+                    # self.changed_execute_button_text_and_status(True)
+                    # # 开始执行跑马灯效果
+                    # self.th_progress_bar.start_init()
+                    # self.th_progress_bar.start()
 
             else:
                 self.print_logs("还未选择需要执行的功能")
