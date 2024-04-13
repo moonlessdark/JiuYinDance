@@ -228,7 +228,7 @@ class FindButton:
         button_dict_result: list = self.sort_button(button_dict, bigger_pic, debug=debug, single=single,
                                                     dance_type=find_type)
         if debug:
-            if len(button_dict_result) > 0:
+            if len(button_dict_result) > 0 and find_type == "团练":
                 if find_param_type == "night":
                     print_log(f"启用识别模式二(阈值:{button_area_list[4]})")
                     self.log.write_log(
@@ -237,7 +237,7 @@ class FindButton:
                 else:
                     print_log(f"启用识别模式一(阈值:{button_area_list[4]})")
                     self.log.write_log(
-                        f"启用识别模式一，当前按钮区域的最高阈值为 {button_area_list[4]}。按钮的识别阈值设置为 {dance_threshold}。\n"
+                        f"启用识别模式一，当前按钮区域的最高阈值为 {button_area_list[-1]}。按钮的识别阈值设置为 {dance_threshold}。\n"
                         f"其中模式一的最高阈值为 {day[4]}，模式二的最高阈值为 {night[4]}。")
         return button_dict_result
 
@@ -249,7 +249,7 @@ if __name__ == '__main__':
     # pic = cv2.imread(f"D:\\JiuYinScreenPic\\19_50\\{pic_path}", 1)
 
     pic = cv2.imread(
-        f"D:\\SoftWare\\Developed\\Projected\\JiuYinDance\\dist\\JiuDancing\\JiuYinScreenPic\\23_19\\23_19_22.png",
+        f"D:\\SoftWare\\Game\\SnailGames\\JiuDancing\\JiuYinScreenPic\\10_35\\10_39_05.png",
         1)  # 黑色
 
     start_time = time.time()
@@ -259,7 +259,7 @@ if __name__ == '__main__':
     print("执行时间为: " + str(execution_time) + "秒")
 
     start_time = time.time()
-    b = FindButton().find_pic_by_bigger(bigger_pic_cap=pic, find_type="团练", debug=False)
+    b = FindButton().find_pic_by_bigger(bigger_pic_cap=pic, find_type="团练1", debug=False)
     print(f"查询到的按钮：{b}")
     end_time = time.time()
     execution_time = end_time - start_time
