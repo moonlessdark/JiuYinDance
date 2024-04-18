@@ -62,17 +62,19 @@ def display_windows_detection(hwnd) -> tuple:
     :return:
     """
     handle = int(hwnd)
-    r = wintypes.RECT()
-
-    dw_mwa_extended_frame_bounds = 9
-    f = windll.dwmapi.DwmGetWindowAttribute
-    f(wintypes.HWND(handle),
-      wintypes.DWORD(dw_mwa_extended_frame_bounds),
-      byref(r),
-      sizeof(r)
-      )
-    width, height = r.right - r.left, r.bottom - r.top
-    return width, height
+    try:
+        f = ctypes.windll.dwmapi.DwmGetWindowAttribute
+    except WindowsError as e:
+        f = None
+    if f:
+        rect = ctypes.wintypes.RECT()
+        DWMWA_EXTENDED_FRAME_BOUNDS = 9
+        f(ctypes.wintypes.HWND(handle),
+          ctypes.wintypes.DWORD(DWMWA_EXTENDED_FRAME_BOUNDS),
+          ctypes.byref(rect),
+          ctypes.sizeof(rect)
+          )
+        return (rect.left, rect.top), (rect.right, rect.bottom)
 
 
 def display_windows_border_size(hwnd):
@@ -173,32 +175,6 @@ def coordinate_change_from_windows(hwnd: int, coordinate: tuple):
     :param coordinate: 在游戏窗口中获取的坐标（x, y）
     :return:
     """
-
-    def get_window_rect(handle) -> tuple:
-        """
-        获取窗口在屏幕上的位置
-        :param handle: 窗口的handle
-        :return:
-            返回的内容为
-            [left, top],  # 左上角坐标
-            [left, bottom],  # 左下角坐标
-            [right, top],  # 右上角坐标
-            [right, bottom]  # 右下角坐标
-        """
-        handle = int(handle)
-        try:
-            f = ctypes.windll.dwmapi.DwmGetWindowAttribute
-        except WindowsError as e:
-            f = None
-        if f:
-            rect = ctypes.wintypes.RECT()
-            DWMWA_EXTENDED_FRAME_BOUNDS = 9
-            f(ctypes.wintypes.HWND(handle),
-              ctypes.wintypes.DWORD(DWMWA_EXTENDED_FRAME_BOUNDS),
-              ctypes.byref(rect),
-              ctypes.sizeof(rect)
-              )
-            return (rect.left, rect.top), (rect.right, rect.bottom)
 
     def client_to_screen(hwnd_id: int, x, y):
         """

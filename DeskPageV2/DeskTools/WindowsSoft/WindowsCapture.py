@@ -199,7 +199,7 @@ class WindowsCapture:
         find_all_list = self.__find_area(smaller_pic=source_img, bigger_img=cap_img, threshold=threshold, edge=edge)
         return find_all_list
 
-    def find_windows_coordinate_rect(self, handle: int, img, threshold: float = 0.5, edge: bool = False):
+    def find_windows_coordinate_rect(self, handle: int, img, threshold: float = 0.8, edge: bool = False):
         """
         在windows窗口中寻找目标的坐标，需要映射坐标
         :param handle: 句柄
