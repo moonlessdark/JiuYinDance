@@ -1,27 +1,48 @@
 TruckCarFindTask:
   qin_xiu: ./DeskPageV2/Resources/TruckCarFindTask/勤修.png
-  qin_xiu_truck_car_npc_chengdu: ./DeskPageV2/Resources/TruckCarFindTask/成都接镖npc.png
+  qin_xiu_truck_car_npc_chengdu: ./DeskPageV2/Resources/TruckCarFindTask/chengdu_truck_car_npc.png
   qin_xiu_truck_car_task: ./DeskPageV2/Resources/TruckCarFindTask/日常运镖.png
+  car_type_big: ./DeskPageV2/Resources/TruckCarFindTask/CarType/大车.png
+  car_type_little: ./DeskPageV2/Resources/TruckCarFindTask/CarType/小车.png
+  car_type_medium: ./DeskPageV2/Resources/TruckCarFindTask/CarType/中车.png
+  receive_task: ./DeskPageV2/Resources/TruckCarFindTask/receive_task.png
+  receive_task_confirm: ./DeskPageV2/Resources/TruckCarFindTask/receive_task_confirm.png
+  receive_task_talk: ./DeskPageV2/Resources/TruckCarFindTask/receive_task_talk.png
+  Area:
+    chengdu:
+      address: ./DeskPageV2/Resources/TruckCarFindTask/NPC/成都.png
+      npc: ./DeskPageV2/Resources/TruckCarFindTask/NPC/成都npc.png
+      GaiBang: ./DeskPageV2/Resources/TruckCarFindTask/Area/ChengDu/丐帮驻地.png
+      NanGong: ./DeskPageV2/Resources/TruckCarPic/Area/ChengDu/南宫世家.png
+      QianDengZheng: ./DeskPageV2/Resources/TruckCarFindTask/Area/ChengDu/千灯镇.png
+      ShenJiaBao: ./DeskPageV2/Resources/TruckCarFindTask/Area/ChengDu/沈家堡.png
+    JinLing:
+      address: ./DeskPageV2/Resources/TruckCarFindTask/NPC/金陵.png
+      npc: ./DeskPageV2/Resources/TruckCarFindTask/NPC/金陵npc.png
+    LuoYang:
+      address: ./DeskPageV2/Resources/TruckCarFindTask/NPC/洛阳.png
+      npc: ./DeskPageV2/Resources/TruckCarFindTask/NPC/洛阳npc.png
+    SuZhou:
+      address: ./DeskPageV2/Resources/TruckCarFindTask/NPC/苏州.png
+      npc: ./DeskPageV2/Resources/TruckCarFindTask/NPC/苏州npc.png
+    YanJin:
+      address: ./DeskPageV2/Resources/TruckCarFindTask/NPC/燕京.png
+      npc: ./DeskPageV2/Resources/TruckCarFindTask/NPC/燕京npc.png
+      DongFang: ./DeskPageV2/Resources/TruckCarFindTask/Area/YanJin/东方世家.png
+      JiMingYi: ./DeskPageV2/Resources/TruckCarFindTask/Area/YanJin/鸡鸣驿.png
+      JunMaChang: ./DeskPageV2/Resources/TruckCarFindTask/Area/YanJin/军马场.png
+      YiRenZhuang: ./DeskPageV2/Resources/TruckCarFindTask/Area/YanJin/异人庄.png
 TruckCarPic:
-  car_type_big: ./DeskPageV2/Resources/TruckCarPic/大镖车.png
-  car_type_little: ./DeskPageV2/Resources/TruckCarPic/小镖车.png
-  car_type_medium: ./DeskPageV2/Resources/TruckCarPic/中镖车.png
-  receive_task: ./DeskPageV2/Resources/TruckCarPic/接镖.png
-  receive_task_confirm: ./DeskPageV2/Resources/TruckCarPic/确定接镖.png
-  receive_task_talk: ./DeskPageV2/Resources/TruckCarPic/接镖_对话.png
-  task_chengdu_GaiBang: ./DeskPageV2/Resources/TruckCarPic/丐帮驻地.png
-  task_chengdu_NanGongShiJia: ./DeskPageV2/Resources/TruckCarPic/南宫世家.png
-  task_chengdu_QianDengZheng: ./DeskPageV2/Resources/TruckCarPic/千灯镇.png
-  task_chengdu_ShenJiaBao: ./DeskPageV2/Resources/TruckCarPic/沈家堡.png
+  car_flag: ./DeskPageV2/Resources/TruckCarPic/CarsFlag.png
   task_flag_status: ./DeskPageV2/Resources/TruckCarPic/CarFlag.png
   task_flags_yellow_car:
-  - ./DeskPageV2/Resources/TruckCarPic/镖旗1.png
-  - ./DeskPageV2/Resources/TruckCarPic/镖旗.png
-  task_monster_fight: ./DeskPageV2/Resources/TruckCarPic/进入战斗.png
+  - ./DeskPageV2/Resources/TruckCarPic/car_yellow_flag1.png
+  - ./DeskPageV2/Resources/TruckCarPic/car_yellow_flag.png
+  task_monster_fight: ./DeskPageV2/Resources/TruckCarPic/fight_status.png
   task_monster_target:
-  - ./DeskPageV2/Resources/TruckCarPic/镖车劫匪.png
-  - ./DeskPageV2/Resources/TruckCarPic/镖车劫匪2.png
-  - ./DeskPageV2/Resources/TruckCarPic/镖车劫匪3.png
+  - ./DeskPageV2/Resources/TruckCarPic/car_monster.png
+  - ./DeskPageV2/Resources/TruckCarPic/car_monster2.png
+  - ./DeskPageV2/Resources/TruckCarPic/car_monster3.png
   task_star_mode: ./DeskPageV2/Resources/TruckCarPic/运镖方式.png
 config:
   dance_threshold_area: 0.3

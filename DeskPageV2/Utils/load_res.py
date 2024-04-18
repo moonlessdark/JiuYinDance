@@ -2,7 +2,7 @@
 import yaml
 
 from DeskPageV2.Utils.dataClass import DancePic, WhzDancePic, DmDll, GhostDll, Config, Team, TruckCarPic, \
-    FindTruckCarTask
+    FindTruckCarTaskNPC, TruckCarReceiveTask
 from DeskPageV2.Utils.project_path import PathUtil
 
 
@@ -154,34 +154,52 @@ class GetConfig:
 
     def get_track_car(self):
         """
-        获取镖车
+        获取镖车的目的地
         """
-        truck_car = TruckCarPic()
-        truck_car.receive_task_talk = self.__datas["TruckCarPic"]["receive_task_talk"]
-        truck_car.receive_task = self.__datas["TruckCarPic"]["receive_task"]
-        truck_car.receive_task_confirm = self.__datas["TruckCarPic"]["receive_task_confirm"]
-        truck_car.task_chengdu_GaiBang = self.__datas["TruckCarPic"]["task_chengdu_GaiBang"]
-        truck_car.task_chengdu_NanGongShiJia = self.__datas["TruckCarPic"]["task_chengdu_NanGongShiJia"]
-        truck_car.task_chengdu_QianDengZheng = self.__datas["TruckCarPic"]["task_chengdu_QianDengZheng"]
-        truck_car.task_chengdu_ShenJiaBao = self.__datas["TruckCarPic"]["task_chengdu_ShenJiaBao"]
-        truck_car.car_type_little = self.__datas["TruckCarPic"]["car_type_little"]
-        truck_car.car_type_medium = self.__datas["TruckCarPic"]["car_type_medium"]
-        truck_car.car_type_big = self.__datas["TruckCarPic"]["car_type_big"]
-        truck_car.task_flag_status = self.__datas["TruckCarPic"]["task_flag_status"]
-        truck_car.task_flags_yellow_car = self.__datas["TruckCarPic"]["task_flags_yellow_car"]
-        truck_car.task_star_mode = self.__datas["TruckCarPic"]["task_star_mode"]
-        truck_car.task_monster_fight = self.__datas["TruckCarPic"]["task_star_mode"]
-        truck_car.task_monster_target = self.__datas["TruckCarPic"]["task_monster_target"]
-        return truck_car
+        truck_car = TruckCarReceiveTask()
+        # 寻找NPC并对话
+        truck_car.receive_task_talk = self.__datas["TruckCarFindTask"]["receive_task_talk"]
+        # 选择目的地和镖车类型
+        truck_car.receive_task = self.__datas["TruckCarFindTask"]["receive_task"]
+        truck_car.receive_task_confirm = self.__datas["TruckCarFindTask"]["receive_task_confirm"]
+        # 成都
+        truck_car.task_chengdu_GaiBang = self.__datas["TruckCarFindTask"]["Area"]["chengdu"]["GaiBang"]
+        truck_car.task_chengdu_NanGongShiJia = self.__datas["TruckCarFindTask"]["Area"]["chengdu"]["NanGong"]
+        truck_car.task_chengdu_QianDengZheng = self.__datas["TruckCarFindTask"]["Area"]["chengdu"]["QianDengZheng"]
+        truck_car.task_chengdu_ShenJiaBao = self.__datas["TruckCarFindTask"]["Area"]["chengdu"]["ShenJiaBao"]
+        # 燕京
+        truck_car.task_yanjing_DongFangShiJia = self.__datas["TruckCarFindTask"]["Area"]["YanJin"]["DongFang"]
+        truck_car.task_yanjing_JiMingYi = self.__datas["TruckCarFindTask"]["Area"]["YanJin"]["JiMingYi"]
+        truck_car.task_yanjing_JunMaChang = self.__datas["TruckCarFindTask"]["Area"]["YanJin"]["JunMaChang"]
+        truck_car.task_yanjing_YiRenZhuang = self.__datas["TruckCarFindTask"]["Area"]["YanJin"]["YiRenZhuang"]
+        # 车型
+        truck_car.car_type_little = self.__datas["TruckCarFindTask"]["car_type_little"]
+        truck_car.car_type_medium = self.__datas["TruckCarFindTask"]["car_type_medium"]
+        truck_car.car_type_big = self.__datas["TruckCarFindTask"]["car_type_big"]
+
+    def truck_task(self):
+        truck = TruckCarPic()
+        truck.car_flag = self.__datas["TruckCarPic"]["car_flag"]
+        truck.task_flag_status = self.__datas["TruckCarPic"]["task_flag_status"]
+        truck.task_flags_yellow_car = self.__datas["TruckCarPic"]["task_flags_yellow_car"]
+        truck.task_star_mode = self.__datas["TruckCarPic"]["task_star_mode"]
+        truck.task_monster_fight = self.__datas["TruckCarPic"]["task_star_mode"]
+        truck.task_monster_target = self.__datas["TruckCarPic"]["task_monster_target"]
+        return truck
 
     def find_track_car_task(self):
         """
         寻找地图上的接镖NPC
         """
-        truck_car_task = FindTruckCarTask()
+        truck_car_task = FindTruckCarTaskNPC()
         truck_car_task.qin_xiu = self.__datas["TruckCarFindTask"]["qin_xiu"]
         truck_car_task.qin_xiu_truck_car_task = self.__datas["TruckCarFindTask"]["qin_xiu_truck_car_task"]
-        truck_car_task.qin_xiu_truck_car_npc_chengdu = self.__datas["TruckCarFindTask"]["qin_xiu_truck_car_npc_chengdu"]
+        # 成都
+        truck_car_task.task_point_chengdu = self.__datas["TruckCarFindTask"]["Area"]["chengdu"]["address"]
+        truck_car_task.task_point_chengdu_npc = self.__datas["TruckCarFindTask"]["Area"]["chengdu"]["npc"]
+        # 燕京
+        truck_car_task.task_point_yanjing = self.__datas["TruckCarFindTask"]["Area"]["YanJin"]["address"]
+        truck_car_task.task_point_yanjing_npc = self.__datas["TruckCarFindTask"]["Area"]["YanJin"]["npc"]
         return truck_car_task
 
 

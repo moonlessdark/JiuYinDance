@@ -66,7 +66,32 @@ class TaskDay:
     truck_car: str = dataclasses.field(default_factory=str)  # 日常运镖
     truck_car_black: str = dataclasses.field(default_factory=str)  # 日常运镖，已经满5次，颜色变灰色
     truck_task_man: list = dataclasses.field(default_factory=list)  # 任务接取人，数组，多个人
-    truck_task_man_talk_get_task: str = dataclasses.field(default_factory=str)  # 和NPC对话接镖
+
+
+@dataclasses.dataclass
+class TruckCarReceiveTask:
+    """
+    接镖
+    """
+    receive_task_talk: str = dataclasses.field(default_factory=str)  # 接镖_和NPC的对话
+    receive_task: str = dataclasses.field(default_factory=str)  # 接镖
+    receive_task_confirm: str = dataclasses.field(default_factory=str)  # 确定接镖
+
+    car_type_little: str = dataclasses.field(default_factory=str)  # 镖车类型：小镖车
+    car_type_medium: str = dataclasses.field(default_factory=str)  # 镖车类型：中镖车
+    car_type_big: str = dataclasses.field(default_factory=str)  # 镖车类型：大镖车
+
+    # 成都
+    task_chengdu_GaiBang: str = dataclasses.field(default_factory=str)  # 选择目的地：成都丐帮
+    task_chengdu_NanGongShiJia: str = dataclasses.field(default_factory=str)  # 选择目的地：南宫世家
+    task_chengdu_QianDengZheng: str = dataclasses.field(default_factory=str)  # 选择目的地：千灯镇
+    task_chengdu_ShenJiaBao: str = dataclasses.field(default_factory=str)  # 选择目的地：沈家堡
+
+    # 燕京
+    task_yanjing_DongFangShiJia: str = dataclasses.field(default_factory=str)  # 选择目的地：东方世家
+    task_yanjing_JiMingYi: str = dataclasses.field(default_factory=str)  # 选择目的地：鸡鸣驿
+    task_yanjing_JunMaChang: str = dataclasses.field(default_factory=str)  # 选择目的地：军马场
+    task_yanjing_YiRenZhuang: str = dataclasses.field(default_factory=str)  # 选择目的地：异人庄
 
 
 @dataclasses.dataclass
@@ -74,16 +99,7 @@ class TruckCarPic:
     """
     运镖
     """
-    receive_task_talk: str = dataclasses.field(default_factory=str)  # 接镖_和NPC的对话
-    receive_task: str = dataclasses.field(default_factory=str)  # 接镖
-    receive_task_confirm: str = dataclasses.field(default_factory=str)  # 确定接镖
-    task_chengdu_GaiBang: str = dataclasses.field(default_factory=str)  # 选择目的地：成都丐帮
-    task_chengdu_NanGongShiJia: str = dataclasses.field(default_factory=str)  # 选择目的地：南宫世家
-    task_chengdu_QianDengZheng: str = dataclasses.field(default_factory=str)  # 选择目的地：千灯镇
-    task_chengdu_ShenJiaBao: str = dataclasses.field(default_factory=str)  # 选择目的地：沈家堡
-    car_type_little: str = dataclasses.field(default_factory=str)  # 镖车类型：小镖车
-    car_type_medium: str = dataclasses.field(default_factory=str)  # 镖车类型：中镖车
-    car_type_big: str = dataclasses.field(default_factory=str)  # 镖车类型：大镖车
+    car_flag: str = dataclasses.field(default_factory=str)  # 寻找镖车
     task_flag_status: str = dataclasses.field(default_factory=str)  # 运镖状态，有此图标表示任务进行中
     task_flags_yellow_car: list = dataclasses.field(default_factory=list)  # 镖车上的黄色小旗子，用于判断车的位置
     task_star_mode: str = dataclasses.field(default_factory=str)  # 运镖方式，驾车还是赶路
@@ -92,13 +108,28 @@ class TruckCarPic:
 
 
 @dataclasses.dataclass
-class FindTruckCarTask:
+class FindTruckCarTaskNPC:
     """
     寻找运镖NPC
     """
     qin_xiu: str = dataclasses.field(default_factory=str)  # 勤修图标
     qin_xiu_truck_car_task: str = dataclasses.field(default_factory=str)  # 日常运镖
-    qin_xiu_truck_car_npc_chengdu: str = dataclasses.field(default_factory=str)  # 成都接镖NPC
+
+    # 成都NPC
+    task_point_chengdu: str = dataclasses.field(default_factory=str)
+    task_point_chengdu_npc: str = dataclasses.field(default_factory=str)
+    # 金陵NPC
+    task_point_jinling: str = dataclasses.field(default_factory=str)
+    task_point_jingling_npc: str = dataclasses.field(default_factory=str)
+    # 洛阳NPC
+    task_point_luoyang: str = dataclasses.field(default_factory=str)
+    task_point_luoyang_npc: str = dataclasses.field(default_factory=str)
+    # 苏州NPC
+    task_point_suzhou: str = dataclasses.field(default_factory=str)
+    task_point_suzhou_npc: str = dataclasses.field(default_factory=str)
+    # 燕京NPC
+    task_point_yanjing: str = dataclasses.field(default_factory=str)
+    task_point_yanjing_npc: str = dataclasses.field(default_factory=str)
 
 
 @dataclasses.dataclass
