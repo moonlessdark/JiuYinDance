@@ -20,7 +20,7 @@ def find_ocr(image, temp_text: str) -> list or None:
     for boxed_result in res:
         if temp_text in boxed_result.ocr_text:
             rect = boxed_result.box
-            x_center = (rect[0][0] + res[2][0])/2
-            y_center = (rect[0][1] + res[2][1])/2
+            x_center = (rect[0][0] + rect[2][0])/2
+            y_center = (rect[0][1] + rect[2][1])/2
             return [int(x_center), int(y_center)]
     return None
