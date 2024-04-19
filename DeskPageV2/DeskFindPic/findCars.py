@@ -84,13 +84,16 @@ class TruckCar:
         查询小车在哪
         """
 
-        def reply_perspective_target(pic_width: int, target_pos: tuple):
+        def reply_perspective_target(pic_width, pic_height, target_pos: tuple):
             """
             坐标是否在屏幕中间的位置
             """
             center_x: int = int(pic_width / 2)
-            if abs(center_x - target_pos[0]) < 500:
-                # 如果坐标和游戏窗口中间的误差在40个像素内，就算通过
+            center_y: int = int(pic_height / 2)
+            if target_pos[1] < center_y:
+                """
+                如果镖车的文字处于窗口的上半部分和在中间的500的像素附近
+                """
                 return True
             return False
         while 1:
@@ -103,7 +106,7 @@ class TruckCar:
                 """
                 找到车了，把视角转到这个车
                 """
-                if reply_perspective_target(im.pic_width, rec):
+                if reply_perspective_target(im.pic_width, im.pic_height, rec):
                     return coordinate_change_from_windows(hwnd, rec)
             continue
         return None
@@ -214,7 +217,6 @@ class TruckCar:
                 SetGhostMouse().click_mouse_left_button()
                 SetGhostBoards().click_press_and_release_by_code(27)
                 break
-
         return True
 
     def receive_task(self, hwnd):
@@ -337,7 +339,6 @@ class TruckCar:
 
             car_type = self.windows.find_windows_coordinate_rect(handle=hwnd, img=find_task.task_flags_yellow_car)
             if car_type is not None:
-                print(f" 黄旗 {find_task.task_flags_yellow_car}")
                 return True
             return False
         while 1:
@@ -371,7 +372,7 @@ class TruckCar:
                             time.sleep(1)
                             SetGhostMouse().click_mouse_left_button()  # 尝试每隔50个像素就点击一次，看看能不能出现车辆被选中的效果
                             time.sleep(2)
-                            if check_driver_type_select() is not None:
+                            if check_driver_type_select() is True:
                                 """
                                 如果选择了车辆后立即出现了选择 驾车方式 的图标，那么为了避免点击右键失效，先关闭此窗口
                                 """
