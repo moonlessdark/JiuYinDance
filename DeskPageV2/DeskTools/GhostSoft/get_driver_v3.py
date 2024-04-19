@@ -289,11 +289,9 @@ class SetGhostMouse(SetGhostDriver):
                 -1：表示获取失败，位置未知
 
         """
-        position = collections.namedtuple('position', ['x', 'y'])
         result_int_x: int = self.ghost_driver.getmousex()
         result_int_y: int = self.ghost_driver.getmousey()
-        position(result_int_x, result_int_y)
-        return position
+        return result_int_x, result_int_y
 
     def set_mouse_position(self, x: int, y: int):
         """

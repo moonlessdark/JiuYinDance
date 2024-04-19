@@ -1,3 +1,4 @@
+
 import ctypes
 import time
 
@@ -9,6 +10,7 @@ from DeskPageV2.DeskTools.GhostSoft.get_driver_v3 import SetGhostBoards, SetGhos
 from DeskPageV2.DeskTools.WindowsSoft.MonitorDisplay import coordinate_change_from_windows, display_windows_detection
 from DeskPageV2.DeskTools.WindowsSoft.WindowsCapture import WindowsCapture
 from DeskPageV2.DeskTools.WindowsSoft.WindowsHandle import WindowsHandle
+from DeskPageV2.DeskTools.WindowsSoft.findOcr import FindPicOCR
 from DeskPageV2.DeskTools.WindowsSoft.get_windows import find_pic, PicCapture, find_area
 from DeskPageV2.Utils.dataClass import FindTruckCarTaskNPC, Team, TruckCarPic, TruckCarReceiveTask
 from DeskPageV2.Utils.load_res import GetConfig
@@ -23,6 +25,7 @@ class TruckCar:
         self.__receive_task_road = None  # 运镖路上...
 
         self.windows = WindowsCapture()
+        self.ocr = FindPicOCR()
 
     @staticmethod
     def __load_pic(pic_dir: str):
@@ -63,7 +66,8 @@ class TruckCar:
             self.__receive_task_road = self.__config.truck_task()
         return self.__receive_task_road
 
-    def reply_perspective(self, hwnd):
+    @staticmethod
+    def reply_perspective(hwnd):
         """
         恢复角色视角
         """
@@ -71,37 +75,36 @@ class TruckCar:
         SetGhostBoards().click_press_by_code(38)
         time.sleep(3)
         SetGhostBoards().release_by_code(38)
-        for i in range(5):
+        for i in range(10):
             SetGhostBoards().click_press_and_release_by_code(40)
         SetGhostBoards().click_press_and_release_by_key_name("w")
-
-    @staticmethod
-    def reply_perspective_target(hwnd, target_pos: tuple):
-        """
-        恢复角色视角
-        """
-        left_top, right_bottom = display_windows_detection(hwnd)
-        if int((right_bottom[1] - left_top[1])/2) - target_pos[0][1] < 20:
-            return True
-        return False
 
     def __find_car_flag(self, hwnd):
         """
         查询小车在哪
         """
-        receive_task: TruckCarPic = self.__get_pic_truck_car()
-        car_flag = receive_task.car_flag
-        self.reply_perspective(hwnd)
+
+        def reply_perspective_target(pic_width: int, target_pos: tuple):
+            """
+            坐标是否在屏幕中间的位置
+            """
+            center_x: int = int(pic_width / 2)
+            if abs(center_x - target_pos[0]) < 500:
+                # 如果坐标和游戏窗口中间的误差在40个像素内，就算通过
+                return True
+            return False
         while 1:
             SetGhostBoards().click_press_and_release_by_code(37)  # 视角左转一下
             time.sleep(1)
-            rec = self.windows.find_windows_coordinate_rect(handle=hwnd, img=car_flag)
+            im = self.windows.capture(hwnd)
+            rec = self.ocr.find_ocr(im.pic_content, "的镖车")
+
             if rec is not None:
                 """
                 找到车了，把视角转到这个车
                 """
-                if self.reply_perspective_target(hwnd, rec):
-                    break
+                if reply_perspective_target(im.pic_width, rec):
+                    return coordinate_change_from_windows(hwnd, rec)
             continue
         return None
 
@@ -113,6 +116,7 @@ class TruckCar:
         flag_status = find_team.flag_team_status
         while 1:
             rec = self.windows.find_windows_coordinate_rect(hwnd, img=self.__load_pic(flag_status))
+            print("查询队伍ing")
             if rec is None:
                 """
                 说明没有队伍，需要创建一下
@@ -138,6 +142,7 @@ class TruckCar:
         WindowsHandle().activate_windows(hwnd)
         find_npc: FindTruckCarTaskNPC = self.__get_pic_find_task_npc()
         while 1:
+            print("查询勤修图标")
             time.sleep(1)
             qin_xiu_rec = self.windows.find_windows_coordinate_rect(handle=hwnd, img=find_npc.qin_xiu)
             if qin_xiu_rec is None:
@@ -146,7 +151,22 @@ class TruckCar:
                 """
                 找到了勤修图标
                 """
+                print(f"查询勤修图标 {qin_xiu_rec[0]} x {qin_xiu_rec[1]}")
                 SetGhostMouse().move_mouse_to(qin_xiu_rec[0], qin_xiu_rec[1])
+                time.sleep(1)
+                SetGhostMouse().click_mouse_left_button()
+                break
+        while 1:
+            time.sleep(1)
+            qin_xiu_activity_list = self.windows.find_windows_coordinate_rect(handle=hwnd,
+                                                                           img=find_npc.qin_xiu_activity_list)
+            if qin_xiu_activity_list is None:
+                continue
+            else:
+                """
+                找到活动列表
+                """
+                SetGhostMouse().move_mouse_to(qin_xiu_activity_list[0], qin_xiu_activity_list[1])
                 time.sleep(1)
                 SetGhostMouse().click_mouse_left_button()
                 break
@@ -271,20 +291,6 @@ class TruckCar:
                 time.sleep(1)
                 SetGhostMouse().click_mouse_left_button()
                 break
-        while 1:
-            time.sleep(1)
-            task_star_mode = self.windows.find_windows_coordinate_rect(handle=hwnd,
-                                                                       img=find_task.task_star_mode)
-            if task_star_mode is None:
-                continue
-            else:
-                """
-                确认接镖
-                """
-                SetGhostMouse().move_mouse_to(task_star_mode[0], task_star_mode[1])
-                time.sleep(1)
-                SetGhostMouse().click_mouse_left_button()
-                break
         return True
 
     def driver_car(self, hwnd):
@@ -311,24 +317,92 @@ class TruckCar:
                 return False
             else:
                 return True
-        while 1:
 
+        def check_driver_type():
+            """
+            检查 驾车方式 是否存在
+            """
+            __img_car = self.windows.capture(hwnd)
+            cos = self.ocr.find_ocr(__img_car.pic_content, "驾车")
+            if cos is not None:
+                driver_res = coordinate_change_from_windows(hwnd, cos)
+                print(f"find car type {driver_res[0]}x{driver_res[1]}")
+                return driver_res
+            return None
+
+        def check_driver_type_select():
+            """
+            看看选中类型的按钮出没出现
+            """
+
+            car_type = self.windows.find_windows_coordinate_rect(handle=hwnd, img=find_task.task_flags_yellow_car)
+            if car_type is not None:
+                print(f" 黄旗 {find_task.task_flags_yellow_car}")
+                return True
+            return False
+        while 1:
             while 1:
                 time.sleep(1)
                 if check_car_status() is False:
                     return False
-                car_flag = self.windows.find_windows_coordinate_rect(handle=hwnd,
-                                                                     img=find_task.car_flag)
-                if car_flag is None:
-                    self.__find_car_flag(hwnd)
-                    continue
-                else:
-                    """
-                    寻找车的位置
-                    """
+
+                """
+                看看镖车是不是在屏幕中间
+                """
+                rec: list = self.__find_car_flag(hwnd)
+                if rec is not None:
+                    SetGhostMouse().move_mouse_to(rec[0], rec[1])  # 鼠标移动到初始化位置
                     time.sleep(1)
-                    SetGhostBoards().click_press_and_release_by_key_name("W")
-                    break
+                    #  先点击一次
+                    SetGhostMouse().move_mouse_to(rec[0], rec[1] + 50)
+                    time.sleep(1)
+                    SetGhostMouse().click_mouse_left_button()
+                    time.sleep(2)
+                    while 1:
+
+                        task_car_selected = self.windows.find_windows_coordinate_rect(handle=hwnd, img=find_task.task_car_selected)
+                        time.sleep(1)
+                        if task_car_selected is None:
+                            """
+                            如果还是没有出现镖车已经选中成功的标志，就继续往下点击
+                            """
+                            pos_x, pos_y = SetGhostMouse().get_mouse_x_y()
+                            SetGhostMouse().move_mouse_to(pos_x, pos_y + 50)
+                            time.sleep(1)
+                            SetGhostMouse().click_mouse_left_button()  # 尝试每隔50个像素就点击一次，看看能不能出现车辆被选中的效果
+                            time.sleep(2)
+                            if check_driver_type_select() is not None:
+                                """
+                                如果选择了车辆后立即出现了选择 驾车方式 的图标，那么为了避免点击右键失效，先关闭此窗口
+                                """
+                                print("sss")
+                                SetGhostBoards().click_press_and_release_by_code(27)
+                                time.sleep(1)
+                        else:
+                            """
+                            如果成功选中了镖车，那么就点击一下鼠标右键，让人物主动靠近
+                            """
+                            print("car selected")
+                            while 1:
+                                SetGhostMouse().click_mouse_right_button()
+                                print("wait person move")
+                                time.sleep(5)  # 让角色走5秒
+                                task_star_mode = self.windows.find_windows_coordinate_rect(handle=hwnd, img=find_task.task_star_mode)
+                                task_star_mode2 = check_driver_type()
+                                if task_star_mode is not None:
+                                    print("find truck type")
+                                    SetGhostMouse().move_mouse_to(task_star_mode[0], task_star_mode[1])
+                                    time.sleep(1)
+                                    SetGhostMouse().click_mouse_left_button()
+                                    print("Go")
+                                    return True
+                                elif task_star_mode2 is not None:
+                                    print("find truck type 2")
+                                    SetGhostMouse().move_mouse_to(task_star_mode2[0], task_star_mode2[1])
+                                    time.sleep(1)
+                                    SetGhostMouse().click_mouse_left_button()
+                                    print("Go2")
+                                    return True
 
 
 

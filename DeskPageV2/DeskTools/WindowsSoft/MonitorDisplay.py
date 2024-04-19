@@ -168,7 +168,7 @@ def coordinate_change_from_monitor(coordinate: tuple, old_monitor_size: tuple, n
     return tag_x, tag_y
 
 
-def coordinate_change_from_windows(hwnd: int, coordinate: tuple):
+def coordinate_change_from_windows(hwnd: int, coordinate: tuple or list):
     """
     坐标映射，从游戏窗口中的某个坐标映射到屏幕显示器上，用于鼠标点击
     :param hwnd: 游戏窗口所句柄，用于获取桌面所在的尺寸
@@ -185,8 +185,15 @@ def coordinate_change_from_windows(hwnd: int, coordinate: tuple):
         return rec
 
     # 获取中心点坐标
-    x_center = int((coordinate[0][0] + coordinate[3][0])//2)
-    y_center = int((coordinate[0][1] + coordinate[3][1])//2)
+    if len(coordinate) == 2:
+        """
+        如果是已经处理好的坐标 （X，Y）
+        """
+        x_center = int((coordinate[0]))
+        y_center = int((coordinate[1]))
+    else:
+        x_center = int((coordinate[0][0] + coordinate[3][0]) // 2)
+        y_center = int((coordinate[0][1] + coordinate[3][1]) // 2)
 
     rs = client_to_screen(hwnd, x_center, y_center)
     return rs

@@ -1,26 +1,36 @@
+# coding=utf-8
+import os
+import time
+
+import numpy as np
 from numpy import fromfile, uint8
 from ppocronnx.predict_system import TextSystem
 import cv2
 
-text_sys = TextSystem()
 
+class FindPicOCR:
 
-def find_ocr(image, temp_text: str) -> list or None:
-    """
-    :param image: ĞèÒª²éÕÒÎÄ×ÖµÄÍ¼Æ¬
-    :param temp_text: ÏëÒªÔÙÍ¼Æ¬ÖĞ²éÑ¯µÄÎÄ×Ö
-    :return ²éÕÒµ½µÄµÚÒ»¸öÆ¥ÅäµÄÎÄ×ÖµÄ×ø±ê
-    """
-    if isinstance(image, str):
-        # img_read = cv2.cv2.imread(img)   # Õâ¸ö·½·¨ÎŞ·¨´¦Àí´øÖĞÎÄµÄÂ·¾¶
-        img_read = cv2.imdecode(fromfile(image, dtype=uint8), -1)
-    else:
-        img_read = image
-    res = text_sys.detect_and_ocr(img_read)
-    for boxed_result in res:
-        if temp_text in boxed_result.ocr_text:
-            rect = boxed_result.box
-            x_center = (rect[0][0] + rect[2][0])/2
-            y_center = (rect[0][1] + rect[2][1])/2
-            return [int(x_center), int(y_center)]
-    return None
+    def __init__(self):
+        self.text_sys = TextSystem()
+
+    def find_ocr(self, image: np.ndarray, temp_text: str) -> list or None:
+        """
+        :param image: éœ€è¦æŸ¥æ‰¾æ–‡å­—çš„å›¾ç‰‡
+        :param temp_text: æƒ³è¦å†å›¾ç‰‡ä¸­æŸ¥è¯¢çš„æ–‡å­—
+        :return æŸ¥æ‰¾åˆ°çš„ç¬¬ä¸€ä¸ªåŒ¹é…çš„æ–‡å­—çš„åæ ‡
+        """
+        channel = 1 if len(image.shape) == 2 else image.shape[2]
+        if channel == 4:
+            # ä»–è¿™ä¸ªæ–‡å­—è¯†åˆ«åªæ”¯æŒ3é€šé“çš„ï¼Œæ‰€ä»¥è¦å¤„ç†ä¸€ä¸‹
+            images = cv2.cvtColor(image, cv2.COLOR_BGRA2BGR)
+        else:
+            images = image
+        if images is not None:
+            res = self.text_sys.detect_and_ocr(images)
+            for boxed_result in res:
+                if temp_text in boxed_result.ocr_text:
+                    rect = boxed_result.box
+                    x_center = (rect[0][0] + rect[2][0]) / 2
+                    y_center = (rect[0][1] + rect[2][1]) / 2
+                    return [int(x_center), int(y_center)]
+        return None

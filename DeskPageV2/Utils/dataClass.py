@@ -101,10 +101,11 @@ class TruckCarPic:
     """
     car_flag: str = dataclasses.field(default_factory=str)  # 寻找镖车
     task_flag_status: str = dataclasses.field(default_factory=str)  # 运镖状态，有此图标表示任务进行中
-    task_flags_yellow_car: list = dataclasses.field(default_factory=list)  # 镖车上的黄色小旗子，用于判断车的位置
+    task_flags_yellow_car: str = dataclasses.field(default_factory=str)  # 镖车上的黄色小旗子，用于判断车的位置
     task_star_mode: str = dataclasses.field(default_factory=str)  # 运镖方式，驾车还是赶路
     task_monster_fight: str = dataclasses.field(default_factory=str)  # 进入战斗，劫匪或者垃圾四害
     task_monster_target: list = dataclasses.field(default_factory=list)  # 劫匪，数组，有多个判断标志,头像
+    task_car_selected: str = dataclasses.field(default_factory=str)  # 已经选中了镖车
 
 
 @dataclasses.dataclass
@@ -113,6 +114,7 @@ class FindTruckCarTaskNPC:
     寻找运镖NPC
     """
     qin_xiu: str = dataclasses.field(default_factory=str)  # 勤修图标
+    qin_xiu_activity_list: str = dataclasses.field(default_factory=str)  # 活动列表
     qin_xiu_truck_car_task: str = dataclasses.field(default_factory=str)  # 日常运镖
 
     # 成都NPC

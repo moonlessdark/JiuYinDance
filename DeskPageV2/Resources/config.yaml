@@ -1,5 +1,6 @@
 TruckCarFindTask:
   qin_xiu: ./DeskPageV2/Resources/TruckCarFindTask/勤修.png
+  qin_xiu_activity_list : ./DeskPageV2/Resources/TruckCarFindTask/活动列表.png
   qin_xiu_truck_car_npc_chengdu: ./DeskPageV2/Resources/TruckCarFindTask/chengdu_truck_car_npc.png
   qin_xiu_truck_car_task: ./DeskPageV2/Resources/TruckCarFindTask/日常运镖.png
   car_type_big: ./DeskPageV2/Resources/TruckCarFindTask/CarType/大车.png
@@ -35,15 +36,14 @@ TruckCarFindTask:
 TruckCarPic:
   car_flag: ./DeskPageV2/Resources/TruckCarPic/CarsFlag.png
   task_flag_status: ./DeskPageV2/Resources/TruckCarPic/CarFlag.png
-  task_flags_yellow_car:
-  - ./DeskPageV2/Resources/TruckCarPic/car_yellow_flag1.png
-  - ./DeskPageV2/Resources/TruckCarPic/car_yellow_flag.png
+  task_flags_yellow_car: ./DeskPageV2/Resources/TruckCarPic/car_yellow_flag.png
   task_monster_fight: ./DeskPageV2/Resources/TruckCarPic/fight_status.png
   task_monster_target:
   - ./DeskPageV2/Resources/TruckCarPic/car_monster.png
   - ./DeskPageV2/Resources/TruckCarPic/car_monster2.png
   - ./DeskPageV2/Resources/TruckCarPic/car_monster3.png
-  task_star_mode: ./DeskPageV2/Resources/TruckCarPic/运镖方式.png
+  task_star_mode: ./DeskPageV2/Resources/TruckCarPic/truck_type.png
+  task_car_selected: ./DeskPageV2/Resources/TruckCarPic/truck_car_selected.png
 config:
   dance_threshold_area: 0.3
   dance_threshold_tl: 0.9
