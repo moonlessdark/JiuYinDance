@@ -122,7 +122,7 @@ class FindTruckCarTaskNPC:
     task_point_chengdu_npc: str = dataclasses.field(default_factory=str)
     # 金陵NPC
     task_point_jinling: str = dataclasses.field(default_factory=str)
-    task_point_jingling_npc: str = dataclasses.field(default_factory=str)
+    task_point_jinling_npc: str = dataclasses.field(default_factory=str)
     # 洛阳NPC
     task_point_luoyang: str = dataclasses.field(default_factory=str)
     task_point_luoyang_npc: str = dataclasses.field(default_factory=str)

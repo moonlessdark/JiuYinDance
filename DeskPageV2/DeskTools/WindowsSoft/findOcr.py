@@ -60,7 +60,7 @@ class FindPicOCR:
                         result[text] = [int(x_center), int(y_center)]
         return result
 
-    def get_person_pos(self, image: np.ndarray):
+    def get_person_map(self, image: np.ndarray):
         """
         寻找人物的在地图上的坐标
         """
@@ -72,9 +72,25 @@ class FindPicOCR:
             images = image
         h: int = int(images.shape[0])
         w: int = int(images.shape[1])
-        image_cap = images[int(h * 0.1): int(h * 0.4), int(w * 0.8): int(w * 0.99)]
+        image_cap = images[int(1): int(h * 0.4), int(w * 0.8): int(w * 0.99)]
         res = self.text_sys.detect_and_ocr(image_cap)
+
+        pos: int = 0
+        area: str = ""
+        person_name: str = ""
         for res_cap in res:
-            if res_cap.ocr_text.isdigit():
-                return int(res_cap.ocr_text)
-        return 0
+            if res_cap.ocr_text in ["成都", "金陵", "燕京", "洛阳", "苏州"]:
+                area = res_cap.ocr_text
+            elif res_cap.ocr_text.isdigit():
+                pos = int(res_cap.ocr_text)
+
+        image_cap2 = images[int(1): int(h * 0.4), int(1): int(w * 0.4)]
+        res2 = self.text_sys.detect_and_ocr(image_cap2)
+        for res_cap2 in res2:
+            person_name_school = res_cap2.ocr_text
+            school_name: list = ["哦眉", "武当"]
+            find_value_in_list = lambda s: next((value for value in school_name if value in s), None)
+            result = find_value_in_list(person_name_school)
+            if result is not None:
+                person_name = person_name_school.replace(result, "")
+        return pos, area, person_name

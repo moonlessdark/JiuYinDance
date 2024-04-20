@@ -203,6 +203,15 @@ class GetConfig:
         # 燕京
         truck_car_task.task_point_yanjing = self.__datas["TruckCarFindTask"]["Area"]["YanJin"]["address"]
         truck_car_task.task_point_yanjing_npc = self.__datas["TruckCarFindTask"]["Area"]["YanJin"]["npc"]
+        # 金陵
+        truck_car_task.task_point_jinling = self.__datas["TruckCarFindTask"]["Area"]["JinLing"]["address"]
+        truck_car_task.task_point_jinling_npc = self.__datas["TruckCarFindTask"]["Area"]["JinLing"]["npc"]
+        # 苏州
+        truck_car_task.task_point_suzhou = self.__datas["TruckCarFindTask"]["Area"]["SuZhou"]["address"]
+        truck_car_task.task_point_suzhou_npc = self.__datas["TruckCarFindTask"]["Area"]["SuZhou"]["npc"]
+        # 洛阳
+        truck_car_task.task_point_luoyang = self.__datas["TruckCarFindTask"]["Area"]["LuoYang"]["address"]
+        truck_car_task.task_point_luoyang_npc = self.__datas["TruckCarFindTask"]["Area"]["LuoYang"]["npc"]
         return truck_car_task
 
 
