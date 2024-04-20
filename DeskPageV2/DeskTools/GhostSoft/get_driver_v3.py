@@ -135,6 +135,24 @@ class SetGhostBoards(SetGhostDriver):
         result_int: int = self.ghost_driver.pressandreleasekeybyname(key_str)
         return True if result_int > 0 else False
 
+    def click_press_and_release_by_key_name_hold_time(self, key_str: str, hold_time: float):
+        """
+        按住某个按钮多少秒
+        """
+        self.ghost_driver.presskeybyname(key_str)
+        time.sleep(hold_time)
+        self.ghost_driver.releasekeybyname(key_str)
+        return True
+
+    def click_press_and_release_by_key_code_hold_time(self, key_code: int, hold_time: float):
+        """
+        按住某个按钮多少秒
+        """
+        self.ghost_driver.presskeybyvalue(key_code)
+        time.sleep(hold_time)
+        self.ghost_driver.releasekeybyvalue(key_code)
+        return True
+
     def click_press_and_release_by_code(self, key_code: int) -> bool:
         """
         按下并释放键盘上的键
@@ -162,13 +180,13 @@ class SetGhostBoards(SetGhostDriver):
         result_int: int = self.ghost_driver.presskeybyvalue(key_code)
         return True if result_int > 0 else False
 
-    def release_by_key_name(self, key_code: int) -> bool:
+    def release_by_key_name(self, key_str: str) -> bool:
         """
         释放键盘上的键
-        :param key_code: 按键code
+        :param key_str: 按键
         :return:
         """
-        result_int: int = self.ghost_driver.releasekeybyname(key_code)
+        result_int: int = self.ghost_driver.releasekeybyname(key_str)
         return True if result_int > 0 else False
 
     def release_by_code(self, key_code: int) -> bool:
@@ -247,6 +265,54 @@ class SetGhostMouse(SetGhostDriver):
         :return:
         """
         result_int: int = self.ghost_driver.pressandreleasemousebutton(2)
+        return True if result_int > 0 else False
+
+    def press_mouse_left_button(self):
+        """
+        按下鼠标左键
+        :return:
+        """
+        result_int: int = self.ghost_driver.pressmousebutton(1)
+        return True if result_int > 0 else False
+
+    def press_mouse_right_button(self):
+        """
+        按下鼠标右键
+        :return:
+        """
+        result_int: int = self.ghost_driver.pressmousebutton(3)
+        return True if result_int > 0 else False
+
+    def release_mouse_middle_button(self):
+        """
+        按下鼠标中键
+        :return:
+        """
+        result_int: int = self.ghost_driver.releasemousebutton(2)
+        return True if result_int > 0 else False
+
+    def release_mouse_left_button(self):
+        """
+        按下鼠标左键
+        :return:
+        """
+        result_int: int = self.ghost_driver.releasemousebutton(1)
+        return True if result_int > 0 else False
+
+    def release_mouse_right_button(self):
+        """
+        按下鼠标右键
+        :return:
+        """
+        result_int: int = self.ghost_driver.releasemousebutton(3)
+        return True if result_int > 0 else False
+
+    def press_mouse_middle_button(self):
+        """
+        按下鼠标中键
+        :return:
+        """
+        result_int: int = self.ghost_driver.pressmousebutton(2)
         return True if result_int > 0 else False
 
     def move_mouse_to(self, x: int, y: int):

@@ -34,3 +34,47 @@ class FindPicOCR:
                     y_center = (rect[0][1] + rect[2][1]) / 2
                     return [int(x_center), int(y_center)]
         return None
+
+    def find_ocr_arbitrarily(self, image: np.ndarray, temp_text_list: list) -> dict:
+        """
+        能够匹配到
+        :param image: 需要查找文字的图片
+        :param temp_text_list: 想要再图片中查询的文字,数组
+        :return 查找到的第一个匹配的文字的坐标
+        """
+        channel = 1 if len(image.shape) == 2 else image.shape[2]
+        if channel == 4:
+            # 他这个文字识别只支持3通道的，所以要处理一下
+            images = cv2.cvtColor(image, cv2.COLOR_BGRA2BGR)
+        else:
+            images = image
+        result: dict = {}
+        if images is not None:
+            res = self.text_sys.detect_and_ocr(images)
+            for boxed_result in res:
+                for text in temp_text_list:
+                    if text in boxed_result.ocr_text:
+                        rect = boxed_result.box
+                        x_center = (rect[0][0] + rect[2][0]) / 2
+                        y_center = (rect[0][1] + rect[2][1]) / 2
+                        result[text] = [int(x_center), int(y_center)]
+        return result
+
+    def get_person_pos(self, image: np.ndarray):
+        """
+        寻找人物的在地图上的坐标
+        """
+        channel = 1 if len(image.shape) == 2 else image.shape[2]
+        if channel == 4:
+            # 他这个文字识别只支持3通道的，所以要处理一下
+            images = cv2.cvtColor(image, cv2.COLOR_BGRA2BGR)
+        else:
+            images = image
+        h: int = int(images.shape[0])
+        w: int = int(images.shape[1])
+        image_cap = images[int(h * 0.1): int(h * 0.4), int(w * 0.8): int(w * 0.99)]
+        res = self.text_sys.detect_and_ocr(image_cap)
+        for res_cap in res:
+            if res_cap.ocr_text.isdigit():
+                return int(res_cap.ocr_text)
+        return 0
