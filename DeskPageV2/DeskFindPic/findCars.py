@@ -30,7 +30,6 @@ class TruckCar:
         self.hwnd: int = 0
         _, self.__area_map, self.__person_name = self.ocr.get_person_map(self.windows.capture(self.hwnd).pic_content)
 
-
     @staticmethod
     def __load_pic(pic_dir: str):
         """
@@ -192,234 +191,259 @@ class TruckCar:
                 return coordinate_change_from_windows(hwnd, rec)
         return None
 
-    def fight_monster(self, hwnd):
+    # def driver_car(self, hwnd):
+    #     """
+    #     开车
+    #     """
+    #     WindowsHandle().activate_windows(hwnd)
+    #     find_task: TruckCarPic = self.__get_pic_truck_car()
+    #     _, area, person = self.ocr.get_person_map(self.windows.capture(hwnd).pic_content)
+    #
+    #     is_go: bool = False
+    #
+    #
+    #
+    #
+    #
+    #
+    #     def go_truck():
+    #         f_rec: list = self._find_car_pos(hwnd, person)
+    #         if f_rec is not None:
+    #             """
+    #             镖车在屏幕中间的位置
+    #             """
+    #             SetGhostMouse().move_mouse_to(f_rec[0], f_rec[1])  # 鼠标移动到初始化位置
+    #             time.sleep(1)
+    #
+    #             while 1:
+    #
+    #                 self.fight_monster(hwnd)
+    #
+    #                 pos_x, pos_y = SetGhostMouse().get_mouse_x_y()
+    #
+    #                 #  先点击一次
+    #                 SetGhostMouse().move_mouse_to(pos_x, pos_y + 50)
+    #
+    #                 time.sleep(1)
+    #                 SetGhostMouse().click_mouse_left_button()
+    #                 time.sleep(3)
+    #                 ress = self._check_driver_type()
+    #                 if ress is not None:
+    #                     """
+    #                     如果已经成功选中车辆
+    #                     """
+    #                     print("找到运镖窗口了")
+    #                     SetGhostBoards().click_press_and_release_by_code(27)
+    #                     time.sleep(1)
+    #                     SetGhostMouse().click_mouse_right_button()
+    #                     time.sleep(1)
+    #                     ress = check_driver_type()
+    #                     if ress is not None:
+    #                         """
+    #                         如果已经选中了
+    #                         """
+    #                         SetGhostBoards().click_press_and_release_by_key_name_hold_time("w",
+    #                                                                                        0.5)  # 往前走一步
+    #                         print("往前走一步")
+    #                     # 点击右键有看看运镖的按钮有没有出现
+    #                     if ress is not None:
+    #                         print("找到车后，等待5秒，等待任务自动往镖车走过去")
+    #                         time.sleep(1)
+    #                         SetGhostMouse().move_mouse_to(ress[0], ress[1])
+    #                         time.sleep(1)
+    #                         SetGhostMouse().click_mouse_left_button()  # 点击一下 驾车 按钮
+    #                         print("尝试再次点击 驾车 按钮")
+    #                         return True
+    #
+    #
+    #
+    #     while 1:
+    #         """
+    #         开始正式押镖了.
+    #         押镖逻辑如下：
+    #         1、接取了任务后，此时会弹出 “驾车” 选项。点击确定，如果成功上车，就开始判断是否出现了劫镖的怪。并进行打怪
+    #         2、如果没有成功上车，就开始找车。
+    #
+    #
+    #         if 点击"驾车" 出现 “距离NPC太远”:
+    #             while:
+    #                 开始旋转游戏画面，开始找车，车在屏幕正中间
+    #                 if "找到车"，往前走一步 点击驾车，出现 “距离NPC太远”:
+    #                     continue
+    #                 else:
+    #                     break
+    #         等待怪的出现，并打怪
+    #
+    #         """
+    #         time.sleep(1)
+    #         if check_car_status() is False:
+    #             # 如果没有检测到接镖成功的图标
+    #             print("未在任务栏检测到运镖的图标...")
+    #             continue
+    #
+    #         if check_task_end() is True:
+    #             print("运镖结束了")
+    #             return True
+    #
+    #         self.fight_monster(hwnd)
+    #
+    #         if is_go:
+    #             continue
+    #
+    #         while 1:
+    #
+    #             print("接镖成功后,尝试直接运镖")
+    #             rec = check_driver_type()
+    #             if rec is not None:
+    #
+    #                 self.fight_monster(hwnd)
+    #
+    #                 pos_old, _, _ = self.ocr.get_person_map(self.windows.capture(hwnd).pic_content)
+    #                 print(f"当前坐标：{pos_old}")
+    #                 SetGhostMouse().move_mouse_to(rec[0], rec[1])
+    #                 time.sleep(1)
+    #                 SetGhostMouse().click_mouse_left_button()
+    #                 time.sleep(0.5)
+    #                 print("尝试点击 驾车 按钮")
+    #
+    #                 for i in range(5):
+    #                     """
+    #                     循环5秒，看看这个提示是否存在
+    #                     """
+    #
+    #                     if self.fight_monster(hwnd):
+    #                         break
+    #
+    #                     time.sleep(1)
+    #
+    #                     # 截图一下图片区域，只拿上半部分区域(避免读取到右下角的日志)，因为这里只是用于判断，拿到的坐标没有其他用途
+    #                     img = self.windows.capture(hwnd)
+    #                     new_pic = img.pic_content[int(img.pic_height * 0.2):int(img.pic_height * 0.6),
+    #                               int(img.pic_width * 0.4):int(img.pic_width * 0.6)]
+    #
+    #                     cc = self.ocr.find_ocr(image=new_pic, temp_text="你距离NPC太远了")
+    #
+    #                     if cc is not None:
+    #                         print("出现了距离太远的文字，无法直接直接押镖")
+    #                         go_truck()
+    #                         is_go = True
+    #                         break
+    #
+    #                     elif _check_person_move_status(old_pos=pos_old) is False:
+    #                         print("直接运镖失败，坐标没有移动，开始尝试找车")
+    #                         go_truck()
+    #                         is_go = True
+    #                         break
+    #                     else:
+    #                         is_go = True
+    #                         break
+    #                 print("进行了5次循环")
+    #                 break
+    #             else:
+    #                 go_truck()
+    #                 is_go = True
+    #                 break
+
+
+class FightMonster(TruckCar):
+    """
+    打怪啊
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.__find_task: TruckCarPic = self.__get_pic_truck_car()
+
+    def check_fight_status(self, hwnd: int):
         """
-        运镖打怪
+        检查是否进入了战斗状态。
+        避免识别场景过于复杂，在这里进行多重检测
         """
 
-        WindowsHandle().activate_windows(hwnd)
-        find_task: TruckCarPic = self.__get_pic_truck_car()
-
-        def check_fight_status():
+        if len(self.ocr.find_ocr_arbitrarily(self.windows.capture(hwnd).pic_content,
+                                             ["您正在观看风景时", "忽然一道身影一闪而过",
+                                              "马受到惊吓，停滞不前"])) > 0:
             """
-            检查是否进入了战斗状态。
-            避免识别场景过于复杂，在这里进行多重检测
+            方法1：如果出现了文字 “马受到惊吓，停滞不前” 出现在屏幕上，那么说明即将出现劫镖的怪
             """
-
-            if len(self.ocr.find_ocr_arbitrarily(self.windows.capture(hwnd).pic_content,
-                                                 ["您正在观看风景时", "忽然一道身影一闪而过",
-                                                  "马受到惊吓，停滞不前"])) > 0:
-                """
-                方法1：如果出现了文字 “马受到惊吓，停滞不前” 出现在屏幕上，那么说明即将出现劫镖的怪
-                """
-                return True
-            elif self.windows.find_windows_coordinate_rect(handle=hwnd, img=find_task.task_monster_fight) is not None:
-                """
-                方法2: 如果出现了 进入战斗的文字(这里使用的是图片)，那么就说明进入战斗了，可能是劫镖的NPC，也可能是其他
-                """
-                return True
-            return False
-
-        def check_monster_npc_status():
-            """
-            检测劫镖的NPC是否出现
-            """
-            fight_tag_list: list = find_task.task_monster_target
-            for target in fight_tag_list:
-                task_monster_fight = self.windows.find_windows_coordinate_rect(handle=hwnd,
-                                                                               img=target)
-                if task_monster_fight is not None:
-                    return True
-            return False
-
-        def fight():
-            """
-            打怪，这里是自定义的按钮
-            """
-            SetGhostMouse().press_mouse_right_button()  # 按住格挡
-            time.sleep(0.5)
-            while 1:
-                SetGhostBoards().click_press_and_release_by_code(81)
-                time.sleep(2)
-                if len(self.ocr.find_ocr_arbitrarily(self.windows.capture(hwnd).pic_content,
-                                                     ["成功攻克劫匪", "完成此次运镖后将额外获得"])) > 0:
-                    """
-                    如果出现了把怪打死的文字
-                    """
-                    break
-                elif check_monster_npc_status() is False:
-                    """
-                    如果怪消失了
-                    """
-                    break
-            SetGhostMouse().release_mouse_right_button()  # 放开格挡
             return True
-
-        time.sleep(0.5)
-        if check_fight_status():
+        elif self.windows.find_windows_coordinate_rect(handle=hwnd,
+                                                       img=self.__find_task.task_monster_fight) is not None:
             """
-            如果进入了战斗状态
+            方法2: 如果出现了 进入战斗的文字(这里使用的是图片)，那么就说明进入战斗了，可能是劫镖的NPC，也可能是其他
             """
-            while 1:
-                if check_monster_npc_status():
-                    # 如果怪物出现了
-                    if fight():
-                        # 如果打怪结束
-                        return True
+            return True
         return False
 
-    def driver_car(self, hwnd):
+    def check_monster_npc_status(self, hwnd: int):
         """
-        开车
+        检测劫镖的NPC是否出现
         """
-        WindowsHandle().activate_windows(hwnd)
-        find_task: TruckCarPic = self.__get_pic_truck_car()
-        _, area, person = self.ocr.get_person_map(self.windows.capture(hwnd).pic_content)
-
-        is_go: bool = False
-
-
-
-
-
-
-        def go_truck():
-            f_rec: list = self._find_car_pos(hwnd, person)
-            if f_rec is not None:
-                """
-                镖车在屏幕中间的位置
-                """
-                SetGhostMouse().move_mouse_to(f_rec[0], f_rec[1])  # 鼠标移动到初始化位置
-                time.sleep(1)
-
-                while 1:
-
-                    self.fight_monster(hwnd)
-
-                    pos_x, pos_y = SetGhostMouse().get_mouse_x_y()
-
-                    #  先点击一次
-                    SetGhostMouse().move_mouse_to(pos_x, pos_y + 50)
-
-                    time.sleep(1)
-                    SetGhostMouse().click_mouse_left_button()
-                    time.sleep(3)
-                    ress = self._check_driver_type()
-                    if ress is not None:
-                        """
-                        如果已经成功选中车辆
-                        """
-                        print("找到运镖窗口了")
-                        SetGhostBoards().click_press_and_release_by_code(27)
-                        time.sleep(1)
-                        SetGhostMouse().click_mouse_right_button()
-                        time.sleep(1)
-                        ress = check_driver_type()
-                        if ress is not None:
-                            """
-                            如果已经选中了
-                            """
-                            SetGhostBoards().click_press_and_release_by_key_name_hold_time("w",
-                                                                                           0.5)  # 往前走一步
-                            print("往前走一步")
-                        # 点击右键有看看运镖的按钮有没有出现
-                        if ress is not None:
-                            print("找到车后，等待5秒，等待任务自动往镖车走过去")
-                            time.sleep(1)
-                            SetGhostMouse().move_mouse_to(ress[0], ress[1])
-                            time.sleep(1)
-                            SetGhostMouse().click_mouse_left_button()  # 点击一下 驾车 按钮
-                            print("尝试再次点击 驾车 按钮")
-                            return True
-
-
-
-        while 1:
-            """
-            开始正式押镖了.
-            押镖逻辑如下：
-            1、接取了任务后，此时会弹出 “驾车” 选项。点击确定，如果成功上车，就开始判断是否出现了劫镖的怪。并进行打怪
-            2、如果没有成功上车，就开始找车。
-            
-            
-            if 点击"驾车" 出现 “距离NPC太远”:
-                while:
-                    开始旋转游戏画面，开始找车，车在屏幕正中间
-                    if "找到车"，往前走一步 点击驾车，出现 “距离NPC太远”:
-                        continue
-                    else:
-                        break   
-            等待怪的出现，并打怪 
-            
-            """
-            time.sleep(1)
-            if check_car_status() is False:
-                # 如果没有检测到接镖成功的图标
-                print("未在任务栏检测到运镖的图标...")
-                continue
-
-            if check_task_end() is True:
-                print("运镖结束了")
+        fight_tag_list: list = self.__find_task.task_monster_target
+        for target in fight_tag_list:
+            task_monster_fight = self.windows.find_windows_coordinate_rect(handle=hwnd, img=target)
+            if task_monster_fight is not None:
                 return True
+        return False
 
-            self.fight_monster(hwnd)
+    def __check_monster_skill_status(self, hwnd: int):
+        """
+        检测NPC是不是在放技能
+        """
+        fight_tag_skill_list: list = self.__find_task.task_monster_target_skil
+        for target in fight_tag_skill_list:
+            task_monster_fight = self.windows.find_windows_coordinate_rect(handle=hwnd, img=target)
+            if task_monster_fight is not None:
+                return True
+        return False
 
-            if is_go:
-                continue
+    def __fight_func(self, hwnd: int):
+        """
+        打怪啊
+        """
 
-            while 1:
+        time.sleep(0.5)
+        while 1:
+            if self.__check_monster_skill_status:
+                # 如果怪出技能了，快格挡
+                # 出技能前其实还能再打一下
+                if SetGhostMouse().is_mouse_button_pressed(3) is False:
+                    SetGhostMouse().press_mouse_right_button()  # 按住格挡
 
-                print("接镖成功后,尝试直接运镖")
-                rec = check_driver_type()
-                if rec is not None:
+            else:
+                # 如果没有检测到怪出技能
+                if SetGhostMouse().is_mouse_button_pressed(3):
+                    # 如果当前状态时格挡中
+                    SetGhostMouse().release_mouse_right_button()  # 放开格挡
+                SetGhostBoards().click_press_and_release_by_code(81)  # 按Q
+                time.sleep(1)
+            if len(self.ocr.find_ocr_arbitrarily(self.windows.capture(hwnd).pic_content,
+                                                 ["成功攻克劫匪", "完成此次运镖后将额外获得"])) > 0:
+                """
+                如果出现了把怪打死的文字
+                """
+                break
+            elif self.check_monster_npc_status(hwnd) is False:
+                """
+                如果怪消失了
+                """
+                break
+        return True
 
-                    self.fight_monster(hwnd)
+    def fight_monster(self, hwnd):
+        """
+        开始打怪
+        """
 
-                    pos_old, _, _ = self.ocr.get_person_map(self.windows.capture(hwnd).pic_content)
-                    print(f"当前坐标：{pos_old}")
-                    SetGhostMouse().move_mouse_to(rec[0], rec[1])
-                    time.sleep(1)
-                    SetGhostMouse().click_mouse_left_button()
-                    time.sleep(0.5)
-                    print("尝试点击 驾车 按钮")
+        WindowsHandle().activate_windows(hwnd)
+        time.sleep(0.5)
 
-                    for i in range(5):
-                        """
-                        循环5秒，看看这个提示是否存在
-                        """
+        if self.check_monster_npc_status(hwnd) is False:
+            # 没有发现劫匪NPC，主动按一下tab
+            SetGhostBoards().click_press_and_release_by_code(9)
 
-                        if self.fight_monster(hwnd):
-                            break
-
-                        time.sleep(1)
-
-                        # 截图一下图片区域，只拿上半部分区域(避免读取到右下角的日志)，因为这里只是用于判断，拿到的坐标没有其他用途
-                        img = self.windows.capture(hwnd)
-                        new_pic = img.pic_content[int(img.pic_height * 0.2):int(img.pic_height * 0.6),
-                                  int(img.pic_width * 0.4):int(img.pic_width * 0.6)]
-
-                        cc = self.ocr.find_ocr(image=new_pic, temp_text="你距离NPC太远了")
-
-                        if cc is not None:
-                            print("出现了距离太远的文字，无法直接直接押镖")
-                            go_truck()
-                            is_go = True
-                            break
-
-                        elif _check_person_move_status(old_pos=pos_old) is False:
-                            print("直接运镖失败，坐标没有移动，开始尝试找车")
-                            go_truck()
-                            is_go = True
-                            break
-                        else:
-                            is_go = True
-                            break
-                    print("进行了5次循环")
-                    break
-                else:
-                    go_truck()
-                    is_go = True
-                    break
+        if self.__fight_func(hwnd):
+            return True
 
 
 class TeamFunc(TruckCar):
@@ -616,7 +640,8 @@ class FindTaskNPCFunc(TruckCar):
                 """
                 找到了成都NPC
                 """
-                print(f"FindTaskNpc: 找到 {self.__area_map} 的NPC图标({qin_xiu_truck_point_npc[0]},{qin_xiu_truck_point_npc[1]})")
+                print(
+                    f"FindTaskNpc: 找到 {self.__area_map} 的NPC图标({qin_xiu_truck_point_npc[0]},{qin_xiu_truck_point_npc[1]})")
                 SetGhostMouse().move_mouse_to(qin_xiu_truck_point_npc[0], qin_xiu_truck_point_npc[1])
                 time.sleep(1)
                 SetGhostMouse().click_mouse_left_button()
@@ -629,6 +654,7 @@ class ReceiveTruckTask(TruckCar):
     """
     接取押镖任务
     """
+
     def __init__(self):
         super().__init__()
 
@@ -649,7 +675,8 @@ class ReceiveTruckTask(TruckCar):
                 """
                 已经点开了NPC
                 """
-                print(f"ReceiveTruckTask: 已经找到 接取任务的NPC 图标({truck_npc_receive_task_talk[0]},{truck_npc_receive_task_talk[1]})")
+                print(
+                    f"ReceiveTruckTask: 已经找到 接取任务的NPC 图标({truck_npc_receive_task_talk[0]},{truck_npc_receive_task_talk[1]})")
 
                 SetGhostMouse().move_mouse_to(truck_npc_receive_task_talk[0], truck_npc_receive_task_talk[1])
                 time.sleep(1)
@@ -673,7 +700,8 @@ class ReceiveTruckTask(TruckCar):
                 """
                 选择押镖目的地
                 """
-                print(f"ReceiveTruckTask: 已经找到 目的地 图标({truck_npc_receive_task_address[0]},{truck_npc_receive_task_address[1]})")
+                print(
+                    f"ReceiveTruckTask: 已经找到 目的地 图标({truck_npc_receive_task_address[0]},{truck_npc_receive_task_address[1]})")
 
                 SetGhostMouse().move_mouse_to(truck_npc_receive_task_address[0], truck_npc_receive_task_address[1])
                 time.sleep(1)
@@ -720,7 +748,8 @@ class ReceiveTruckTask(TruckCar):
                 """
                 确认接镖
                 """
-                print(f"ReceiveTruckTask: 已经找到 确认接镖 图标({truck_receive_task_confirm[0]},{truck_receive_task_confirm[1]})")
+                print(
+                    f"ReceiveTruckTask: 已经找到 确认接镖 图标({truck_receive_task_confirm[0]},{truck_receive_task_confirm[1]})")
 
                 SetGhostMouse().move_mouse_to(truck_receive_task_confirm[0], truck_receive_task_confirm[1])
                 time.sleep(1)
@@ -734,6 +763,7 @@ class TransportTaskFunc(TruckCar):
     接完任务后寻找镖车，并点击 “驾车” 开始运输
     期间可能会出现 劫镖NPC
     """
+
     def __init__(self):
         super().__init__()
 

@@ -186,6 +186,7 @@ class GetConfig:
         truck.task_star_mode = self.__datas["TruckCarPic"]["task_star_mode"]
         truck.task_monster_fight = self.__datas["TruckCarPic"]["task_monster_fight"]
         truck.task_monster_target = self.__datas["TruckCarPic"]["task_monster_target"]
+        truck.task_monster_target_skil = self.__datas["TruckCarPic"]["task_monster_target_skill"]
         truck.task_car_selected = self.__datas["TruckCarPic"]["task_car_selected"]
         return truck
 

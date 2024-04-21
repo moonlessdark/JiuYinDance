@@ -402,3 +402,11 @@ class SetGhostMouse(SetGhostDriver):
         speed_value = 10 if speed_value > 10 else 1 if speed_value < 1 else 1
         result_int: int = self.ghost_driver.setmousemovementspeed(speed_value)
         return True if result_int > 0 else False
+
+    def is_mouse_button_pressed(self, m_btn: int):
+        """
+        判断指定的鼠标键是否按下，该接口仅用于检测设备本身的按键状态，不能检测本机实体鼠标的按键状态
+        :param m_btn: 整数类型，鼠标键序号（1:左键 2:中键 3:右键）
+        """
+        result_int: int = self.ghost_driver.ismousebuttonpressed(m_btn)
+        return True if result_int > 0 else False

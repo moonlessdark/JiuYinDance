@@ -88,7 +88,7 @@ class FindPicOCR:
         res2 = self.text_sys.detect_and_ocr(image_cap2)
         for res_cap2 in res2:
             person_name_school = res_cap2.ocr_text
-            school_name: list = ["哦眉", "武当"]
+            school_name: list = ["哦眉", "峨眉", "武当"]
             find_value_in_list = lambda s: next((value for value in school_name if value in s), None)
             result = find_value_in_list(person_name_school)
             if result is not None:

@@ -105,6 +105,7 @@ class TruckCarPic:
     task_star_mode: str = dataclasses.field(default_factory=str)  # 运镖方式，驾车还是赶路
     task_monster_fight: str = dataclasses.field(default_factory=str)  # 进入战斗，劫匪或者垃圾四害
     task_monster_target: list = dataclasses.field(default_factory=list)  # 劫匪，数组，有多个判断标志,头像
+    task_monster_target_skil: list = dataclasses.field(default_factory=list)  # 劫匪NPC的技能，此时需要格挡
     task_car_selected: str = dataclasses.field(default_factory=str)  # 已经选中了镖车
 
 
