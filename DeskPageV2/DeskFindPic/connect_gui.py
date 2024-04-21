@@ -388,10 +388,10 @@ class Dance(MainGui):
                 如果是押镖
                 """
                 if len(windows_list) == 1:
-                    # TruckCar().reply_perspective(windows_list[0])
-                    # TruckCar().create_team(windows_list[0])
-                    # TruckCar().find_truck_task_npc(windows_list[0])
-                    # TruckCar().receive_task(windows_list[0])
+                    TruckCar().__reply_perspective(windows_list[0])
+                    TruckCar().create_team(windows_list[0])
+                    TruckCar().find_truck_task_npc(windows_list[0])
+                    TruckCar().receive_task(windows_list[0])
                     TruckCar().driver_car(windows_list[0])
                     # self.th_truck_task.get_param(windows_handle=windows_list[0], truck_count=5)
                     # self.th_truck_task.start()
