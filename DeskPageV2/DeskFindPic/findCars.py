@@ -1,5 +1,4 @@
 # encoding = utf-8
-import ctypes
 import time
 
 import cv2
@@ -7,7 +6,7 @@ import numpy as np
 from numpy import fromfile
 
 from DeskPageV2.DeskTools.GhostSoft.get_driver_v3 import SetGhostBoards, SetGhostMouse
-from DeskPageV2.DeskTools.WindowsSoft.MonitorDisplay import coordinate_change_from_windows, display_windows_detection
+from DeskPageV2.DeskTools.WindowsSoft.MonitorDisplay import coordinate_change_from_windows
 from DeskPageV2.DeskTools.WindowsSoft.WindowsCapture import WindowsCapture
 from DeskPageV2.DeskTools.WindowsSoft.WindowsHandle import WindowsHandle
 from DeskPageV2.DeskTools.WindowsSoft.findOcr import FindPicOCR
@@ -18,59 +17,64 @@ from DeskPageV2.Utils.load_res import GetConfig
 
 class TruckCar:
     def __init__(self):
-        self.__config = GetConfig()
-        self.__find_task_npc = None  # 查询任务NPC
-        self.__find_team = None  # 查询队伍是否创建
-        self.__receive_task = None  # 接取押镖任务
-        self.__receive_task_road = None  # 运镖路上...
+        self._config = GetConfig()
+        self._find_task_npc = None  # 查询任务NPC
+        self._find_team = None  # 查询队伍是否创建
+        self._receive_task = None  # 接取押镖任务
+        self._receive_task_road = None  # 运镖路上...
 
         self.windows = WindowsCapture()
         self.ocr = FindPicOCR()
 
         self.hwnd: int = 0
-        _, self.__area_map, self.__person_name = self.ocr.get_person_map(self.windows.capture(self.hwnd).pic_content)
+
+        self._area_map, self._person_name = None, None
+
+    def get_map_and_person(self, hwnd: int):
+        _, self._area_map, self._person_name = self.ocr.get_person_map(self.windows.capture(hwnd).pic_content)
+        print(f"当前地图是 {self._area_map}, 当前角色是 {self._person_name}")
 
     @staticmethod
-    def __load_pic(pic_dir: str):
+    def _load_pic(pic_dir: str):
         """
         加载一下图片
         """
         return cv2.imdecode(fromfile(pic_dir, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
 
-    def __get_pic_find_task_npc(self) -> FindTruckCarTaskNPC:
+    def _get_pic_find_task_npc(self) -> FindTruckCarTaskNPC:
         """
         获取查找地图的运镖NPC
         """
-        if self.__find_task_npc is None:
-            self.__find_task_npc = self.__config.find_track_car_task()
-        return self.__find_task_npc
+        if self._find_task_npc is None:
+            self._find_task_npc = self._config.find_track_car_task()
+        return self._find_task_npc
 
-    def __get_pic_team(self) -> Team():
+    def _get_pic_team(self) -> Team():
         """
         检查队伍是否创建
         """
-        if self.__find_team is None:
-            self.__find_team = self.__config.get_team()
-        return self.__find_team
+        if self._find_team is None:
+            self._find_team = self._config.get_team()
+        return self._find_team
 
-    def __get_pic_receive_task(self) -> TruckCarReceiveTask:
+    def _get_pic_receive_task(self) -> TruckCarReceiveTask:
         """
         接取任务和押镖的路上
         """
-        if self.__receive_task is None:
-            self.__receive_task = self.__config.get_track_car()
-        return self.__receive_task
+        if self._receive_task is None:
+            self._receive_task = self._config.get_track_car()
+        return self._receive_task
 
-    def __get_pic_truck_car(self):
+    def _get_pic_truck_car(self):
         """
         开始押镖了
         """
-        if self.__receive_task_road is None:
-            self.__receive_task_road = self.__config.truck_task()
-        return self.__receive_task_road
+        if self._receive_task_road is None:
+            self._receive_task_road = self._config.truck_task()
+        return self._receive_task_road
 
     @staticmethod
-    def _reply_person_perspective(hwnd):
+    def reply_person_perspective(hwnd):
         """
         恢复角色视角
         """
@@ -81,7 +85,7 @@ class TruckCar:
             time.sleep(0.2)
         SetGhostBoards().click_press_and_release_by_key_name("w")
         time.sleep(0.5)
-        SetGhostMouse().move_mouse_wheel(-10)
+        # SetGhostMouse().move_mouse_wheel(-10)
 
     @staticmethod
     def _check_target_pos_is_center(img: PicCapture, target_pos: tuple) -> bool:
@@ -90,24 +94,24 @@ class TruckCar:
         """
         __img = img
         __w, __h = __img.pic_width, __img.pic_height
-        if int(__w * 0.2) < target_pos[0] < int(__w * 0.8) and target_pos[1] < int(__h * 0.5):
+        print(f"图片的宽高 {__w}_{__h}")
+        if int(__w * 0.45) < target_pos[0] < int(__w * 0.55) and target_pos[1] < int(__h * 0.5):
             """
             如果目标在屏幕的上半区域
             """
             print("镖车处于屏幕的上半区域，符合要求")
             return True
-        else:
-            print("镖车所处的坐标不符合要求")
-            return True
+        print("镖车所处的坐标不符合要求")
+        return False
 
-    def _check_task_status(self) -> bool:
+    def _check_task_status(self, hwnd: int) -> bool:
         """
         检测是否接取了任务。
         任务栏的押镖小旗子
         """
         time.sleep(1)
-        find_task: TruckCarPic = self.__get_pic_truck_car()
-        task_flag_status = self.windows.find_windows_coordinate_rect(handle=self.hwnd,
+        find_task: TruckCarPic = self._get_pic_truck_car()
+        task_flag_status = self.windows.find_windows_coordinate_rect(handle=hwnd,
                                                                      img=find_task.task_flag_status)
         if task_flag_status is None:
             """
@@ -122,22 +126,22 @@ class TruckCar:
             return False
         return True
 
-    def _check_task_end(self) -> bool:
+    def _check_task_end(self, hwnd: int) -> bool:
         """
         检测押镖是否结束
         """
-        if len(self.ocr.find_ocr_arbitrarily(self.windows.capture(self.hwnd).pic_content,
+        if len(self.ocr.find_ocr_arbitrarily(self.windows.capture(hwnd).pic_content,
                                              ["帮会获得运镖积分", "获得帮派贡献度"])) > 0:
             print("DriverTruckCarFuc: 运镖结束")
             return True
         return False
 
-    def _check_person_move_status(self, old_pos: int):
+    def _check_person_move_status(self, hwnd: int, old_pos: int):
         """
         游戏人物是否在移动
         :param old_pos: 旧地图坐标
         """
-        pos, _, _ = self.ocr.get_person_map(self.windows.capture(self.hwnd).pic_content)
+        pos, _, _ = self.ocr.get_person_map(self.windows.capture(hwnd).pic_content)
         if old_pos == pos:
             return False
         return True
@@ -153,7 +157,7 @@ class TruckCar:
         cc = self.ocr.find_ocr(image=new_pic, temp_text="你距离NPC太远了")
         if cc is not None:
             return False
-        elif self._check_person_move_status(old_pos) is False:
+        elif self._check_person_move_status(hwnd, old_pos) is False:
             return False
         return True
 
@@ -161,34 +165,40 @@ class TruckCar:
         """
         检查 运镖(驾车) 按钮
         """
-        __hwnd: int = hwnd
-        __img_car = self.windows.capture(__hwnd)
-        find_task: TruckCarPic = self.__get_pic_truck_car()
+        time.sleep(1)
+        __img_car = self.windows.capture(hwnd)
+        find_task: TruckCarPic = self._get_pic_truck_car()
         cos = self.ocr.find_ocr(__img_car.pic_content, "驾车")
-        cos2 = self.windows.find_windows_coordinate_rect(__hwnd, find_task.task_star_mode)
+        cos2 = self.windows.find_windows_coordinate_rect(hwnd, find_task.task_star_mode)
         if cos is not None:
-            driver_res = coordinate_change_from_windows(__hwnd, cos)
+            driver_res = coordinate_change_from_windows(hwnd, cos)
             print(f"DriverTruckCarFuc: 发现了 运镖(驾车) 文字({driver_res[0]},{driver_res[1]})")
             return driver_res
         elif cos2 is not None:
             print(f"DriverTruckCarFuc: 发现了 运镖(驾车) 图标({cos2[0]},{cos2[1]})")
             return cos2
+        print(f"DriverTruckCarFuc: 开始寻找 驾车 按钮是否加载")
         return None
 
-    def _find_car_pos(self, hwnd: int):
+    def _find_car_pos_in_display(self, hwnd: int):
         """
         查询小车在哪
         """
-        SetGhostBoards().click_press_and_release_by_code(37)  # 视角左转一下
+        self.get_map_and_person(hwnd)
+        print(f"正在寻找 {self._person_name}的镖车")
+        # SetGhostBoards().click_press_and_release_by_code(37)  # 视角左转一下
         time.sleep(1)
         im = self.windows.capture(hwnd)
-        rec = self.ocr.find_ocr(im.pic_content, f"{self.__person_name}的镖车")
+        rec = self.ocr.find_ocr(im.pic_content, f"{self._person_name}的镖车")
         if rec is not None:
             """
             找到车了，把视角转到这个车
             """
+            print("屏幕出现镖车了")
             if self._check_target_pos_is_center(im, rec):
+                print(f"转OK了, 当前坐标是 {rec[0], rec[1]}")
                 return coordinate_change_from_windows(hwnd, rec)
+            print("还没有转到符合条件的地方")
         return None
 
     # def driver_car(self, hwnd):
@@ -352,13 +362,14 @@ class FightMonster(TruckCar):
 
     def __init__(self):
         super().__init__()
-        self.__find_task: TruckCarPic = self.__get_pic_truck_car()
+        self.__find_task = None
 
     def check_fight_status(self, hwnd: int):
         """
         检查是否进入了战斗状态。
         避免识别场景过于复杂，在这里进行多重检测
         """
+        self.__find_task: TruckCarPic = self._get_pic_truck_car()
 
         if len(self.ocr.find_ocr_arbitrarily(self.windows.capture(hwnd).pic_content,
                                              ["您正在观看风景时", "忽然一道身影一闪而过",
@@ -386,15 +397,18 @@ class FightMonster(TruckCar):
                 return True
         return False
 
-    def __check_monster_skill_status(self, hwnd: int):
+    def _check_monster_skill_status(self, hwnd: int):
         """
         检测NPC是不是在放技能
         """
-        fight_tag_skill_list: list = self.__find_task.task_monster_target_skil
-        for target in fight_tag_skill_list:
-            task_monster_fight = self.windows.find_windows_coordinate_rect(handle=hwnd, img=target)
-            if task_monster_fight is not None:
-                return True
+        print("开始检测NPC是否准备放技能")
+        fight_tag_skill: str = self.__find_task.task_monster_target_skil
+        task_monster_fight = self.windows.find_windows_coordinate_rect(handle=hwnd, img=fight_tag_skill)
+        if task_monster_fight is not None:
+            print(f"检测到NPC要放技能了{task_monster_fight}")
+            SetGhostMouse().move_mouse_to(task_monster_fight[0], task_monster_fight[1])
+            return True
+        print("NPC没有要放技能")
         return False
 
     def __fight_func(self, hwnd: int):
@@ -404,30 +418,43 @@ class FightMonster(TruckCar):
 
         time.sleep(0.5)
         while 1:
-            if self.__check_monster_skill_status:
+            if self._check_monster_skill_status:
+                print("检测到劫匪要放技能了")
                 # 如果怪出技能了，快格挡
                 # 出技能前其实还能再打一下
                 if SetGhostMouse().is_mouse_button_pressed(3) is False:
+                    print("此时鼠标右键不是按住的，需要按住")
                     SetGhostMouse().press_mouse_right_button()  # 按住格挡
-
+                else:
+                    print("111")
             else:
+                print("劫匪没有要放技能")
                 # 如果没有检测到怪出技能
                 if SetGhostMouse().is_mouse_button_pressed(3):
+                    print("当前是格挡状态，松开格挡")
                     # 如果当前状态时格挡中
                     SetGhostMouse().release_mouse_right_button()  # 放开格挡
-                SetGhostBoards().click_press_and_release_by_code(81)  # 按Q
-                time.sleep(1)
+                else:
+                    print("222")
+            SetGhostBoards().click_press_and_release_by_code(81)  # 按Q
+            time.sleep(0.5)
             if len(self.ocr.find_ocr_arbitrarily(self.windows.capture(hwnd).pic_content,
                                                  ["成功攻克劫匪", "完成此次运镖后将额外获得"])) > 0:
                 """
                 如果出现了把怪打死的文字
                 """
+                print("把怪打死了，可以结束了")
                 break
             elif self.check_monster_npc_status(hwnd) is False:
                 """
                 如果怪消失了
                 """
+                print("怪消失了，可以结束了")
                 break
+        if SetGhostMouse().is_mouse_button_pressed(3):
+            print("打怪结束当前是格挡状态，松开格挡")
+            # 如果当前状态时格挡中
+            SetGhostMouse().release_mouse_right_button()  # 放开格挡
         return True
 
     def fight_monster(self, hwnd):
@@ -438,9 +465,9 @@ class FightMonster(TruckCar):
         WindowsHandle().activate_windows(hwnd)
         time.sleep(0.5)
 
-        if self.check_monster_npc_status(hwnd) is False:
-            # 没有发现劫匪NPC，主动按一下tab
-            SetGhostBoards().click_press_and_release_by_code(9)
+        SetGhostBoards().click_press_and_release_by_code(9)
+        SetGhostBoards().click_press_and_release_by_code(81)
+        SetGhostMouse().click_mouse_right_button()
 
         if self.__fight_func(hwnd):
             return True
@@ -455,7 +482,7 @@ class TeamFunc(TruckCar):
         """
         创建队伍
         """
-        find_team: Team = self.__get_pic_team()
+        find_team: Team = self._get_pic_team()
         flag_status = find_team.flag_team_status
         while 1:
 
@@ -465,7 +492,7 @@ class TeamFunc(TruckCar):
                 """
                 return False
 
-            rec = self.windows.find_windows_coordinate_rect(hwnd, img=self.__load_pic(flag_status))
+            rec = self.windows.find_windows_coordinate_rect(hwnd, img=self._load_pic(flag_status))
             if rec is None:
                 """
                 说明没有队伍，需要创建一下
@@ -512,7 +539,8 @@ class FindTaskNPCFunc(TruckCar):
         打开勤修
         """
         WindowsHandle().activate_windows(hwnd)
-        find_npc: FindTruckCarTaskNPC = self.__get_pic_find_task_npc()
+        find_npc: FindTruckCarTaskNPC = self._get_pic_find_task_npc()
+        self.get_map_and_person(hwnd)
         while 1:
 
             if work_status is False:
@@ -588,13 +616,13 @@ class FindTaskNPCFunc(TruckCar):
 
             time.sleep(1)
 
-            if self.__area_map == "成都":
+            if self._area_map == "成都":
                 __image_city: str = find_npc.task_point_chengdu
-            elif self.__area_map == "燕京":
+            elif self._area_map == "燕京":
                 __image_city: str = find_npc.task_point_yanjing
-            elif self.__area_map == "金陵":
+            elif self._area_map == "金陵":
                 __image_city: str = find_npc.task_point_jinling
-            elif self.__area_map == "苏州":
+            elif self._area_map == "苏州":
                 __image_city: str = find_npc.task_point_suzhou
             else:
                 __image_city: str = find_npc.task_point_chengdu
@@ -606,7 +634,7 @@ class FindTaskNPCFunc(TruckCar):
                 """
                 找到了成都
                 """
-                print(f"FindTaskNpc: 找到 {self.__area_map} 图标({qin_xiu_truck_point[0]},{qin_xiu_truck_point[1]})")
+                print(f"FindTaskNpc: 找到 {self._area_map} 图标({qin_xiu_truck_point[0]},{qin_xiu_truck_point[1]})")
                 SetGhostMouse().move_mouse_to(qin_xiu_truck_point[0], qin_xiu_truck_point[1])
                 time.sleep(1)
                 SetGhostMouse().click_mouse_left_button()
@@ -622,13 +650,13 @@ class FindTaskNPCFunc(TruckCar):
 
             time.sleep(1)
 
-            if self.__area_map == "成都":
+            if self._area_map == "成都":
                 __image_city_npc: str = find_npc.task_point_chengdu_npc
-            elif self.__area_map == "燕京":
+            elif self._area_map == "燕京":
                 __image_city_npc: str = find_npc.task_point_yanjing_npc
-            elif self.__area_map == "金陵":
+            elif self._area_map == "金陵":
                 __image_city_npc: str = find_npc.task_point_jinling_npc
-            elif self.__area_map == "苏州":
+            elif self._area_map == "苏州":
                 __image_city_npc: str = find_npc.task_point_suzhou_npc
             else:
                 __image_city_npc: str = find_npc.task_point_chengdu_npc
@@ -640,8 +668,7 @@ class FindTaskNPCFunc(TruckCar):
                 """
                 找到了成都NPC
                 """
-                print(
-                    f"FindTaskNpc: 找到 {self.__area_map} 的NPC图标({qin_xiu_truck_point_npc[0]},{qin_xiu_truck_point_npc[1]})")
+                print(f"FindTaskNpc: 找到 {self._area_map} 的NPC图标({qin_xiu_truck_point_npc[0]},{qin_xiu_truck_point_npc[1]})")
                 SetGhostMouse().move_mouse_to(qin_xiu_truck_point_npc[0], qin_xiu_truck_point_npc[1])
                 time.sleep(1)
                 SetGhostMouse().click_mouse_left_button()
@@ -664,7 +691,8 @@ class ReceiveTruckTask(TruckCar):
         暂时只实现了成都和燕京
         """
         WindowsHandle().activate_windows(hwnd)
-        find_task: TruckCarReceiveTask = self.__get_pic_receive_task()
+        find_task: TruckCarReceiveTask = self._get_pic_receive_task()
+        self.get_map_and_person(hwnd)
         while 1:
             time.sleep(1)
             truck_npc_receive_task_talk = self.windows.find_windows_coordinate_rect(handle=hwnd,
@@ -685,9 +713,9 @@ class ReceiveTruckTask(TruckCar):
         while 1:
             time.sleep(1)
 
-            if self.__area_map == "成都":
+            if self._area_map == "成都":
                 __image_city_npc: str = find_task.task_chengdu_NanGongShiJia
-            elif self.__area_map == "燕京":
+            elif self._area_map == "燕京":
                 __image_city_npc: str = find_task.task_yanjing_JunMaChang
             else:
                 __image_city_npc: str = find_task.task_chengdu_NanGongShiJia
@@ -767,7 +795,7 @@ class TransportTaskFunc(TruckCar):
     def __init__(self):
         super().__init__()
 
-    def transport_truck(self, hwnd: int):
+    def transport_truck(self, hwnd: int) -> bool:
         """
         开始运镖
         """
@@ -778,10 +806,25 @@ class TransportTaskFunc(TruckCar):
             time.sleep(0.5)
             SetGhostMouse().click_mouse_left_button()
 
-            if self.check_person_move_status(hwnd, check_wait_time=2):
-                # 等待2秒，看看坐标有没有更新
-                print(f"TransportTaskFunc: 成功开始运镖，注意 劫匪NPC 刷新)")
+            time.sleep(1)
+            find_pic = self.windows.capture(hwnd)
+            find_pic = find_pic.pic_content[int(find_pic.pic_height * 0.1):int(find_pic.pic_height * 0.5), int(find_pic.pic_width * 0.3):int(find_pic.pic_width * 0.7)]
+            if self.ocr.find_ocr(find_pic, "距离NPC太远") is not None:
+                """
+                如果出现距离NPC太远了，说明开车失败了
+                """
+                print("出现“距离NPC太远”的提示")
+                return False
+
+            elif self.check_person_move_status(hwnd, check_wait_time=3):
+                # 等待3秒，看看坐标有没有更新
+                """
+                这里有问题
+                """
+                print(f"TransportTaskFunc: 成功开始运镖，注意 劫匪NPC 刷新")
                 return True
+            return False
+        print(f"TransportTaskFunc: 人物2秒内没有移动，距离镖车太远")
         return False
 
     def find_driver_truck_type(self, hwnd: int):
@@ -794,21 +837,21 @@ class TransportTaskFunc(TruckCar):
         """
         查找镖车的坐标
         """
-        return self._find_car_pos(hwnd)
+        return self._find_car_pos_in_display(hwnd)
 
-    def check_task_status(self) -> bool:
+    def check_task_status(self, hwnd: int) -> bool:
         """
         检测押镖是否已经在NPC处接了任务
         """
-        if self._check_task_status():
+        if self._check_task_status(hwnd):
             return True
         return False
 
-    def check_task_end(self) -> bool:
+    def check_task_end(self, hwnd: int) -> bool:
         """
         检测押镖是否结束
         """
-        if self._check_task_end():
+        if self._check_task_end(hwnd):
             return True
         return False
 
@@ -818,6 +861,6 @@ class TransportTaskFunc(TruckCar):
         """
         pos, _, _ = self.ocr.get_person_map(self.windows.capture(hwnd).pic_content)
         time.sleep(check_wait_time)
-        if self._check_person_move_status(pos) is False:
+        if self._check_person_move_status(hwnd, pos) is False:
             return False
         return True

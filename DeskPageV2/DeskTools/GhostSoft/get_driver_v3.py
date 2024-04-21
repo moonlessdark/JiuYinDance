@@ -409,4 +409,4 @@ class SetGhostMouse(SetGhostDriver):
         :param m_btn: 整数类型，鼠标键序号（1:左键 2:中键 3:右键）
         """
         result_int: int = self.ghost_driver.ismousebuttonpressed(m_btn)
-        return True if result_int > 0 else False
+        return True if result_int == 1 else False

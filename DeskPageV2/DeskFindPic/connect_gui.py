@@ -4,11 +4,11 @@ import time
 
 from PySide6 import QtWidgets
 from PySide6.QtGui import QTextCursor
-from PySide6.QtWidgets import QLabel, QMessageBox, QDialog
+from PySide6.QtWidgets import QMessageBox
 
 from DeskPageV2.DeskFindPic.findCars import TruckCar
 from DeskPageV2.DeskGUIQth.execut_th import DanceThByFindPic, ScreenGameQth, QProgressBarQth, AutoPressKeyQth, \
-    TruckCarTaskQth
+    TruckCarTaskQth, TruckTaskFightMonsterQth, TruckTaskFindCarQth
 from DeskPageV2.DeskPageGUI.MainPage import MainGui
 from DeskPageV2.DeskTools.DmSoft.get_dm_driver import getDM, getWindows, getKeyBoardMouse
 from DeskPageV2.DeskTools.GhostSoft.get_driver_v3 import GetGhostDriver, SetGhostBoards
@@ -32,7 +32,11 @@ class Dance(MainGui):
         self.th_screen = ScreenGameQth()
         self.th_progress_bar = QProgressBarQth()
         self.th_key_press_auto = AutoPressKeyQth()
-        self.th_truck_task = TruckCarTaskQth()
+
+        # 押镖
+        self.th_truck_task = TruckCarTaskQth()  # 运镖
+        self.th_truck_fight_monster = TruckTaskFightMonsterQth()  # 打怪
+        self.th_truck_find_car = TruckTaskFindCarQth()  # 找NPC
 
         # # 键盘驱动对象
         self.dm_window = getWindows()
@@ -71,6 +75,19 @@ class Dance(MainGui):
 
         self.th_truck_task.sin_out.connect(self.print_logs)
         self.th_truck_task.sin_work_status.connect(self._th_execute_stop)
+
+        # 押镖相关的信号槽
+        self.th_truck_task.sin_out.connect(self.print_logs)
+        self.th_truck_task.next_step.connect(self.truck_task_func_switch)
+        self.th_truck_task.sin_work_status.connect(self._th_execute_stop)
+
+        self.th_truck_find_car.sin_out.connect(self.print_logs)
+        self.th_truck_find_car.next_step.connect(self.truck_task_func_switch)
+        self.th_truck_find_car.sin_work_status.connect(self._th_execute_stop)
+
+        self.th_truck_fight_monster.sin_out.connect(self.print_logs)
+        self.th_truck_fight_monster.next_step.connect(self.truck_task_func_switch)
+        self.th_truck_fight_monster.sin_work_status.connect(self._th_execute_stop)
 
         self.text_browser_print_log.textChanged.connect(lambda: self.text_browser_print_log.moveCursor(QTextCursor.End))
 
@@ -388,17 +405,13 @@ class Dance(MainGui):
                 如果是押镖
                 """
                 if len(windows_list) == 1:
-                    TruckCar().__reply_perspective(windows_list[0])
-                    TruckCar().create_team(windows_list[0])
-                    TruckCar().find_truck_task_npc(windows_list[0])
-                    TruckCar().receive_task(windows_list[0])
-                    TruckCar().driver_car(windows_list[0])
-                    # self.th_truck_task.get_param(windows_handle=windows_list[0], truck_count=5)
-                    # self.th_truck_task.start()
-                    # self.changed_execute_button_text_and_status(True)
-                    # # 开始执行跑马灯效果
-                    # self.th_progress_bar.start_init()
-                    # self.th_progress_bar.start()
+                    self.th_truck_task.get_param(windows_list[0], 5)
+                    self.th_truck_task.start()
+
+                    self.changed_execute_button_text_and_status(True)
+                    # 开始执行跑马灯效果
+                    self.th_progress_bar.start_init()
+                    self.th_progress_bar.start()
 
             else:
                 self.print_logs("还未选择需要执行的功能")
@@ -539,3 +552,29 @@ class Dance(MainGui):
             res_list: list = list(eval(res_file))
             for res in res_list:
                 self.list_widget.addItem(res)
+
+    def truck_task_func_switch(self, step: int):
+        """
+        切换方法
+        :param step: 1 是扫描打怪。
+                     2 是重新查找 镖车并开车,
+                     3: 打怪中，暂时查找车辆，
+                     4：打怪结束，重新查找车辆
+        """
+        # 前面已经做了判断，只能有一个窗口执行，所以这里直接获取
+        windows_handle = self.check_handle_is_selected()[0]
+        if step == 1:
+            print("接收到信号，开始等待出怪")
+            self.th_truck_fight_monster.get_param(windows_handle)
+            self.th_truck_fight_monster.start()
+        elif step == 2:
+            print("接收到信号，开始查找镖车")
+            self.th_truck_find_car.get_param(windows_handle, True)
+            self.th_truck_find_car.start()
+        elif step == 3:
+            print("接收到信号，正在打怪中，暂时停止找车")
+            self.th_truck_find_car.get_param(windows_handle, False)
+        elif step == 4:
+            print("接收到信号，打怪结束，开始继续找车")
+            self.th_truck_find_car.get_param(windows_handle, True)
+            self.th_truck_find_car.start()
