@@ -405,6 +405,7 @@ class Dance(MainGui):
                 如果是押镖
                 """
                 if len(windows_list) == 1:
+
                     self.th_truck_task.get_param(windows_list[0], 5)
                     self.th_truck_task.start()
 

@@ -520,6 +520,8 @@ class TruckCarTaskQth(QThread):
                 self.sin_work_status.emit(False)
                 return None
 
+            self.__get_task.reply_person_perspective(self.windows_handle)
+
             # 创建队伍
             self.__team.create_team(self.windows_handle)
             # 查询地图和NPC
@@ -544,10 +546,8 @@ class TruckCarTaskQth(QThread):
                     self.mutex.unlock()  # 解锁
                     self.sin_work_status.emit(False)
                     return None
-                if self.__transport_task.check_task_status(self.windows_handle) is False:
-                    self.sin_out.emit("未检测到接镖成功标志，等待...")
-                    continue
-                if self.__transport_task.check_task_end(self.windows_handle):
+                if self.__transport_task.check_task_status(self.windows_handle) is False or self.__transport_task.check_task_end(self.windows_handle):
+                    self.sin_out.emit("未检测到接镖成功标志，大概已经结束了")
                     self.sin_out.emit(f"本次押镖(第{count_i + 1}轮已经完成)")
                     break
         self.mutex.unlock()  # 解锁
@@ -610,6 +610,9 @@ class TruckTaskFindCarQth(QThread):
 
     def run(self):
         self.mutex.lock()  # 先加锁
+
+        # 旋转一周的次数
+        round_count: int = 0
         while 1:
 
             if self.working is False:
@@ -618,7 +621,23 @@ class TruckTaskFindCarQth(QThread):
                 self.sin_work_status.emit(False)
                 return None
 
+            if round_count == 20:
+                # 转了一周之后，还是没找到，就调整一下视角
+                self.__transport_task.reply_person_perspective_up(self.windows_handle)
+                round_count = 0
             print("TransportTaskFunc 开始进行查询镖车的操作")
+
+            if self.__transport_task.transport_truck(self.windows_handle):
+                self.sin_out.emit("开始押镖,请注意劫匪NPC刷新")
+
+            __car_quadrant: int = self.__transport_task.find_car_quadrant(self.windows_handle)
+            if __car_quadrant in [0, 3, 4]:
+                """
+                如果在第三、四象限，那么这不是我想要的
+                """
+                print(f"镖车在屏幕的第 {__car_quadrant} 象限")
+                continue
+
             __car_pos = self.__transport_task.find_car_pos(self.windows_handle)
             if __car_pos is not None:
                 self.sin_out.emit(f"TransportTaskFunc: 找到了 镖车 的坐标({__car_pos[0]},{__car_pos[1]})")
@@ -658,8 +677,19 @@ class TruckTaskFindCarQth(QThread):
                             # 退出循环，从头再来一次
                             break
             else:
+                print(f"镖车在屏幕的第 {__car_quadrant} 象限，但是距离中间太近了")
+                if __car_quadrant == 1:
+                    """
+                    如果在第一象限，但是不符合规则；那么就向 左侧 转一下
+                    """
+                    SetGhostBoards().click_press_and_release_by_code(37)
+                else:
+                    """
+                    如果在第二象限，但是不符合规则；那么就向 右侧 转一下
+                    """
+                    SetGhostBoards().click_press_and_release_by_code(39)
                 print("TransportTaskFunc: 没有找到镖车，旋转一下继续找")
-                SetGhostBoards().click_press_and_release_by_code(37)
+                round_count += 1
 
 
 class TruckTaskFightMonsterQth(QThread):
