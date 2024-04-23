@@ -1,5 +1,7 @@
 import os
 import random
+import time
+
 import win32gui
 from PySide6.QtCore import Signal, QThread, QWaitCondition, QMutex
 
@@ -522,6 +524,10 @@ class TruckCarTaskQth(QThread):
 
             self.__get_task.reply_person_perspective(self.windows_handle)
 
+            # for i in range(4):
+            #     # 看看角色旋转视角行不行
+            #     self.__get_task.reply_person_perspective_right(self.windows_handle)
+            #     time.sleep(2)
             # 创建队伍
             self.__team.create_team(self.windows_handle)
             # 查询地图和NPC
@@ -622,21 +628,13 @@ class TruckTaskFindCarQth(QThread):
                 return None
 
             if round_count == 20:
-                # 转了一周之后，还是没找到，就调整一下视角
+                # 转了一周之后，还是没找到，就调整一下视角，拉到最远除
                 self.__transport_task.reply_person_perspective_up(self.windows_handle)
                 round_count = 0
             print("TransportTaskFunc 开始进行查询镖车的操作")
 
             if self.__transport_task.transport_truck(self.windows_handle):
                 self.sin_out.emit("开始押镖,请注意劫匪NPC刷新")
-
-            __car_quadrant: int = self.__transport_task.find_car_quadrant(self.windows_handle)
-            if __car_quadrant in [0, 3, 4]:
-                """
-                如果在第三、四象限，那么这不是我想要的
-                """
-                print(f"镖车在屏幕的第 {__car_quadrant} 象限")
-                continue
 
             __car_pos = self.__transport_task.find_car_pos(self.windows_handle)
             if __car_pos is not None:
@@ -677,17 +675,29 @@ class TruckTaskFindCarQth(QThread):
                             # 退出循环，从头再来一次
                             break
             else:
-                print(f"镖车在屏幕的第 {__car_quadrant} 象限，但是距离中间太近了")
+                __car_quadrant: int = self.__transport_task.find_car_quadrant(self.windows_handle)
+                print(f"镖车在屏幕的第 {__car_quadrant} 象限")
                 if __car_quadrant == 1:
                     """
                     如果在第一象限，但是不符合规则；那么就向 左侧 转一下
                     """
                     SetGhostBoards().click_press_and_release_by_code(37)
-                else:
+                elif __car_quadrant == 2:
                     """
                     如果在第二象限，但是不符合规则；那么就向 右侧 转一下
                     """
                     SetGhostBoards().click_press_and_release_by_code(39)
+                elif __car_quadrant == 3:
+                    """
+                    如果在第三象限，就转一个大的，转到第一象限去
+                    """
+                    SetGhostBoards().click_press_and_release_by_key_code_hold_time(37, 0.5)
+                elif __car_quadrant == 4:
+                    """
+                    如果在第四象限，就转一个大的，转到第二象限去
+                    """
+                    SetGhostBoards().click_press_and_release_by_key_code_hold_time(39, 0.5)
+
                 print("TransportTaskFunc: 没有找到镖车，旋转一下继续找")
                 round_count += 1
 

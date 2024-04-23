@@ -76,14 +76,15 @@ class TruckCar:
     @staticmethod
     def reply_person_perspective(hwnd: int):
         """
-        恢复角色视角
+        恢复角色向前的视角
         """
         WindowsHandle().activate_windows(hwnd)
+        SetGhostBoards().click_press_and_release_by_key_name("w")
+        time.sleep(0.2)
         SetGhostBoards().click_press_and_release_by_key_code_hold_time(40, 3)  # 先向下到底3秒
         SetGhostBoards().click_press_and_release_by_key_code_hold_time(38, 0.6)  # 再向上1秒
-        time.sleep(0.2)
-        SetGhostBoards().click_press_and_release_by_key_name("w")
-        # SetGhostMouse().move_mouse_wheel(10)
+        time.sleep(0.1)
+        SetGhostMouse().move_mouse_wheel(-5)  # 拉远镜头
 
     @staticmethod
     def reply_person_perspective_up(hwnd: int):
@@ -91,11 +92,40 @@ class TruckCar:
         上移视角，视角拉到远处，用于查找车辆
         """
         WindowsHandle().activate_windows(hwnd)
-        SetGhostBoards().click_press_and_release_by_key_code_hold_time(38, 2)  # 先向下到底3秒
-        SetGhostBoards().click_press_and_release_by_key_code_hold_time(40, 0.6)  # 再向上1秒
-        time.sleep(0.2)
-        # SetGhostBoards().click_press_and_release_by_key_name("w")
-        SetGhostMouse().move_mouse_wheel(5)  # 视角拉远一些
+        SetGhostBoards().click_press_and_release_by_key_code_hold_time(38, 2)
+        time.sleep(0.1)
+        SetGhostMouse().move_mouse_wheel(-15)  # 视角拉远一些
+
+    @staticmethod
+    def reply_person_perspective_left(hwnd: int):
+        """
+        角色向左转
+        """
+        WindowsHandle().activate_windows(hwnd)
+        SetGhostBoards().click_press_and_release_by_key_code_hold_time(37, 0.4)
+        time.sleep(0.1)
+        SetGhostBoards().click_press_and_release_by_key_name("w")
+
+    @staticmethod
+    def reply_person_perspective_right(hwnd: int):
+        """
+        角色向右转
+        """
+        WindowsHandle().activate_windows(hwnd)
+        SetGhostBoards().click_press_and_release_by_key_code_hold_time(39, 0.4)
+        time.sleep(0.1)
+        SetGhostBoards().click_press_and_release_by_key_name("w")
+
+    @staticmethod
+    def reply_person_perspective_back(hwnd: int):
+        """
+        角色向后转
+        """
+        WindowsHandle().activate_windows(hwnd)
+        SetGhostBoards().click_press_and_release_by_key_code_hold_time(39, 0.8)  # 先向上到底3秒
+        time.sleep(0.1)
+        SetGhostBoards().click_press_and_release_by_key_name("w")
+
 
     @staticmethod
     def _check_target_pos_is_center(img: PicCapture, target_pos: tuple) -> bool:
@@ -890,7 +920,7 @@ class TransportTaskFunc(TruckCar):
                 print("出现“距离NPC太远”的提示")
                 return False
 
-            elif self.check_person_move_status(hwnd, check_wait_time=4):
+            elif self.check_person_move_status(hwnd, check_wait_time=5):
                 # 等待3秒，看看坐标有没有更新
                 """
                 这里有问题
