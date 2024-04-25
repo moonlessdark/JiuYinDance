@@ -524,17 +524,19 @@ class TruckCarTaskQth(QThread):
 
             self.__get_task.reply_person_perspective(self.windows_handle)
 
-            # for i in range(4):
-            #     # 看看角色旋转视角行不行
-            #     self.__get_task.reply_person_perspective_right(self.windows_handle)
-            #     time.sleep(2)
             # 创建队伍
             self.__team.create_team(self.windows_handle)
             # 查询地图和NPC
             self.__find_npc.find_truck_task_npc(self.windows_handle)
             # 接取任务
             self.__get_task.receive_task(self.windows_handle)
-
+            """
+            当前为调试代码，
+            燕京场景，接镖后人物距离镖车会较远，直接
+            """
+            __car = self.__transport_task.find_truck_car_center_pos(hwnd=self.windows_handle)
+            if __car is not None:
+                SetGhostBoards().click_press_and_release_by_key_name_hold_time("w", 2)
             if self.__transport_task.transport_truck(self.windows_handle):
                 self.sin_out.emit("开始押镖,请注意劫匪NPC刷新")
                 self.next_step.emit(1)  # 开始等待劫匪出现
