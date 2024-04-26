@@ -79,12 +79,16 @@ class TruckCar:
         恢复角色向前的视角
         """
         WindowsHandle().activate_windows(hwnd)
+        time.sleep(0.5)
         SetGhostBoards().click_press_and_release_by_key_name("w")
         time.sleep(0.5)
-        SetGhostBoards().click_press_and_release_by_key_code_hold_time(40, 5)  # 先向下到底3秒
-        time.sleep(0.5)
+        SetGhostBoards().click_press_and_release_by_key_code_hold_time(40, 3)  # 先向下到底3秒
+        time.sleep(1)
         SetGhostBoards().click_press_and_release_by_key_code_hold_time(38, 0.6)  # 再向上1秒
-        # SetGhostMouse().move_mouse_wheel(-5)  # 拉远镜头
+        time.sleep(1)
+        SetGhostMouse().move_mouse_wheel(20)  # 拉近镜头
+        time.sleep(1)
+        SetGhostMouse().move_mouse_wheel(-5)  # 拉远镜头
 
     @staticmethod
     def reply_person_perspective_up(hwnd: int):
@@ -92,8 +96,9 @@ class TruckCar:
         上移视角，视角拉到远处，用于查找车辆
         """
         WindowsHandle().activate_windows(hwnd)
+        time.sleep(0.5)
         SetGhostBoards().click_press_and_release_by_key_code_hold_time(38, 2)
-        time.sleep(1)
+        time.sleep(0.5)
         SetGhostMouse().move_mouse_wheel(-15)  # 视角拉远一些
 
     @staticmethod
@@ -264,7 +269,7 @@ class TruckCar:
         print(f"DriverTruckCarFuc: 开始寻找 驾车 按钮是否加载")
         return None
 
-    def _find_car_center_pos_in_display(self, hwnd: int):
+    def find_car_center_pos_in_display(self, hwnd: int):
         """
         查询小车是不是在屏幕中间
         """
@@ -413,7 +418,7 @@ class FightMonster(TruckCar):
                     print("当前是格挡状态，松开格挡")
                     # 如果当前状态时格挡中
                     SetGhostMouse().release_mouse_right_button()  # 放开格挡
-            SetGhostBoards().click_press_and_release_by_code(81)  # 按Q
+            SetGhostBoards().click_press_and_release_by_key_name("Q")  # 按Q
             time.sleep(0.5)
             if len(self.ocr.find_ocr_arbitrarily(self.windows.capture(hwnd).pic_content,
                                                  ["成功攻克劫匪", "完成此次运镖后将额外获得"])) > 0:
@@ -426,8 +431,8 @@ class FightMonster(TruckCar):
                 """
                 如果怪消失了
                 """
-                print("怪消失了，可以结束了")
-                break
+                print("怪消失了，按一下tab 找怪")
+                # SetGhostBoards().click_press_and_release_by_key_name("Tab")
         if SetGhostMouse().is_mouse_button_pressed(3):
             print("打怪结束当前是格挡状态，松开格挡")
             # 如果当前状态时格挡中
@@ -442,8 +447,9 @@ class FightMonster(TruckCar):
         WindowsHandle().activate_windows(hwnd)
         time.sleep(0.5)
 
-        SetGhostBoards().click_press_and_release_by_code(9)
-        SetGhostBoards().click_press_and_release_by_code(81)
+        # SetGhostBoards().click_press_and_release_by_key_name("Tab")
+        time.sleep(0.5)
+        SetGhostBoards().click_press_and_release_by_key_name("Q")
         SetGhostMouse().click_mouse_right_button()
 
         if self.__fight_func(hwnd):
@@ -783,70 +789,31 @@ class TransportTaskFunc(TruckCar):
             time.sleep(0.5)
             SetGhostMouse().click_mouse_left_button()
 
-            time.sleep(1)
+            time.sleep(0.5)
             find_pic = self.windows.capture(hwnd)
             find_pic = find_pic.pic_content[int(find_pic.pic_height * 0.1):int(find_pic.pic_height * 0.5), int(find_pic.pic_width * 0.3):int(find_pic.pic_width * 0.7)]
             if self.ocr.find_ocr(find_pic, "距离NPC太远") is not None:
                 """
                 如果出现距离NPC太远了，说明开车失败了
                 """
-                print("出现“距离NPC太远”的提示")
+                print("TransportTaskFunc: 出现“距离NPC太远”的提示")
                 return False
-
-            elif self.check_person_move_status(hwnd, check_wait_time=5):
-                # 等待3秒，看看坐标有没有更新
-                """
-                这里有问题
-                """
-                print(f"TransportTaskFunc: 成功开始运镖，注意 劫匪NPC 刷新")
-                return True
-            return False
-        print(f"TransportTaskFunc: 人物2秒内没有移动，距离镖车太远")
+            # elif self.check_person_move_status(hwnd, check_wait_time=3):
+            #     # 等待3秒，看看坐标有没有更新
+            #     """
+            #     这里有问题
+            #     """
+            #     print(f"TransportTaskFunc: 成功开始运镖，注意 劫匪NPC 刷新")
+            #     return True
+            return True
+        print(f"TransportTaskFunc: 未找到镖车的 “驾车” 按钮")
         return False
 
-    def find_truck_car_in_yanjin(self, hwnd):
-        """
-        燕京押镖
-        """
-        while 1:
-            # 修正视角面向押镖NPC
-            npc_pos = self.ocr.find_ocr(hwnd, "邢烈风（长风镖局镖师）")
-            if npc_pos is not None:
-                target_pos = self._find_target_center_pos_in_display(hwnd, npc_pos)
-                if target_pos is not None:
-                    return target_pos
-                cap = self.windows.capture(hwnd)
-                __car_quadrant: int = self._check_target_pos_direction(cap.pic_content, target_pos=res_car)
-                print(f"镖车在屏幕的第 {__car_quadrant} 象限")
-                if __car_quadrant == 1:
-                    """
-                    如果在第一象限，但是不符合规则；那么就向 左侧 转一下
-                    """
-                    SetGhostBoards().click_press_and_release_by_key_code_hold_time(37, 0.2)
-                elif __car_quadrant == 2:
-                    """
-                    如果在第二象限，但是不符合规则；那么就向 右侧 转一下
-                    """
-                    SetGhostBoards().click_press_and_release_by_key_code_hold_time(39, 0.2)
-                elif __car_quadrant == 3:
-                    """
-                    如果在第三象限，就转一个大的，转到第一象限去
-                    """
-                    SetGhostBoards().click_press_and_release_by_key_code_hold_time(37, 0.5)
-                elif __car_quadrant == 4:
-                    """
-                    如果在第四象限，就转一个大的，转到第二象限去
-                    """
-                    SetGhostBoards().click_press_and_release_by_key_code_hold_time(39, 0.5)
-            # 先向左旋转90度,一共旋转4次，就是是旋转一周了
-            self.reply_person_perspective_left(hwnd)
-            time.sleep(1)
-
-    def find_truck_car_center_pos(self, hwnd: int) -> tuple or None:
+    def find_truck_car_center_pos(self, hwnd: int, find_count: int = 10) -> tuple or None:
         """
         保持镖车在屏幕中间
         """
-        for i in range(10):
+        for i in range(find_count):
             time.sleep(1)
             # 看看镖车在不在
             res_car = self._find_car_pos_in_display(hwnd)
@@ -854,7 +821,7 @@ class TransportTaskFunc(TruckCar):
                 # 如果镖车在，那么就看看在不在中间
                 while 1:
                     time.sleep(1)
-                    res_center_car = self._find_car_center_pos_in_display(hwnd)
+                    res_center_car = self.find_car_center_pos_in_display(hwnd)
                     if res_center_car is not None:
                         # 在中间
                         print("镖车在屏幕中间位置")
@@ -902,7 +869,7 @@ class TransportTaskFunc(TruckCar):
         """
         查找镖车的坐标
         """
-        return self._find_car_center_pos_in_display(hwnd)
+        return self.find_car_center_pos_in_display(hwnd)
 
     def find_car_quadrant(self, hwnd: int):
         """

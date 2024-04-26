@@ -8,7 +8,7 @@ from PySide6.QtWidgets import QMessageBox
 
 from DeskPageV2.DeskFindPic.findCars import TruckCar
 from DeskPageV2.DeskGUIQth.execut_th import DanceThByFindPic, ScreenGameQth, QProgressBarQth, AutoPressKeyQth, \
-    TruckCarTaskQth, TruckTaskFightMonsterQth, TruckTaskFindCarQth
+    TruckCarTaskQth, TruckTaskFightMonsterQth, TruckTaskFindCarQth, FollowTheTrailOfTruckQth
 from DeskPageV2.DeskPageGUI.MainPage import MainGui
 from DeskPageV2.DeskTools.DmSoft.get_dm_driver import getDM, getWindows, getKeyBoardMouse
 from DeskPageV2.DeskTools.GhostSoft.get_driver_v3 import GetGhostDriver, SetGhostBoards
@@ -37,6 +37,7 @@ class Dance(MainGui):
         self.th_truck_task = TruckCarTaskQth()  # 运镖
         self.th_truck_fight_monster = TruckTaskFightMonsterQth()  # 打怪
         self.th_truck_find_car = TruckTaskFindCarQth()  # 找NPC
+        self.th_follow_truck = FollowTheTrailOfTruckQth()  # 查找镖车
 
         # # 键盘驱动对象
         self.dm_window = getWindows()
@@ -88,6 +89,10 @@ class Dance(MainGui):
         self.th_truck_fight_monster.sin_out.connect(self.print_logs)
         self.th_truck_fight_monster.next_step.connect(self.truck_task_func_switch)
         self.th_truck_fight_monster.sin_work_status.connect(self._th_execute_stop)
+
+        self.th_follow_truck.sin_out.connect(self.print_logs)
+        self.th_follow_truck.next_step.connect(self.truck_task_func_switch)
+        self.th_follow_truck.sin_work_status.connect(self._th_execute_stop)
 
         self.text_browser_print_log.textChanged.connect(lambda: self.text_browser_print_log.moveCursor(QTextCursor.End))
 
@@ -575,7 +580,19 @@ class Dance(MainGui):
         elif step == 3:
             print("接收到信号，正在打怪中，暂时停止找车")
             self.th_truck_find_car.get_param(windows_handle, False)
+            self.th_follow_truck.get_param(windows_handle, False)  # 停止跟踪车辆
         elif step == 4:
             print("接收到信号，打怪结束，开始继续找车")
             self.th_truck_find_car.get_param(windows_handle, True)
             self.th_truck_find_car.start()
+        elif step == 5:
+            print("接收到信号，保持镖车在屏幕中心区域")
+            self.th_follow_truck.get_param(windows_handle, True)
+            self.th_follow_truck.start()
+        else:
+            """
+            如果是其他值，一般是 0，就表示结束
+            """
+            self.th_truck_fight_monster.get_param(windows_handle, False)  # 停止打怪
+            self.th_truck_find_car.get_param(windows_handle, False)  # 停止找车
+            self.th_follow_truck.get_param(windows_handle, False)  # 停止跟踪车辆
