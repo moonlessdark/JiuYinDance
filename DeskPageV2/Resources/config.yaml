@@ -39,9 +39,7 @@ TruckCarPic:
   task_flags_yellow_car: ./DeskPageV2/Resources/TruckCarPic/car_yellow_flag.png
   task_monster_fight: ./DeskPageV2/Resources/TruckCarPic/fight_status.png
   task_monster_target:
-  - ./DeskPageV2/Resources/TruckCarPic/car_monster.png
   - ./DeskPageV2/Resources/TruckCarPic/car_monster2.png
-  - ./DeskPageV2/Resources/TruckCarPic/car_monster3.png
   task_monster_target_skill: ./DeskPageV2/Resources/TruckCarPic/car_monster_skill_1.png
   task_star_mode: ./DeskPageV2/Resources/TruckCarPic/truck_type.png
   task_car_selected: ./DeskPageV2/Resources/TruckCarPic/truck_car_selected.png

@@ -1,5 +1,6 @@
 import os
 import random
+import time
 
 import win32gui
 from PySide6.QtCore import Signal, QThread, QWaitCondition, QMutex
@@ -11,6 +12,11 @@ from DeskPageV2.DeskTools.DmSoft.get_dm_driver import getKeyBoardMouse, getWindo
 from DeskPageV2.DeskTools.WindowsSoft.get_windows import WindowsCapture, GetHandleList, PicCapture
 from DeskPageV2.DeskTools.GhostSoft.get_driver_v3 import SetGhostBoards
 from DeskPageV2.Utils.keyEvenQTAndGhost import qt_key_get_ghost_key_code
+
+# 是否已经与接镖的NPC战斗，此变量主要用于判断是否需要拉高视角查询车辆
+is_fight_npc: bool = False
+is_break: bool = False
+is_driver_car: bool = False  # 是否已经驾车出发
 
 
 def get_local_time():
@@ -230,8 +236,8 @@ class DanceThByFindPic(QThread):
                     如果分辨率太低了
                     """
                     if wait_game_pic is False:
-                        self.sin_out.emit(f"游戏窗口分辨率过低，请重新设置游戏窗口m分辨率大于1366*768。\n"
-                                          f"当前分辨率为 {pic_contents.pic_width}*{pic_contents.pic_height} 。")
+                        # self.sin_out.emit(f"游戏窗口分辨率过低，请重新设置游戏窗口m分辨率大于1366*768。\n"
+                        #                   f"当前分辨率为 {pic_contents.pic_width}*{pic_contents.pic_height} 。")
                         self.sin_out.emit("等待窗口刷新...")
                     else:
                         self.sin_out.emit("等待窗口刷新...")
@@ -467,7 +473,7 @@ class AutoPressKeyQth(QThread):
 
 class TruckCarTaskQth(QThread):
     """
-    押镖
+    本线程负责接镖和检测是否结束
     """
     sin_out = Signal(str)
     next_step = Signal(int)  # 下一步: 1 是扫描打怪。 2 是重新查找 镖车并开车
@@ -482,6 +488,8 @@ class TruckCarTaskQth(QThread):
 
         self.windows_opt = GetHandleList()
 
+        self.is_wait: bool = False
+
         self.mutex = QMutex()
         self.windows_handle = 0
 
@@ -495,13 +503,8 @@ class TruckCarTaskQth(QThread):
         # self.wait()
         self.working = False
 
-    def stop_execute_init(self):
-        """
-        线程暂停,所有参数重置为null
-        :return:
-        """
-        self.working = False
-        self.windows_handle = 0
+    def set_wait_status(self,  is_wait: bool):
+        self.is_wait = is_wait
 
     def get_param(self, windows_handle: int, truck_count: int):
         """
@@ -514,9 +517,9 @@ class TruckCarTaskQth(QThread):
 
     def run(self):
         self.mutex.lock()  # 先加锁
-
-        is_first_car: bool = True
-
+        print(f"{get_local_time()}: 开始执行接取任务的线程")
+        self.sin_out.emit("5秒后开始启动")
+        time.sleep(5)
         for count_i in range(self.truck_count):
             if self.working is False:
                 self.mutex.unlock()  # 解锁
@@ -532,43 +535,21 @@ class TruckCarTaskQth(QThread):
             # 接取任务
             self.__get_task.receive_task(self.windows_handle)
 
-            # 开始等待劫匪出现
+            # 发送信号，等待劫匪出现
             self.next_step.emit(1)
-            print("Single:已经接镖成功,发送信号至“等待劫匪出现”")
+            print(f"{get_local_time()}:Single:接镖成功,发送信号: 1, 等待刷新NPC怪")
+            # 发送信号，等待劫匪出现
+            self.next_step.emit(2)
+            print(f"{get_local_time()}:Single:接镖成功,发送信号: 2, 进入驾车模式")
+            self.next_step.emit(4)
+            print(f"{get_local_time()}:Single:接镖成功,发送信号: 4, 查找画面中的车辆")
 
             while 1:
-                if self.working is False:
-                    # 结束了
-                    self.mutex.unlock()  # 解锁
-                    self.sin_work_status.emit(False)
-                    self.next_step.emit(0)  # 全部结束
-                    return None
-
-                if is_first_car:
-                    # 如果此时是接任务后的第一次寻找镖车
-                    """
-                    当前为调试代码，
-                    燕京场景，接镖后人物距离镖车会较远，直接
-                    """
-                    __car = self.__transport_task.find_truck_car_center_pos(hwnd=self.windows_handle, find_count=1)
-                    if __car is None:
-                        continue
-                        # 如果发现镖车在 画面中间的位置附近，就往前走2秒，靠近镖车
-                    SetGhostBoards().click_press_and_release_by_key_name_hold_time("w", 1)
-                    print("往镖车方向走2步，直接上车")
-                    if self.__transport_task.transport_truck(self.windows_handle):
-                        # 如果出现了“驾车”的按钮，尝试点击 “驾车”
-                        self.sin_out.emit("开始押镖")
-                        # 鼠标离镖车远一点
-                        __pos = SetGhostMouse().get_mouse_x_y()
-                        SetGhostMouse().move_mouse_to(100, 100)
-                        print("鼠标离镖车远一点")
-                    is_first_car = False
-                    self.next_step.emit(5)
-
-                if self.__transport_task.check_task_status(self.windows_handle) is False or self.__transport_task.check_task_end(self.windows_handle):
-                    self.sin_out.emit("未检测到接镖成功标志，大概已经结束了")
-                    self.sin_out.emit(f"本次押镖(第{count_i + 1}轮已经完成)")
+                if self.__transport_task.check_task_status(self.windows_handle) is False:
+                    if self.__transport_task.check_task_end(self.windows_handle):
+                        self.sin_out.emit(f"本次押镖(第{count_i + 1}轮已经完成)")
+                    else:
+                        self.sin_out.emit("押镖未完成，超时或者镖车被毁")
                     self.next_step.emit(0)  # 全部结束
                     break
         self.mutex.unlock()  # 解锁
@@ -589,16 +570,10 @@ class TruckTaskFindCarQth(QThread):
 
     def __init__(self):
         super().__init__()
-
-        self.truck_count = None
+        self.wait = False
         self.working = True
-        self.cond = QWaitCondition()
-
-        self.windows_opt = GetHandleList()
-
         self.mutex = QMutex()
         self.windows_handle = 0
-        self.wait = False
 
         self.__transport_task = TransportTaskFunc()  # 开始运镖
 
@@ -612,9 +587,9 @@ class TruckTaskFindCarQth(QThread):
         线程暂停,所有参数重置为null
         :return:
         """
+        self.wait = False
         self.working = False
         self.windows_handle = 0
-        self.wait = False
 
     def wait_status(self, status: bool):
         """
@@ -632,135 +607,80 @@ class TruckTaskFindCarQth(QThread):
 
     def run(self):
         self.mutex.lock()  # 先加锁
+        print(f"{get_local_time()}: 开始执行查找并上车的线程")
+        global is_driver_car
         while 1:
             if self.working is False:
                 # 结束了
                 self.mutex.unlock()  # 解锁
-                self.sin_work_status.emit(False)
                 return None
+
+            if is_fight_npc is False:
+                # 如果此时是接任务后的第一次寻找镖车,还没有打怪
+                """
+                当前为调试代码，
+                燕京场景，接镖后人物距离镖车会较远，直接
+                """
+                __car = self.__transport_task.find_truck_car_center_pos(hwnd=self.windows_handle, find_count=1,
+                                                                        is_break=is_break)
+                if __car is None:
+                    continue
+                    # 如果发现镖车在 画面中间的位置附近，就往前走2秒，靠近镖车
+                SetGhostBoards().click_press_and_release_by_key_name_hold_time("w", 1)
+                print("往镖车方向走2步，直接上车")
+                if self.__transport_task.transport_truck(self.windows_handle):
+                    # 如果出现了“驾车”的按钮，尝试点击 “驾车”
+                    self.sin_out.emit("开始押镖")
+                    # 鼠标离镖车远一点
+                    pos = coordinate_change_from_windows(self.windows_handle, (100, 100))
+                    SetGhostMouse().move_mouse_to(pos[0], pos[1])
+                    print("鼠标离镖车远一点")
+                    self.__transport_task.reply_person_perspective_up(self.windows_handle)  # 成功上车，拉远一下视角
+                    # 成功开车
+                    is_driver_car = True
+
             if self.__transport_task.transport_truck(self.windows_handle):
                 self.sin_out.emit("已经找到镖车，开始押镖...")
                 self.working = False
                 break
-            __car_pos = self.__transport_task.find_car_center_pos_in_display(self.windows_handle)
-            if __car_pos is not None:
-                self.sin_out.emit(f"TransportTaskFunc: 找到了 镖车 的坐标({__car_pos[0]},{__car_pos[1]})")
-                SetGhostMouse().move_mouse_to(__car_pos[0], __car_pos[1])  # 鼠标移动到初始化位置
-                time.sleep(0.5)
-                while 1:
-                    pos_x, pos_y = SetGhostMouse().get_mouse_x_y()
 
-                    #  先下移50个像素点击一次
-                    SetGhostMouse().move_mouse_to(pos_x, pos_y + 50)
-                    print("下移50个像素，继续找车")
-                    time.sleep(0.2)
-                    SetGhostMouse().click_mouse_left_button()
-                    time.sleep(1)
+            if is_driver_car is False:
+                """
+                如果没有开车
+                """
+                __car_pos = self.__transport_task.find_car_center_pos_in_display(self.windows_handle)
+                if __car_pos is not None:
+                    # self.sin_out.emit(f"TransportTaskFunc: 找到了 镖车 的坐标({__car_pos[0]},{__car_pos[1]})")
+                    SetGhostMouse().move_mouse_to(__car_pos[0], __car_pos[1])  # 鼠标移动到初始化位置
+                    time.sleep(0.5)
+                    while 1:
+                        pos = SetGhostMouse().get_mouse_x_y()
 
-                    __transport_pos = self.__transport_task.find_driver_truck_type(self.windows_handle)
-                    if __transport_pos is not None:
-                        SetGhostBoards().click_press_and_release_by_code(27)
+                        #  先下移50个像素点击一次
+                        SetGhostMouse().move_mouse_to(pos[0], pos[1] + 50)
+                        print("下移50个像素，继续找车")
+                        time.sleep(0.2)
+                        SetGhostMouse().click_mouse_left_button()
                         time.sleep(1)
-                        SetGhostMouse().click_mouse_right_button()  # 右键主动靠近
-                        time.sleep(2)  # 等待2秒，让人物主动靠近
-                        if self.__transport_task.transport_truck(self.windows_handle):
-                            # 如果 运镖 方式 界面出现，并且还成功运行了.
-                            # 那么本次任务就可以结束了
-                            print("开始 '驾车'...")
-                            self.working = False
-                            break
-                        else:
-                            # 如果点了 运镖 但是 没有开车，那么就表示距离太远了，需要靠近
-                            SetGhostBoards().click_press_and_release_by_key_name_hold_time("w", 1)  # 往前走一步
-                            # 退出循环，从头再来一次
-                            break
 
-    def run2(self):
-        self.mutex.lock()  # 先加锁
-
-        # 旋转一周的次数
-        round_count: int = 0
-        while 1:
-
-            if self.working is False:
-                # 结束了
-                self.mutex.unlock()  # 解锁
-                self.sin_work_status.emit(False)
-                return None
-
-            if round_count == 20:
-                # 转了一周之后，还是没找到，就调整一下视角，拉到最远除
-                self.__transport_task.reply_person_perspective_up(self.windows_handle)
-                round_count = 0
-            print("TransportTaskFunc 开始进行查询镖车的操作")
-
-            if self.__transport_task.transport_truck(self.windows_handle):
-                self.sin_out.emit("开始押镖,请注意劫匪NPC刷新")
-
-            __car_pos = self.__transport_task.find_car_pos(self.windows_handle)
-            if __car_pos is not None:
-                self.sin_out.emit(f"TransportTaskFunc: 找到了 镖车 的坐标({__car_pos[0]},{__car_pos[1]})")
-                SetGhostMouse().move_mouse_to(__car_pos[0], __car_pos[1])  # 鼠标移动到初始化位置
-                time.sleep(1)
-
-                while 1:
-                    if self.working is False:
-                        # 结束了
-                        self.mutex.unlock()  # 解锁
-                        self.sin_work_status.emit(False)
-                        return None
-
-                    pos_x, pos_y = SetGhostMouse().get_mouse_x_y()
-                    #  先下移50个像素点击一次
-                    SetGhostMouse().move_mouse_to(pos_x, pos_y + 50)
-                    print("下移50个像素，继续找车")
-                    time.sleep(0.2)
-                    SetGhostMouse().click_mouse_left_button()
-                    time.sleep(1)
-
-                    __transport_pos = self.__transport_task.find_driver_truck_type(self.windows_handle)
-                    if __transport_pos is not None:
-                        SetGhostBoards().click_press_and_release_by_code(27)
-                        time.sleep(1)
-                        SetGhostMouse().click_mouse_right_button()  # 右键主动靠近
-                        time.sleep(2)  # 等待2秒，让人物主动靠近
-                        if self.__transport_task.transport_truck(self.windows_handle):
-                            # 如果 运镖 方式 界面出现，并且还成功运行了.
-                            # 那么本次任务就可以结束了
-                            print("开始 '驾车'...")
-                            self.working = False
-                        else:
-                            # 如果点了 运镖 但是 没有开车，那么就表示距离太远了，需要靠近
-                            SetGhostBoards().click_press_and_release_by_key_name_hold_time("w", 1)  # 往前走一步
-                            # 退出循环，从头再来一次
-                            break
-            else:
-                __car_quadrant: int = self.__transport_task.find_car_quadrant(self.windows_handle)
-                print(f"镖车在屏幕的第 {__car_quadrant} 象限")
-                if __car_quadrant == 1:
-                    """
-                    如果在第一象限，但是不符合规则；那么就向 左侧 转一下
-                    """
-                    SetGhostBoards().click_press_and_release_by_code(37)
-                elif __car_quadrant == 2:
-                    """
-                    如果在第二象限，但是不符合规则；那么就向 右侧 转一下
-                    """
-                    SetGhostBoards().click_press_and_release_by_code(39)
-                elif __car_quadrant == 3:
-                    """
-                    如果在第三象限，就转一个大的，转到第一象限去
-                    """
-                    SetGhostBoards().click_press_and_release_by_key_code_hold_time(37, 0.5)
-                elif __car_quadrant == 4:
-                    """
-                    如果在第四象限，就转一个大的，转到第二象限去
-                    """
-                    SetGhostBoards().click_press_and_release_by_key_code_hold_time(39, 0.5)
-
-                print("TransportTaskFunc: 没有找到镖车，旋转一下继续找")
-                round_count += 1
-                time.sleep(1)
+                        __transport_pos = self.__transport_task.find_driver_truck_type(self.windows_handle)
+                        if __transport_pos is not None:
+                            SetGhostBoards().click_press_and_release_by_code(27)
+                            time.sleep(1)
+                            SetGhostMouse().click_mouse_right_button()  # 右键主动靠近
+                            time.sleep(2)  # 等待2秒，让人物主动靠近
+                            if self.__transport_task.transport_truck(self.windows_handle):
+                                # 如果 运镖 方式 界面出现，并且还成功运行了.
+                                # 那么本次任务就可以结束了
+                                print("开始 '驾车'...")
+                                self.working = False
+                                is_driver_car = True
+                                break
+                            else:
+                                # 如果点了 运镖 但是 没有开车，那么就表示距离太远了，需要靠近
+                                SetGhostBoards().click_press_and_release_by_key_name_hold_time("w", 1)  # 往前走一步
+                                # 退出循环，从头再来一次
+                                break
 
 
 class TruckTaskFightMonsterQth(QThread):
@@ -770,7 +690,6 @@ class TruckTaskFightMonsterQth(QThread):
     """
     sin_out = Signal(str)
     next_step = Signal(int)  # 下一步: 1 是扫描打怪。 2 是重新查找 镖车并开车, 3: 打怪中，暂时查找车辆， 4：打怪结束，重新查找车辆
-    sin_work_status = Signal(bool)
 
     def __init__(self):
         super().__init__()
@@ -782,21 +701,12 @@ class TruckTaskFightMonsterQth(QThread):
         self.windows_handle = 0
         self.wait = False
 
-        self.__fight_monster = FightMonster()  # 开始运镖
+        self.__fight_monster = FightMonster()
 
     def __del__(self):
         # 线程状态改为和线程终止
         self.wait = False
         self.working = False
-
-    def stop_execute_init(self):
-        """
-        线程暂停,所有参数重置为null
-        :return:
-        """
-        self.working = False
-        self.windows_handle = 0
-        self.wait = False
 
     def get_param(self, windows_handle: int, working_status: bool = True):
         """
@@ -808,6 +718,7 @@ class TruckTaskFightMonsterQth(QThread):
 
     def run(self):
         self.mutex.lock()  # 先加锁
+        print(f"{get_local_time()}: 开始执行查询怪物的线程")
 
         while 1:
             if self.working is False:
@@ -815,13 +726,28 @@ class TruckTaskFightMonsterQth(QThread):
                 self.mutex.unlock()  # 解锁
                 return None
             if self.__fight_monster.check_fight_status(self.windows_handle):
-                self.sin_out.emit("出现了劫匪NPC，即将进入战斗")
-
                 self.next_step.emit(3)  # 打怪中，暂时查找车辆
+                print(f"{get_local_time()}:Single:发现NPC怪,发送信号: 3, 停止驾车模式和找车")
+
+                # 声明一下全局变量
+                global is_break
+                global is_fight_npc
+
+                # 修改全局变量，已经发现怪了，停止寻找车辆
+                is_break = True
+
+                # 开始战斗
                 self.__fight_monster.fight_monster(self.windows_handle)
                 self.working = False
-                self.next_step.emit(5)  # 打怪结束，继续上车跑路
-                self.next_step.emit(4)  # 打怪结束，继续上车跑路
+
+                # 修改一下全局变量，已经和NPC战斗过了
+                is_fight_npc = True
+                # 修改全局变量，战斗结束，继续寻找车辆
+                is_break = False
+
+                print(f"{get_local_time}:打怪结束，发出信号2、4")
+                self.next_step.emit(2)  # 打怪结束，继续上车跑路
+                self.next_step.emit(4)  # 打怪结束，继续保持车辆在屏幕上
 
 
 class FollowTheTrailOfTruckQth(QThread):
@@ -831,11 +757,11 @@ class FollowTheTrailOfTruckQth(QThread):
 
     sin_out = Signal(str)
     next_step = Signal(int)  # 下一步: 1 是扫描打怪。 2 是重新查找 镖车并开车, 3: 打怪中，暂时查找车辆， 4：打怪结束，重新查找车辆
-    sin_work_status = Signal(bool)
 
     def __init__(self):
         super().__init__()
 
+        self.is_wait = False
         self.working = True
         self.cond = QWaitCondition()
 
@@ -859,7 +785,10 @@ class FollowTheTrailOfTruckQth(QThread):
         self.windows_handle = 0
         self.wait = False
 
-    def get_param(self, windows_handle: int, working_status: bool = True):
+    def set_wait_status(self, is_wait: bool):
+        self.is_wait = is_wait
+
+    def get_param(self, windows_handle: int, working_status: bool):
         """
         线程用到的参数初始化一下
         :return:
@@ -869,16 +798,24 @@ class FollowTheTrailOfTruckQth(QThread):
 
     def run(self):
         self.mutex.lock()  # 先加锁
-        self.__transport_task.reply_person_perspective_up(self.windows_handle)
+        print(f"{get_local_time()}: 开始执行跟踪车辆的线程")
         while 1:
             if self.working is False:
                 # 结束了
                 self.mutex.unlock()  # 解锁
                 return None
-            __car_pos = self.__transport_task.find_truck_car_center_pos(self.windows_handle, 1)
+
+            if self.is_wait:
+                continue
+
+            if is_driver_car is True:
+                self.__transport_task.reply_person_perspective_up(self.windows_handle)
+            # 如果不是首次打怪,那么就可以拉高视角了
+            __car_pos = self.__transport_task.find_truck_car_center_pos(self.windows_handle, 1, is_break=is_break)
             if __car_pos is not None:
                 self.sin_out.emit("正在持续追踪镖车...")
-                time.sleep(2)
+                time.sleep(5)
+
 
 
 if __name__ == '__main__':

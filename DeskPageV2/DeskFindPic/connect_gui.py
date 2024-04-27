@@ -1,4 +1,3 @@
-import ctypes
 import platform
 import time
 
@@ -6,7 +5,6 @@ from PySide6 import QtWidgets
 from PySide6.QtGui import QTextCursor
 from PySide6.QtWidgets import QMessageBox
 
-from DeskPageV2.DeskFindPic.findCars import TruckCar
 from DeskPageV2.DeskGUIQth.execut_th import DanceThByFindPic, ScreenGameQth, QProgressBarQth, AutoPressKeyQth, \
     TruckCarTaskQth, TruckTaskFightMonsterQth, TruckTaskFindCarQth, FollowTheTrailOfTruckQth
 from DeskPageV2.DeskPageGUI.MainPage import MainGui
@@ -88,11 +86,9 @@ class Dance(MainGui):
 
         self.th_truck_fight_monster.sin_out.connect(self.print_logs)
         self.th_truck_fight_monster.next_step.connect(self.truck_task_func_switch)
-        self.th_truck_fight_monster.sin_work_status.connect(self._th_execute_stop)
 
         self.th_follow_truck.sin_out.connect(self.print_logs)
         self.th_follow_truck.next_step.connect(self.truck_task_func_switch)
-        self.th_follow_truck.sin_work_status.connect(self._th_execute_stop)
 
         self.text_browser_print_log.textChanged.connect(lambda: self.text_browser_print_log.moveCursor(QTextCursor.End))
 
@@ -119,8 +115,8 @@ class Dance(MainGui):
         在这里释放资源，比如文件句柄、数据库连接等。
         在这里主要是断开幽灵键鼠的连接
         """
-        SetGhostBoards().close_device()
-        print("释放资源")
+        SetGhostBoards().release_all_key()  # 释放所有按钮
+        # SetGhostBoards().reset_device()  # 重置设备连接
 
     @staticmethod
     def get_windows_release() -> int:
@@ -279,7 +275,7 @@ class Dance(MainGui):
         :param text: 打印的日志
         :return:
         """
-        self.status_bar_label_right.setText(f"一共识别了 {find_button_count} 轮")
+        self.status_bar_label_right.setText(f"一共执行了 {find_button_count} 轮")
 
     def check_handle_is_selected(self) -> list:
         """
@@ -580,29 +576,26 @@ class Dance(MainGui):
         # 前面已经做了判断，只能有一个窗口执行，所以这里直接获取
         windows_handle = self.check_handle_is_selected()[0]
         if step == 1:
-            print("接收到信号，开始等待出怪")
-            self.th_truck_fight_monster.get_param(windows_handle)
+            print("接收到信号 1，开始等待出怪")
+            self.th_truck_fight_monster.get_param(windows_handle, True)
             self.th_truck_fight_monster.start()
         elif step == 2:
-            print("接收到信号，开始查找镖车")
+            print("接收到信号 2，开始查找镖车")
             self.th_truck_find_car.get_param(windows_handle, True)
             self.th_truck_find_car.start()
         elif step == 3:
-            print("接收到信号，正在打怪中，暂时停止找车")
+            print("接收到信号 3，正在打怪中，暂时停止找车和驾车")
             self.th_truck_find_car.get_param(windows_handle, False)
             self.th_follow_truck.get_param(windows_handle, False)  # 停止跟踪车辆
         elif step == 4:
-            print("接收到信号，打怪结束，开始继续找车")
-            self.th_truck_find_car.get_param(windows_handle, True)
-            self.th_truck_find_car.start()
-        elif step == 5:
-            print("接收到信号，保持镖车在屏幕中心区域")
+            print("接收到信号 4，保持镖车在屏幕中心区域")
             self.th_follow_truck.get_param(windows_handle, True)
             self.th_follow_truck.start()
-        else:
+        elif step == 0:
             """
             如果是其他值，一般是 0，就表示结束
             """
+            print("接收到信号 0，本次押镖结束")
             self.th_truck_fight_monster.get_param(windows_handle, False)  # 停止打怪
             self.th_truck_find_car.get_param(windows_handle, False)  # 停止找车
             self.th_follow_truck.get_param(windows_handle, False)  # 停止跟踪车辆

@@ -198,6 +198,14 @@ class SetGhostBoards(SetGhostDriver):
         result_int: int = self.ghost_driver.releasekeybyvalue(key_code)
         return True if result_int > 0 else False
 
+    def release_all_key(self):
+        """
+        释放所有的按钮
+        """
+        result_int: int = self.ghost_driver.releaseallkey()
+        return True if result_int > 0 else False
+
+
     def click_all_press_and_release_by_key_name(self, key_str_list: list) -> bool:
         """
         按下多个组合键，并释放
