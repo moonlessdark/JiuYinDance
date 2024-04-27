@@ -25,7 +25,8 @@ def local_image(image):
     dst = cv.adaptiveThreshold(src=gray, maxValue=255, adaptiveMethod=cv.ADAPTIVE_THRESH_GAUSSIAN_C,
                                thresholdType=cv.THRESH_BINARY, blockSize=25, C=10)  # blockSize必须是奇数  C 常量
 
-    # cv.imshow('local binary image', dst)
+    cv.imshow('local binary image', dst)
+    cv.waitKey()
     # cv.imwrite("../02.png", dst, [int(cv.IMWRITE_PNG_COMPRESSION), 0])
     # cv.imshow('local_image', dst)
     return dst

@@ -42,6 +42,44 @@ class FindPicOCR:
                     return [int(x_center), int(y_center)]
         return None
 
+    def find_truck_ocr_ocr(self, image: np.ndarray, temp_text: str) -> list or None:
+        """
+        :param image: 专门来找镖车
+        :param temp_text: 想要再图片中查询的文字
+        :return 查找到的第一个匹配的文字的坐标
+        """
+        start_time = time.time()
+        images = self._format_img(image)
+        if images is not None:
+            res = self.text_sys.detect_and_ocr(images)
+            for boxed_result in res:
+                if temp_text in boxed_result.ocr_text:
+                    rect = boxed_result.box
+
+                    new_cap = images[int(rect[0][1]): int(rect[2][1]), int(rect[0][0]): int(rect[1][0])]
+                    h: int = int(new_cap.shape[0])
+                    w: int = int(new_cap.shape[1])
+                    edges: int = 0
+                    element_sum: int = h * w  # 总元素
+                    # 先算高度，从底部侧往上算，左下角往上算，碰到非透明的就结束
+                    for i in range(h):
+                        for n in range(w):
+                            if min(new_cap[i][n]) > 150:
+                                edges += 1
+                    r = edges / element_sum
+                    if r < 0.1:
+                        print("白色区域太少")
+                        return None
+                    x_center = (rect[0][0] + rect[2][0]) / 2
+                    y_center = (rect[0][1] + rect[2][1]) / 2
+                    # print("有白色区域，镖车识别成功")
+                    return [int(x_center), int(y_center)]
+            print("画面中没有识别到文字 镖车,可能是画面精度不够")
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+        print("本次识别耗时：", elapsed_time)
+        return None
+
     def find_ocr_arbitrarily(self, image: np.ndarray, temp_text_list: list) -> dict:
         """
         能够匹配到
@@ -49,6 +87,7 @@ class FindPicOCR:
         :param temp_text_list: 想要再图片中查询的文字,数组
         :return 查找到的第一个匹配的文字的坐标
         """
+        start_time = time.time()
         images = self._format_img(image)
         result: dict = {}
         if images is not None:
@@ -60,6 +99,9 @@ class FindPicOCR:
                         x_center = (rect[0][0] + rect[2][0]) / 2
                         y_center = (rect[0][1] + rect[2][1]) / 2
                         result[text] = [int(x_center), int(y_center)]
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+        print("本次识别耗时：", elapsed_time)
         return result
 
     def get_person_map(self, image: np.ndarray):
