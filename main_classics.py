@@ -43,4 +43,5 @@ if __name__ == '__main__':
                                                 "\n5:本工具为免费工具，请勿支付金钱购买")
     
         main_gui.show()
+        app.aboutToQuit.connect(main_gui.on_application_about_to_quit)
         sys.exit(app.exec())

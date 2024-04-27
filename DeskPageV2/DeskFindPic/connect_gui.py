@@ -113,6 +113,16 @@ class Dance(MainGui):
         self.widget_dock.visibilityChanged.connect(self.on_top_level_changed)
 
     @staticmethod
+    def on_application_about_to_quit():
+        """
+        资源释放: 正在关闭应用程序...
+        在这里释放资源，比如文件句柄、数据库连接等。
+        在这里主要是断开幽灵键鼠的连接
+        """
+        SetGhostBoards().close_device()
+        print("释放资源")
+
+    @staticmethod
     def get_windows_release() -> int:
         """
         获取windows版本
