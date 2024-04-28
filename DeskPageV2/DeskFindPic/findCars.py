@@ -248,18 +248,25 @@ class TruckCar:
 
     def _find_driver_truck_type(self, hwnd: int):
         """
-        检查 运镖(驾车) 按钮
+        检查 运镖(驾车) 按钮。
+        图片模板的识别速度比文字快，所以这里先找图再找文字
         """
         time.sleep(1)
         __img_car = self.windows.capture(hwnd)
         find_task: TruckCarPic = self._get_pic_truck_car()
-        cos = self.ocr.find_truck_ocr_ocr(__img_car.pic_content, "驾车")
-        cos2 = self.windows.find_windows_coordinate_rect(hwnd, find_task.task_star_mode)
+        cos = self.windows.find_windows_coordinate_rect(hwnd, find_task.task_star_mode)
         if cos is not None:
+            """
+            先找图片模板的驾车按钮在不在
+            """
             driver_res = coordinate_change_from_windows(hwnd, cos)
             # print(f"DriverTruckCarFuc: 发现了 运镖(驾车) 文字({driver_res[0]},{driver_res[1]})")
             return driver_res
-        elif cos2 is not None:
+        cos2 = self.ocr.find_truck_ocr_ocr(__img_car.pic_content, "驾车")
+        if cos2 is not None:
+            """
+            再找文字的驾车按钮在不在
+            """
             # print(f"DriverTruckCarFuc: 发现了 运镖(驾车) 图标({cos2[0]},{cos2[1]})")
             return cos2
         # print(f"DriverTruckCarFuc: 开始寻找 驾车 按钮是否加载")
