@@ -253,23 +253,18 @@ class TruckCar:
         """
         time.sleep(1)
         __img_car = self.windows.capture(hwnd)
+        # 先找图片模板的驾车按钮在不在
         find_task: TruckCarPic = self._get_pic_truck_car()
         cos = self.windows.find_windows_coordinate_rect(hwnd, find_task.task_star_mode)
         if cos is not None:
-            """
-            先找图片模板的驾车按钮在不在
-            """
-            driver_res = coordinate_change_from_windows(hwnd, cos)
+            # print(f"DriverTruckCarFuc: 发现了 运镖(驾车) 图标({cos2[0]},{cos2[1]})")
+            return cos
+        # 再找文字的驾车按钮在不在
+        cos_text = self.ocr.find_truck_ocr_ocr(__img_car.pic_content, "驾车")
+        if cos is not None:
+            driver_res = coordinate_change_from_windows(hwnd, cos_text)
             # print(f"DriverTruckCarFuc: 发现了 运镖(驾车) 文字({driver_res[0]},{driver_res[1]})")
             return driver_res
-        cos2 = self.ocr.find_truck_ocr_ocr(__img_car.pic_content, "驾车")
-        if cos2 is not None:
-            """
-            再找文字的驾车按钮在不在
-            """
-            # print(f"DriverTruckCarFuc: 发现了 运镖(驾车) 图标({cos2[0]},{cos2[1]})")
-            return cos2
-        # print(f"DriverTruckCarFuc: 开始寻找 驾车 按钮是否加载")
         return None
 
     def find_car_center_pos_in_display(self, hwnd: int):
