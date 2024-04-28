@@ -116,7 +116,8 @@ class Dance(MainGui):
         在这里主要是断开幽灵键鼠的连接
         """
         SetGhostBoards().release_all_key()  # 释放所有按钮
-        # SetGhostBoards().reset_device()  # 重置设备连接
+        time.sleep(0.1)
+        SetGhostBoards().close_device()  # 关闭设备连接
 
     @staticmethod
     def get_windows_release() -> int:

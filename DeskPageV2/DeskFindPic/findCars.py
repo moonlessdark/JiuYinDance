@@ -332,32 +332,24 @@ class FightMonster(TruckCar):
         避免识别场景过于复杂，在这里进行多重检测
         """
         self.__find_task: TruckCarPic = self._get_pic_truck_car()
-
-        if self.windows.find_windows_coordinate_rect(handle=hwnd,
-                                                     img=self.__find_task.task_monster_fight) is not None:
-            """
-            方法2: 如果出现了 进入战斗的文字(这里使用的是图片)，那么就说明进入战斗了，可能是劫镖的NPC，也可能是其他
-            """
-            print("进入战斗: 查询到进入战斗的模板体魄")
-            return True
-        elif len(self.ocr.find_ocr_arbitrarily(self.windows.capture(hwnd).pic_content,
-                                               ["您正在观看风景时", "忽然一道身影一闪而过", "马受到惊吓"])) > 0:
-            """
-            方法1：如果出现了文字 “马受到惊吓，停滞不前” 出现在屏幕上，那么说明即将出现劫镖的怪
-            """
-            return True
-        return False
-
-    def check_monster_npc_status(self, hwnd: int):
-        """
-        检测劫镖的NPC是否出现
-        """
-        fight_tag_list: list = self.__find_task.task_monster_target
-        for target in fight_tag_list:
-            task_monster_fight = self.windows.find_windows_coordinate_rect(handle=hwnd, img=target, edge=True)
-            if task_monster_fight is not None:
+        pic = self.windows.capture(hwnd)
+        # 高度1-300像素，宽度 画面右侧，查看所有状态栏
+        pic_content = pic.pic_content[1:int(pic.pic_height * 0.5), int(pic.pic_width * 0.4):int(pic.pic_width)]
+        for fs in self.__find_task.task_monster_fight:
+            task_monster_fight = find_area(smaller_pic=fs, bigger_img=pic_content)
+            if task_monster_fight[-1] > 0.5:
+                """
+                如果出现了相似度大于0.5的 出现了战投的图标
+                方法2: 如果出现了 进入战斗的图标（进入战斗的文字模板和右上角的NPC标志），那么就说明进入战斗了
+                """
+                print("进入战斗: 查询到进入战斗的模板体魄")
                 return True
-        print("劫镖的NPC焦点丢失")
+        # if len(self.ocr.find_ocr_arbitrarily(self.windows.capture(hwnd).pic_content,
+        #                                        ["您正在观看风景时", "忽然一道身影一闪而过", "马受到惊吓"])) > 0:
+        #     """
+        #     方法1：如果出现了文字 “马受到惊吓，停滞不前” 出现在屏幕上，那么说明即将出现劫镖的怪
+        #     """
+        #     return True
         return False
 
     def _check_monster_skill_status(self, hwnd: int):
@@ -368,10 +360,11 @@ class FightMonster(TruckCar):
         fight_tag_skill: str = self.__find_task.task_monster_target_skil
 
         pic = self.windows.capture(hwnd)
-        pic_content = pic[int(pic.pic_height * 0.1):int(pic.pic_height * 0.4),
-                      int(pic.pic_width * 0.4):int(pic.pic_width * 0.6)]
+        # 高度1-30%像素，宽度 画面右侧，查看所有状态栏
+        pic_content = pic.pic_content[1:int(pic.pic_height * 0.3), int(pic.pic_width * 0.3):int(pic.pic_width * 0.7)]
+
         task_monster_fight = find_area(smaller_pic=fight_tag_skill, bigger_img=pic_content)
-        if max(task_monster_fight) > 0:
+        if task_monster_fight[-1] > 0.5:
             print(f"检测到NPC要放技能了{task_monster_fight}")
             return True
         print("NPC没有要放技能")
@@ -381,25 +374,34 @@ class FightMonster(TruckCar):
         """
         打怪啊
         """
-        while 1:
+        for __i in range(70):
+            """
+            循环70次，其实怪出现的世界是60秒，但是不确定这些循环会有多长世界，那么就最多循环70次终止循环
+            """
+            if self._check_monster_skill_status(hwnd):
+                if SetGhostMouse().is_mouse_button_pressed(3) is False:
+                    print("打怪结束当前是格挡状态，松开格挡")
+                    # 如果当前状态时格挡中
+                    SetGhostMouse().click_mouse_right_button()
+                    continue
+
             SetGhostBoards().click_press_and_release_by_key_name("Q")  # 按Q
             SetGhostBoards().click_press_and_release_by_key_name("1")  # 按Q
             SetGhostBoards().click_press_and_release_by_key_name("2")  # 按Q
 
-            # if self.check_monster_npc_status(hwnd) is False:
-            #     """
-            #     如果怪消失了
-            #     """
-            #     print("怪消失了，按一下tab 找怪")
-            #     SetGhostBoards().click_press_and_release_by_code(9)
-
-            if len(self.ocr.find_ocr_arbitrarily(self.windows.capture(hwnd).pic_content,
-                                                 ["成功攻克劫匪", "完成此次运镖后将额外获得", "运镖失败"])) > 0:
+            if self.check_fight_status(hwnd) is False:
                 """
-                如果出现了把怪打死的文字
+                如果怪消失了,右上角没有怪的buff了
                 """
-                print("把怪打死了，或者被怪打坏了镖车，可以退出了")
                 break
+
+            # if len(self.ocr.find_ocr_arbitrarily(self.windows.capture(hwnd).pic_content,
+            #                                      ["成功攻克劫匪", "完成此次运镖后将额外获得", "运镖失败"])) > 0:
+            #     """
+            #     如果出现了把怪打死的文字
+            #     """
+            #     print("把怪打死了，或者被怪打坏了镖车，可以退出了")
+            #     break
         if SetGhostMouse().is_mouse_button_pressed(3):
             print("打怪结束当前是格挡状态，松开格挡")
             # 如果当前状态时格挡中
