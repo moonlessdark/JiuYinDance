@@ -527,6 +527,8 @@ class TruckCarTaskQth(QThread):
                 self.sin_work_status.emit(False)
                 return None
 
+            __city_name: str = self.__team.get_map_and_person(self.windows_handle)
+
             # 创建队伍
             self.__team.create_team(self.windows_handle)
             # 查询地图和NPC
@@ -543,10 +545,12 @@ class TruckCarTaskQth(QThread):
             is_fight_npc_end = False
             is_need_walk = True  # 需要根据实际情况修改
             is_fight_npc_visible = False
+            if __city_name in ["苏州", "成都"]:
+                # 如果是成都和苏州，就不需要走了，直接上车就行了
+                is_need_walk = False
 
             pos = coordinate_change_from_windows(self.windows_handle, (100, 100))
             SetGhostMouse().move_mouse_to(pos[0], pos[1])
-            print("鼠标离镖车远一点")
 
             # 发送信号，等待劫匪出现
             self.next_step.emit(1)
@@ -627,6 +631,19 @@ class TruckTaskFindCarQth(QThread):
                 time.sleep(2)
                 continue
 
+            if is_need_walk is False:
+                # 如果不需要走2步，那么就是苏州和成都了，其他的都要走2步，直接上车就行
+                if self.__transport_task.transport_truck(self.windows_handle):
+                    # 如果出现了“驾车”的按钮，尝试点击 “驾车”
+                    self.sin_out.emit("开始押镖")
+                    # 鼠标离镖车远一点
+                    pos = coordinate_change_from_windows(self.windows_handle, (100, 100))
+                    SetGhostMouse().move_mouse_to(pos[0], pos[1])
+                    print("鼠标离镖车远一点")
+                    self.__transport_task.reply_person_perspective_up(self.windows_handle)  # 成功上车，拉远一下视角
+                    # 成功开车
+                    self.working = False
+
             if is_fight_npc_end is False:
 
                 """
@@ -641,7 +658,7 @@ class TruckTaskFindCarQth(QThread):
                     continue
                 if is_need_walk:
                     # 如果发现镖车在 画面中间的位置附近，就往前走2秒，靠近镖车
-                    SetGhostBoards().click_press_and_release_by_key_name_hold_time("w", 1)
+                    SetGhostBoards().click_press_and_release_by_key_name_hold_time("w", 2)
                     print("往镖车方向走2步，直接上车")
                 if self.__transport_task.transport_truck(self.windows_handle):
                     # 如果出现了“驾车”的按钮，尝试点击 “驾车”

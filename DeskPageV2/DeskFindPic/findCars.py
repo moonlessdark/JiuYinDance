@@ -33,6 +33,7 @@ class TruckCar:
     def get_map_and_person(self, hwnd: int):
         _, self._area_map, self._person_name = self.ocr.get_person_map(self.windows.capture(hwnd).pic_content)
         # print(f"当前地图是 {self._area_map}, 当前角色是 {self._person_name}")
+        return self._area_map
 
     @staticmethod
     def _load_pic(pic_dir: str):
