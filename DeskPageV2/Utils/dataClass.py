@@ -93,6 +93,22 @@ class TruckCarReceiveTask:
     task_yanjing_JunMaChang: str = dataclasses.field(default_factory=str)  # 选择目的地：军马场
     task_yanjing_YiRenZhuang: str = dataclasses.field(default_factory=str)  # 选择目的地：异人庄
 
+    # 金陵
+    task_jinlin_MeiHuaMen: str = dataclasses.field(default_factory=str)  # 选择目的地：梅花门
+    task_jinlin_HuangJiaLieChang: str = dataclasses.field(default_factory=str)  # 选择目的地：皇家猎场
+    task_jinlin_MoChouHu: str = dataclasses.field(default_factory=str)  # 选择目的地：莫愁湖
+
+    # 苏州
+    task_suzhou_YongCuiShanZhuang: str = dataclasses.field(default_factory=str)  # 选择目的地：拥翠山庄
+    task_suzhou_WuWangMu: str = dataclasses.field(default_factory=str)  # 选择目的地：吴王墓
+    task_suzhou_CaiShiChang: str = dataclasses.field(default_factory=str)  # 选择目的地：采石场
+    task_suzhou_BaoChuanChang: str = dataclasses.field(default_factory=str)  # 选择目的地：宝船厂
+
+    # 洛阳
+    task_luoyang_BaoDuZhai: str = dataclasses.field(default_factory=str)  # 选择目的地：抱犊寨
+    task_luoyang_YanMenShiJia: str = dataclasses.field(default_factory=str)  # 选择目的地：燕门世家
+    task_luoyang_QinWangFu: str = dataclasses.field(default_factory=str)  # 选择目的地：秦王府
+
 
 @dataclasses.dataclass
 class TruckCarPic:

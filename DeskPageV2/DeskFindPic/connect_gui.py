@@ -343,7 +343,16 @@ class Dance(MainGui):
             """
             self.th.stop_execute_init()
         elif self.radio_button_key_auto.isChecked():
+            """
+            键盘连按
+            """
             self.th_key_press_auto.stop_execute_init()
+        elif self.radio_button_truck_car_task.isChecked():
+            """
+            押镖
+            """
+            self.truck_task_func_switch(0)
+            self.th_truck_task.set_close()
         self.th_progress_bar.stop_init()
         self.changed_execute_button_text_and_status(False)
 

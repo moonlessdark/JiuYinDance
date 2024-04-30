@@ -338,7 +338,7 @@ class FightMonster(TruckCar):
         # 高度1-300像素，宽度 画面右侧，查看所有状态栏
         pic_content = pic.pic_content[1:int(pic.pic_height * 0.5), int(pic.pic_width * 0.4):int(pic.pic_width)]
         for fs in self.__find_task.task_monster_fight:
-            task_monster_fight = find_area(smaller_pic=fs, bigger_img=pic_content)
+            task_monster_fight = find_area(smaller_pic=self._load_pic(fs), bigger_img=pic_content)
             if task_monster_fight[-1] > 0.5:
                 """
                 如果出现了相似度大于0.5的 出现了战投的图标
@@ -364,8 +364,7 @@ class FightMonster(TruckCar):
         pic = self.windows.capture(hwnd)
         # 高度1-30%像素，宽度 画面右侧，查看所有状态栏
         pic_content = pic.pic_content[1:int(pic.pic_height * 0.3), int(pic.pic_width * 0.3):int(pic.pic_width * 0.7)]
-
-        task_monster_fight = find_area(smaller_pic=fight_tag_skill, bigger_img=pic_content)
+        task_monster_fight = find_area(smaller_pic=self._load_pic(fight_tag_skill), bigger_img=pic_content)
         if task_monster_fight[-1] > 0.5:
             print(f"检测到NPC要放技能了{task_monster_fight}")
             return True
@@ -376,19 +375,17 @@ class FightMonster(TruckCar):
         """
         打怪啊
         """
-        for __i in range(70):
-            """
-            循环70次，其实怪出现的世界是60秒，但是不确定这些循环会有多长世界，那么就最多循环70次终止循环
-            """
+        while 1:
             if self._check_monster_skill_status(hwnd):
                 if SetGhostMouse().is_mouse_button_pressed(3) is False:
-                    print("打怪结束当前是格挡状态，松开格挡")
+                    print("怪要放技能了，进行格挡")
                     # 如果当前状态时格挡中
-                    SetGhostMouse().click_mouse_right_button()
+                    SetGhostMouse().press_mouse_right_button()
                     continue
 
             SetGhostBoards().click_press_and_release_by_key_name("Q")  # 按Q
             SetGhostBoards().click_press_and_release_by_key_name("1")  # 按Q
+            SetGhostBoards().click_press_and_release_by_key_name("Q")  # 按Q
             SetGhostBoards().click_press_and_release_by_key_name("2")  # 按Q
 
             if self.check_fight_status(hwnd) is False:
@@ -455,6 +452,12 @@ class TeamFunc(TruckCar):
                 time.sleep(0.2)
                 SetGhostBoards().click_press_and_release_by_key_name("o")
                 time.sleep(1)
+
+                if self.windows.find_windows_coordinate_rect(handle=hwnd, img=find_team.leave_team) is not None:
+                    """
+                    如果有离开的按钮,说明当前已经是组队状态
+                    """
+                    return True
                 rec_create = self.windows.find_windows_coordinate_rect(handle=hwnd, img=find_team.create_team)
                 if rec_create is not None:
                     SetGhostMouse().move_mouse_to(rec_create[0], rec_create[1])
@@ -467,7 +470,7 @@ class TeamFunc(TruckCar):
 
     def add_team_member(self):
         """
-        通过队伍成员
+        通过队伍成员的申请
         """
         pass
 
@@ -577,6 +580,8 @@ class FindTaskNPCFunc(TruckCar):
                 __image_city: str = find_npc.task_point_jinling
             elif self._area_map == "苏州":
                 __image_city: str = find_npc.task_point_suzhou
+            elif self._area_map == "洛阳":
+                __image_city: str = find_npc.task_point_luoyang
             else:
                 __image_city: str = find_npc.task_point_chengdu
             qin_xiu_truck_point = self.windows.find_windows_coordinate_rect(handle=hwnd,
@@ -611,6 +616,8 @@ class FindTaskNPCFunc(TruckCar):
                 __image_city_npc: str = find_npc.task_point_jinling_npc
             elif self._area_map == "苏州":
                 __image_city_npc: str = find_npc.task_point_suzhou_npc
+            elif self._area_map == "洛阳":
+                __image_city_npc: str = find_npc.task_point_luoyang_npc
             else:
                 __image_city_npc: str = find_npc.task_point_chengdu_npc
             qin_xiu_truck_point_npc = self.windows.find_windows_coordinate_rect(handle=hwnd,
@@ -619,7 +626,7 @@ class FindTaskNPCFunc(TruckCar):
                 continue
             else:
                 """
-                找到了成都NPC
+                找到了押镖NPC
                 """
                 print(
                     f"FindTaskNpc: 找到 {self._area_map} 的NPC图标({qin_xiu_truck_point_npc[0]},{qin_xiu_truck_point_npc[1]})")
@@ -671,6 +678,12 @@ class ReceiveTruckTask(TruckCar):
                 __image_city_npc: str = find_task.task_chengdu_NanGongShiJia
             elif self._area_map == "燕京":
                 __image_city_npc: str = find_task.task_yanjing_JunMaChang
+            elif self._area_map == "金陵":
+                __image_city_npc: str = find_task.task_jinlin_HuangJiaLieChang
+            elif self._area_map == "苏州":
+                __image_city_npc: str = find_task.task_suzhou_CaiShiChang
+            elif self._area_map == "洛阳":
+                __image_city_npc: str = find_task.task_luoyang_YanMenShiJia
             else:
                 __image_city_npc: str = find_task.task_chengdu_NanGongShiJia
 
@@ -779,7 +792,7 @@ class TransportTaskFunc(TruckCar):
         保持镖车在屏幕中间
         """
         for i in range(find_count):
-            time.sleep(0.5)
+            time.sleep(1)
 
             if is_break:
                 # 强行终止

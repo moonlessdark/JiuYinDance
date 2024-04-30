@@ -172,6 +172,19 @@ class GetConfig:
         get_track_car.task_yanjing_JiMingYi = self.__datas["TruckCarFindTask"]["Area"]["YanJin"]["JiMingYi"]
         get_track_car.task_yanjing_JunMaChang = self.__datas["TruckCarFindTask"]["Area"]["YanJin"]["JunMaChang"]
         get_track_car.task_yanjing_YiRenZhuang = self.__datas["TruckCarFindTask"]["Area"]["YanJin"]["YiRenZhuang"]
+        # 苏州
+        get_track_car.task_suzhou_YongCuiShanZhuang = self.__datas["TruckCarFindTask"]["Area"]["SuZhou"]["YongCuiShanZhuang"]
+        get_track_car.task_suzhou_WuWangMu = self.__datas["TruckCarFindTask"]["Area"]["SuZhou"]["WuWangMu"]
+        get_track_car.task_suzhou_CaiShiChang = self.__datas["TruckCarFindTask"]["Area"]["SuZhou"]["CaiShiChang"]
+        get_track_car.task_suzhou_BaoChuanChang = self.__datas["TruckCarFindTask"]["Area"]["SuZhou"]["BaoChuanChang"]
+        # 金陵
+        get_track_car.task_jinlin_MeiHuaMen = self.__datas["TruckCarFindTask"]["Area"]["JinLing"]["MeiHuaMen"]
+        get_track_car.task_jinlin_HuangJiaLieChang = self.__datas["TruckCarFindTask"]["Area"]["JinLing"]["HuangJiaLieChang"]
+        get_track_car.task_jinlin_MoChouHu = self.__datas["TruckCarFindTask"]["Area"]["JinLing"]["MoChouHu"]
+        # 洛阳
+        get_track_car.task_luoyang_BaoDuZhai = self.__datas["TruckCarFindTask"]["Area"]["LuoYang"]["BaoDuZhai"]
+        get_track_car.task_luoyang_YanMenShiJia = self.__datas["TruckCarFindTask"]["Area"]["LuoYang"]["YanMenShiJia"]
+        get_track_car.task_luoyang_QinWangFu = self.__datas["TruckCarFindTask"]["Area"]["LuoYang"]["QinWangFu"]
         # 车型
         get_track_car.car_type_little = self.__datas["TruckCarFindTask"]["car_type_little"]
         get_track_car.car_type_medium = self.__datas["TruckCarFindTask"]["car_type_medium"]

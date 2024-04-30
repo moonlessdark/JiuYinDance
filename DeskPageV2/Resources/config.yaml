@@ -20,12 +20,22 @@ TruckCarFindTask:
     JinLing:
       address: ./DeskPageV2/Resources/TruckCarFindTask/NPC/金陵.png
       npc: ./DeskPageV2/Resources/TruckCarFindTask/NPC/金陵npc.png
+      MeiHuaMen: ./DeskPageV2/Resources/TruckCarFindTask/Area/JinLing/梅花门.png
+      HuangJiaLieChang: ./DeskPageV2/Resources/TruckCarFindTask/Area/JinLing/皇家猎场.png
+      MoChouHu: ./DeskPageV2/Resources/TruckCarFindTask/Area/JinLing/莫愁湖.png
     LuoYang:
       address: ./DeskPageV2/Resources/TruckCarFindTask/NPC/洛阳.png
       npc: ./DeskPageV2/Resources/TruckCarFindTask/NPC/洛阳npc.png
+      BaoDuZhai: ./DeskPageV2/Resources/TruckCarFindTask/Area/LuoYang/抱犊寨.png
+      YanMenShiJia: ./DeskPageV2/Resources/TruckCarFindTask/Area/LuoYang/燕门世家.png
+      QinWangFu: ./DeskPageV2/Resources/TruckCarFindTask/Area/LuoYang/秦王府.png
     SuZhou:
       address: ./DeskPageV2/Resources/TruckCarFindTask/NPC/苏州.png
       npc: ./DeskPageV2/Resources/TruckCarFindTask/NPC/苏州npc.png
+      YongCuiShanZhuang: ./DeskPageV2/Resources/TruckCarFindTask/Area/SuZhou/拥翠山庄.png
+      WuWangMu: ./DeskPageV2/Resources/TruckCarFindTask/Area/SuZhou/吴王墓.png
+      CaiShiChang: ./DeskPageV2/Resources/TruckCarFindTask/Area/SuZhou/采石场.png
+      BaoChuanChang: ./DeskPageV2/Resources/TruckCarFindTask/Area/SuZhou/宝船厂.png
     YanJin:
       address: ./DeskPageV2/Resources/TruckCarFindTask/NPC/燕京.png
       npc: ./DeskPageV2/Resources/TruckCarFindTask/NPC/燕京npc.png
