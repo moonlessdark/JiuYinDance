@@ -301,7 +301,7 @@ class SetGhostMouse(SetGhostDriver):
 
     def release_mouse_left_button(self):
         """
-        按下鼠标左键
+        抬起鼠标左键
         :return:
         """
         result_int: int = self.ghost_driver.releasemousebutton(1)
@@ -309,7 +309,7 @@ class SetGhostMouse(SetGhostDriver):
 
     def release_mouse_right_button(self):
         """
-        按下鼠标右键
+        抬起鼠标右键
         :return:
         """
         result_int: int = self.ghost_driver.releasemousebutton(3)
@@ -317,7 +317,7 @@ class SetGhostMouse(SetGhostDriver):
 
     def press_mouse_middle_button(self):
         """
-        按下鼠标中键
+        抬起鼠标中键
         :return:
         """
         result_int: int = self.ghost_driver.pressmousebutton(2)
