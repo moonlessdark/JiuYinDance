@@ -18,6 +18,7 @@ is_stop_find_car: bool = False  # 是否停止寻找镖车
 is_need_walk: bool = True  # 是否需要走2步前往镖车
 is_fight_npc_end: bool = False  # 是否已经和NPC战斗，如有没有战斗，就直接上车。 如果已经战斗，那么就需要查询点击镖车再上车
 is_fight_npc_visible: bool = False  # 是否出现NPC
+person_viewpoint: int = 0  # 0，默认，无， 1：平视， 2：俯视
 
 
 def get_local_time():
@@ -537,6 +538,8 @@ class TruckCarTaskQth(QThread):
             self.__get_task.receive_task(self.windows_handle)
 
             self.__get_task.reply_person_perspective(self.windows_handle)
+            global person_viewpoint
+            person_viewpoint = 1
 
             # 声明一下全局变量
             global is_stop_find_car, is_fight_npc_end, is_need_walk, is_fight_npc_visible
@@ -617,6 +620,7 @@ class TruckTaskFindCarQth(QThread):
         self.windows_handle = windows_handle
 
     def run(self):
+        global person_viewpoint
         self.mutex.lock()  # 先加锁
         print(f"{get_local_time()}: 开始执行查找并上车的线程")
         while 1:
@@ -641,6 +645,7 @@ class TruckTaskFindCarQth(QThread):
                     SetGhostMouse().move_mouse_to(pos[0], pos[1])
                     print("鼠标离镖车远一点")
                     self.__transport_task.reply_person_perspective_up(self.windows_handle)  # 成功上车，拉远一下视角
+                    person_viewpoint = 2
                     # 成功开车
                     self.working = False
 
@@ -668,6 +673,8 @@ class TruckTaskFindCarQth(QThread):
                     SetGhostMouse().move_mouse_to(pos[0], pos[1])
                     print("鼠标离镖车远一点")
                     self.__transport_task.reply_person_perspective_up(self.windows_handle)  # 成功上车，拉远一下视角
+
+                    person_viewpoint = 2
                     # 成功开车
                     self.working = False
             else:
@@ -715,6 +722,7 @@ class TruckTaskFindCarQth(QThread):
                                 # 那么本次任务就可以结束了
                                 print("开始 '驾车'...")
                                 self.__transport_task.reply_person_perspective_up(self.windows_handle)  # 成功上车，拉远一下视角
+                                person_viewpoint = 2
                                 self.working = False
 
                                 pos = coordinate_change_from_windows(self.windows_handle, (100, 100))
@@ -847,6 +855,7 @@ class FollowTheTrailOfTruckQth(QThread):
     def run(self):
         self.mutex.lock()  # 先加锁
         print(f"{get_local_time()}: 开始执行跟踪车辆的线程")
+        follow_car_quadrant: int = 0  # 追踪车辆在第几象限，用于车辆离开了屏幕后可以尝试去找回来
         while 1:
             if self.working is False:
                 # 结束了
@@ -862,7 +871,46 @@ class FollowTheTrailOfTruckQth(QThread):
                                                                         is_break=is_stop_find_car)
             if __car_pos is not None:
                 self.sin_out.emit("正在持续追踪镖车...")
+                # 存储一下镖车在屏幕哪个位置
+                follow_cap = WindowsCapture().capture(self.windows_handle)
+                follow_car_quadrant = self.__transport_task.check_target_pos_direction(follow_cap, __car_pos)
                 time.sleep(5)
+            else:
+                """
+                这里主要是处理被怪击飞后，镖车的视角丢失的问题
+                此时视角如果是俯视的，
+                """
+                if person_viewpoint == 1:
+                    # 如果当前角色视角是平视的话，那么就说明是在查找镖车的时候。
+                    continue
+
+                if follow_car_quadrant == 0:
+                    # 如果镖车本身就就没有出现在屏幕上，那么就继续就好了
+                    continue
+                elif follow_car_quadrant == 1:
+                    # 如果镖车在画面中消失前，是在第1象限，那么就往这个方向走一下
+                    SetGhostBoards().click_press_by_key_name("w")
+                    SetGhostBoards().click_press_by_key_name("a")
+                    time.sleep(0.5)
+                    SetGhostBoards().release_all_key()
+                elif follow_car_quadrant == 2:
+                    # 第二象限，右上角
+                    SetGhostBoards().click_press_by_key_name("w")
+                    SetGhostBoards().click_press_by_key_name("d")
+                    time.sleep(0.5)
+                    SetGhostBoards().release_all_key()
+                elif follow_car_quadrant == 3:
+                    # 第三象限，左下角
+                    SetGhostBoards().click_press_by_key_name("s")
+                    SetGhostBoards().click_press_by_key_name("a")
+                    time.sleep(0.5)
+                    SetGhostBoards().release_all_key()
+                elif follow_car_quadrant == 4:
+                    # 第四象限，右下角
+                    SetGhostBoards().click_press_by_key_name("s")
+                    SetGhostBoards().click_press_by_key_name("d")
+                    time.sleep(0.5)
+                    SetGhostBoards().release_all_key()
 
 
 if __name__ == '__main__':

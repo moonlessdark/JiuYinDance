@@ -149,7 +149,7 @@ class TruckCar:
         return False
 
     @staticmethod
-    def _check_target_pos_direction(img: PicCapture, target_pos: tuple) -> int:
+    def check_target_pos_direction(img: PicCapture, target_pos: tuple) -> int:
         """
         检查传入的坐标是否是在屏幕中间的区域
         :return 4象限： 1：左上角，2，右上角，3. 左下角， 4. 右下角
@@ -316,7 +316,7 @@ class TruckCar:
             """
             找到车了，把视角转到这个车
             """
-            return self._check_target_pos_direction(im, rec)
+            return self.check_target_pos_direction(im, rec)
         return None
 
 
@@ -818,7 +818,7 @@ class TransportTaskFunc(TruckCar):
                     if __res_car is None:
                         return None
                     cap = self.windows.capture(hwnd)
-                    __car_quadrant: int = self._check_target_pos_direction(cap, target_pos=__res_car)
+                    __car_quadrant: int = self.check_target_pos_direction(cap, target_pos=__res_car)
                     print(f"镖车在屏幕的第 {__car_quadrant} 象限")
                     if __car_quadrant == 1:
                         """a
@@ -839,7 +839,7 @@ class TransportTaskFunc(TruckCar):
                         """
                         如果在第四象限，就转一个大的，转到第二象限去
                         """
-                        SetGhostBoards().click_press_and_release_by_key_code_hold_time(39, 0.5)
+                        SetGhostBoards().click_press_and_release_by_key_code_hold_time(39, 0.4)
                     print("转 20度 的视角")
             WindowsHandle().activate_windows(hwnd)
             SetGhostBoards().click_press_and_release_by_key_code_hold_time(37, 0.4)
