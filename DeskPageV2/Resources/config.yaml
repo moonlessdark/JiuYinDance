@@ -1,59 +1,57 @@
 TruckCarFindTask:
-  qin_xiu: ./DeskPageV2/Resources/TruckCarFindTask/勤修.png
-  qin_xiu_activity_list : ./DeskPageV2/Resources/TruckCarFindTask/活动列表.png
-  qin_xiu_truck_car_npc_chengdu: ./DeskPageV2/Resources/TruckCarFindTask/chengdu_truck_car_npc.png
-  qin_xiu_truck_car_task: ./DeskPageV2/Resources/TruckCarFindTask/日常运镖.png
-  car_type_big: ./DeskPageV2/Resources/TruckCarFindTask/CarType/大车.png
-  car_type_little: ./DeskPageV2/Resources/TruckCarFindTask/CarType/小车.png
-  car_type_medium: ./DeskPageV2/Resources/TruckCarFindTask/CarType/中车.png
-  receive_task: ./DeskPageV2/Resources/TruckCarFindTask/receive_task.png
-  receive_task_confirm: ./DeskPageV2/Resources/TruckCarFindTask/receive_task_confirm.png
-  receive_task_talk: ./DeskPageV2/Resources/TruckCarFindTask/receive_task_talk.png
   Area:
-    chengdu:
-      address: ./DeskPageV2/Resources/TruckCarFindTask/NPC/成都.png
-      npc: ./DeskPageV2/Resources/TruckCarFindTask/NPC/成都npc.png
-      GaiBang: ./DeskPageV2/Resources/TruckCarFindTask/Area/ChengDu/丐帮驻地.png
-      NanGong: ./DeskPageV2/Resources/TruckCarPic/Area/ChengDu/南宫世家.png
-      QianDengZheng: ./DeskPageV2/Resources/TruckCarFindTask/Area/ChengDu/千灯镇.png
-      ShenJiaBao: ./DeskPageV2/Resources/TruckCarFindTask/Area/ChengDu/沈家堡.png
     JinLing:
-      address: ./DeskPageV2/Resources/TruckCarFindTask/NPC/金陵.png
-      npc: ./DeskPageV2/Resources/TruckCarFindTask/NPC/金陵npc.png
-      MeiHuaMen: ./DeskPageV2/Resources/TruckCarFindTask/Area/JinLing/梅花门.png
-      HuangJiaLieChang: ./DeskPageV2/Resources/TruckCarFindTask/Area/JinLing/皇家猎场.png
-      MoChouHu: ./DeskPageV2/Resources/TruckCarFindTask/Area/JinLing/莫愁湖.png
+      HuangJiaLieChang: /Resources/TruckCarFindTask/Area/JinLing/皇家猎场.png
+      MeiHuaMen: /Resources/TruckCarFindTask/Area/JinLing/梅花门.png
+      MoChouHu: /Resources/TruckCarFindTask/Area/JinLing/莫愁湖.png
+      address: /Resources/TruckCarFindTask/NPC/金陵.png
+      npc: /Resources/TruckCarFindTask/NPC/金陵npc.png
     LuoYang:
-      address: ./DeskPageV2/Resources/TruckCarFindTask/NPC/洛阳.png
-      npc: ./DeskPageV2/Resources/TruckCarFindTask/NPC/洛阳npc.png
-      BaoDuZhai: ./DeskPageV2/Resources/TruckCarFindTask/Area/LuoYang/抱犊寨.png
-      YanMenShiJia: ./DeskPageV2/Resources/TruckCarFindTask/Area/LuoYang/燕门世家.png
-      QinWangFu: ./DeskPageV2/Resources/TruckCarFindTask/Area/LuoYang/秦王府.png
+      BaoDuZhai: /Resources/TruckCarFindTask/Area/LuoYang/抱犊寨.png
+      QinWangFu: /Resources/TruckCarFindTask/Area/LuoYang/秦王府.png
+      YanMenShiJia: /Resources/TruckCarFindTask/Area/LuoYang/燕门世家.png
+      address: /Resources/TruckCarFindTask/NPC/洛阳.png
+      npc: /Resources/TruckCarFindTask/NPC/洛阳npc.png
     SuZhou:
-      address: ./DeskPageV2/Resources/TruckCarFindTask/NPC/苏州.png
-      npc: ./DeskPageV2/Resources/TruckCarFindTask/NPC/苏州npc.png
-      YongCuiShanZhuang: ./DeskPageV2/Resources/TruckCarFindTask/Area/SuZhou/拥翠山庄.png
-      WuWangMu: ./DeskPageV2/Resources/TruckCarFindTask/Area/SuZhou/吴王墓.png
-      CaiShiChang: ./DeskPageV2/Resources/TruckCarFindTask/Area/SuZhou/采石场.png
-      BaoChuanChang: ./DeskPageV2/Resources/TruckCarFindTask/Area/SuZhou/宝船厂.png
+      BaoChuanChang: /Resources/TruckCarFindTask/Area/SuZhou/宝船厂.png
+      CaiShiChang: /Resources/TruckCarFindTask/Area/SuZhou/采石场.png
+      WuWangMu: /Resources/TruckCarFindTask/Area/SuZhou/吴王墓.png
+      YongCuiShanZhuang: /Resources/TruckCarFindTask/Area/SuZhou/拥翠山庄.png
+      address: /Resources/TruckCarFindTask/NPC/苏州.png
+      npc: /Resources/TruckCarFindTask/NPC/苏州npc.png
     YanJin:
-      address: ./DeskPageV2/Resources/TruckCarFindTask/NPC/燕京.png
-      npc: ./DeskPageV2/Resources/TruckCarFindTask/NPC/燕京npc.png
-      DongFang: ./DeskPageV2/Resources/TruckCarFindTask/Area/YanJin/东方世家.png
-      JiMingYi: ./DeskPageV2/Resources/TruckCarFindTask/Area/YanJin/鸡鸣驿.png
-      JunMaChang: ./DeskPageV2/Resources/TruckCarFindTask/Area/YanJin/军马场.png
-      YiRenZhuang: ./DeskPageV2/Resources/TruckCarFindTask/Area/YanJin/异人庄.png
+      DongFang: /Resources/TruckCarFindTask/Area/YanJin/东方世家.png
+      JiMingYi: /Resources/TruckCarFindTask/Area/YanJin/鸡鸣驿.png
+      JunMaChang: /Resources/TruckCarFindTask/Area/YanJin/军马场.png
+      YiRenZhuang: /Resources/TruckCarFindTask/Area/YanJin/异人庄.png
+      address: /Resources/TruckCarFindTask/NPC/燕京.png
+      npc: /Resources/TruckCarFindTask/NPC/燕京npc.png
+    chengdu:
+      GaiBang: /Resources/TruckCarFindTask/Area/ChengDu/丐帮驻地.png
+      NanGong: /Resources/TruckCarPic/Area/ChengDu/南宫世家.png
+      QianDengZheng: /Resources/TruckCarFindTask/Area/ChengDu/千灯镇.png
+      ShenJiaBao: /Resources/TruckCarFindTask/Area/ChengDu/沈家堡.png
+      address: /Resources/TruckCarFindTask/NPC/成都.png
+      npc: /Resources/TruckCarFindTask/NPC/成都npc.png
+  car_type_big: /Resources/TruckCarFindTask/CarType/大车.png
+  car_type_little: /Resources/TruckCarFindTask/CarType/小车.png
+  car_type_medium: /Resources/TruckCarFindTask/CarType/中车.png
+  qin_xiu: /Resources/TruckCarFindTask/勤修.png
+  qin_xiu_activity_list: /Resources/TruckCarFindTask/活动列表.png
+  qin_xiu_truck_car_npc_chengdu: /Resources/TruckCarFindTask/chengdu_truck_car_npc.png
+  qin_xiu_truck_car_task: /Resources/TruckCarFindTask/日常运镖.png
+  receive_task: /Resources/TruckCarFindTask/receive_task.png
+  receive_task_confirm: /Resources/TruckCarFindTask/receive_task_confirm.png
+  receive_task_talk: /Resources/TruckCarFindTask/receive_task_talk.png
 TruckCarPic:
-  car_flag: ./DeskPageV2/Resources/TruckCarPic/CarsFlag.png
-  task_flag_status: ./DeskPageV2/Resources/TruckCarPic/CarFlag.png
-  task_flags_yellow_car: ./DeskPageV2/Resources/TruckCarPic/car_yellow_flag.png
-  task_monster_fight:
-    - ./DeskPageV2/Resources/TruckCarPic/fight_status_2.png
-  task_monster_target:
-    - ./DeskPageV2/Resources/TruckCarPic/fight_status_2.png
-  task_monster_target_skill: ./DeskPageV2/Resources/TruckCarPic/car_monster_skill_1.png
-  task_star_mode: ./DeskPageV2/Resources/TruckCarPic/truck_type.png
-  task_car_selected: ./DeskPageV2/Resources/TruckCarPic/truck_car_selected.png
+  car_flag: /Resources/TruckCarPic/CarsFlag.png
+  task_car_selected: /Resources/TruckCarPic/truck_car_selected.png
+  task_flag_status: /Resources/TruckCarPic/CarFlag.png
+  task_flags_yellow_car: /Resources/TruckCarPic/car_yellow_flag.png
+  task_monster_fight: /Resources/TruckCarPic/fight_status_2.png
+  task_monster_target: /Resources/TruckCarPic/fight_status_2.png
+  task_monster_target_skill: /Resources/TruckCarPic/car_monster_skill_1.png
+  task_star_mode: /Resources/TruckCarPic/truck_type.png
 config:
   dance_threshold_area: 0.3
   dance_threshold_tl: 0.9
@@ -83,7 +81,7 @@ keyBoardMouseDll:
   ghostDll:
     ghost_dll: /Resources/KeyBoardDriver/gbild64.dll
 team:
-  create_team: ./DeskPageV2/Resources/Team/创建队伍.png
-  flag_team: ./DeskPageV2/Resources/Team/team_mark.png
-  flag_team_status: ./DeskPageV2/Resources/Team/队伍标志.png
-  leave_team: ./DeskPageV2/Resources/Team/离开队伍.png
+  create_team: /Resources/Team/创建队伍.png
+  flag_team: /Resources/Team/team_mark.png
+  flag_team_status: /Resources/Team/队伍标志.png
+  leave_team: /Resources/Team/离开队伍.png

@@ -146,10 +146,10 @@ class GetConfig:
         队伍
         """
         team = Team()
-        team.create_team = self.__datas["team"]["create_team"]
-        team.leave_team = self.__datas["team"]["leave_team"]
-        team.flag_team = self.__datas["team"]["flag_team"]
-        team.flag_team_status = self.__datas["team"]["flag_team_status"]
+        team.create_team = self.project_dir + self.__datas["team"]["create_team"]
+        team.leave_team = self.project_dir + self.__datas["team"]["leave_team"]
+        team.flag_team = self.project_dir + self.__datas["team"]["flag_team"]
+        team.flag_team_status = self.project_dir + self.__datas["team"]["flag_team_status"]
         return team
 
     def get_track_car(self):
@@ -158,49 +158,49 @@ class GetConfig:
         """
         get_track_car = TruckCarReceiveTask()
         # 寻找NPC并对话
-        get_track_car.receive_task_talk = self.__datas["TruckCarFindTask"]["receive_task_talk"]
+        get_track_car.receive_task_talk = self.project_dir + self.__datas["TruckCarFindTask"]["receive_task_talk"]
         # 选择目的地和镖车类型
-        get_track_car.receive_task = self.__datas["TruckCarFindTask"]["receive_task"]
-        get_track_car.receive_task_confirm = self.__datas["TruckCarFindTask"]["receive_task_confirm"]
+        get_track_car.receive_task = self.project_dir + self.__datas["TruckCarFindTask"]["receive_task"]
+        get_track_car.receive_task_confirm = self.project_dir + self.__datas["TruckCarFindTask"]["receive_task_confirm"]
         # 成都
-        get_track_car.task_chengdu_GaiBang = self.__datas["TruckCarFindTask"]["Area"]["chengdu"]["GaiBang"]
-        get_track_car.task_chengdu_NanGongShiJia = self.__datas["TruckCarFindTask"]["Area"]["chengdu"]["NanGong"]
-        get_track_car.task_chengdu_QianDengZheng = self.__datas["TruckCarFindTask"]["Area"]["chengdu"]["QianDengZheng"]
-        get_track_car.task_chengdu_ShenJiaBao = self.__datas["TruckCarFindTask"]["Area"]["chengdu"]["ShenJiaBao"]
+        get_track_car.task_chengdu_GaiBang = self.project_dir + self.__datas["TruckCarFindTask"]["Area"]["chengdu"]["GaiBang"]
+        get_track_car.task_chengdu_NanGongShiJia = self.project_dir + self.__datas["TruckCarFindTask"]["Area"]["chengdu"]["NanGong"]
+        get_track_car.task_chengdu_QianDengZheng = self.project_dir + self.__datas["TruckCarFindTask"]["Area"]["chengdu"]["QianDengZheng"]
+        get_track_car.task_chengdu_ShenJiaBao = self.project_dir + self.__datas["TruckCarFindTask"]["Area"]["chengdu"]["ShenJiaBao"]
         # 燕京
-        get_track_car.task_yanjing_DongFangShiJia = self.__datas["TruckCarFindTask"]["Area"]["YanJin"]["DongFang"]
-        get_track_car.task_yanjing_JiMingYi = self.__datas["TruckCarFindTask"]["Area"]["YanJin"]["JiMingYi"]
-        get_track_car.task_yanjing_JunMaChang = self.__datas["TruckCarFindTask"]["Area"]["YanJin"]["JunMaChang"]
-        get_track_car.task_yanjing_YiRenZhuang = self.__datas["TruckCarFindTask"]["Area"]["YanJin"]["YiRenZhuang"]
+        get_track_car.task_yanjing_DongFangShiJia = self.project_dir + self.__datas["TruckCarFindTask"]["Area"]["YanJin"]["DongFang"]
+        get_track_car.task_yanjing_JiMingYi = self.project_dir + self.__datas["TruckCarFindTask"]["Area"]["YanJin"]["JiMingYi"]
+        get_track_car.task_yanjing_JunMaChang = self.project_dir + self.__datas["TruckCarFindTask"]["Area"]["YanJin"]["JunMaChang"]
+        get_track_car.task_yanjing_YiRenZhuang = self.project_dir + self.__datas["TruckCarFindTask"]["Area"]["YanJin"]["YiRenZhuang"]
         # 苏州
-        get_track_car.task_suzhou_YongCuiShanZhuang = self.__datas["TruckCarFindTask"]["Area"]["SuZhou"]["YongCuiShanZhuang"]
-        get_track_car.task_suzhou_WuWangMu = self.__datas["TruckCarFindTask"]["Area"]["SuZhou"]["WuWangMu"]
-        get_track_car.task_suzhou_CaiShiChang = self.__datas["TruckCarFindTask"]["Area"]["SuZhou"]["CaiShiChang"]
-        get_track_car.task_suzhou_BaoChuanChang = self.__datas["TruckCarFindTask"]["Area"]["SuZhou"]["BaoChuanChang"]
+        get_track_car.task_suzhou_YongCuiShanZhuang = self.project_dir + self.__datas["TruckCarFindTask"]["Area"]["SuZhou"]["YongCuiShanZhuang"]
+        get_track_car.task_suzhou_WuWangMu = self.project_dir + self.__datas["TruckCarFindTask"]["Area"]["SuZhou"]["WuWangMu"]
+        get_track_car.task_suzhou_CaiShiChang = self.project_dir + self.__datas["TruckCarFindTask"]["Area"]["SuZhou"]["CaiShiChang"]
+        get_track_car.task_suzhou_BaoChuanChang = self.project_dir + self.__datas["TruckCarFindTask"]["Area"]["SuZhou"]["BaoChuanChang"]
         # 金陵
-        get_track_car.task_jinlin_MeiHuaMen = self.__datas["TruckCarFindTask"]["Area"]["JinLing"]["MeiHuaMen"]
-        get_track_car.task_jinlin_HuangJiaLieChang = self.__datas["TruckCarFindTask"]["Area"]["JinLing"]["HuangJiaLieChang"]
-        get_track_car.task_jinlin_MoChouHu = self.__datas["TruckCarFindTask"]["Area"]["JinLing"]["MoChouHu"]
+        get_track_car.task_jinlin_MeiHuaMen = self.project_dir + self.__datas["TruckCarFindTask"]["Area"]["JinLing"]["MeiHuaMen"]
+        get_track_car.task_jinlin_HuangJiaLieChang = self.project_dir + self.__datas["TruckCarFindTask"]["Area"]["JinLing"]["HuangJiaLieChang"]
+        get_track_car.task_jinlin_MoChouHu = self.project_dir + self.__datas["TruckCarFindTask"]["Area"]["JinLing"]["MoChouHu"]
         # 洛阳
-        get_track_car.task_luoyang_BaoDuZhai = self.__datas["TruckCarFindTask"]["Area"]["LuoYang"]["BaoDuZhai"]
-        get_track_car.task_luoyang_YanMenShiJia = self.__datas["TruckCarFindTask"]["Area"]["LuoYang"]["YanMenShiJia"]
-        get_track_car.task_luoyang_QinWangFu = self.__datas["TruckCarFindTask"]["Area"]["LuoYang"]["QinWangFu"]
+        get_track_car.task_luoyang_BaoDuZhai = self.project_dir + self.__datas["TruckCarFindTask"]["Area"]["LuoYang"]["BaoDuZhai"]
+        get_track_car.task_luoyang_YanMenShiJia = self.project_dir + self.__datas["TruckCarFindTask"]["Area"]["LuoYang"]["YanMenShiJia"]
+        get_track_car.task_luoyang_QinWangFu = self.project_dir + self.__datas["TruckCarFindTask"]["Area"]["LuoYang"]["QinWangFu"]
         # 车型
-        get_track_car.car_type_little = self.__datas["TruckCarFindTask"]["car_type_little"]
-        get_track_car.car_type_medium = self.__datas["TruckCarFindTask"]["car_type_medium"]
-        get_track_car.car_type_big = self.__datas["TruckCarFindTask"]["car_type_big"]
+        get_track_car.car_type_little = self.project_dir + self.__datas["TruckCarFindTask"]["car_type_little"]
+        get_track_car.car_type_medium = self.project_dir + self.__datas["TruckCarFindTask"]["car_type_medium"]
+        get_track_car.car_type_big = self.project_dir + self.__datas["TruckCarFindTask"]["car_type_big"]
         return get_track_car
 
     def truck_task(self):
         truck = TruckCarPic()
-        truck.car_flag = self.__datas["TruckCarPic"]["car_flag"]
-        truck.task_flag_status = self.__datas["TruckCarPic"]["task_flag_status"]
-        truck.task_flags_yellow_car = self.__datas["TruckCarPic"]["task_flags_yellow_car"]
-        truck.task_star_mode = self.__datas["TruckCarPic"]["task_star_mode"]
-        truck.task_monster_fight = self.__datas["TruckCarPic"]["task_monster_fight"]
-        truck.task_monster_target = self.__datas["TruckCarPic"]["task_monster_target"]
-        truck.task_monster_target_skil = self.__datas["TruckCarPic"]["task_monster_target_skill"]
-        truck.task_car_selected = self.__datas["TruckCarPic"]["task_car_selected"]
+        truck.car_flag = self.project_dir + self.__datas["TruckCarPic"]["car_flag"]
+        truck.task_flag_status = self.project_dir + self.__datas["TruckCarPic"]["task_flag_status"]
+        truck.task_flags_yellow_car = self.project_dir + self.__datas["TruckCarPic"]["task_flags_yellow_car"]
+        truck.task_star_mode = self.project_dir + self.__datas["TruckCarPic"]["task_star_mode"]
+        truck.task_monster_fight = self.project_dir + self.__datas["TruckCarPic"]["task_monster_fight"]
+        truck.task_monster_target = self.project_dir + self.__datas["TruckCarPic"]["task_monster_target"]
+        truck.task_monster_target_skil = self.project_dir + self.__datas["TruckCarPic"]["task_monster_target_skill"]
+        truck.task_car_selected = self.project_dir + self.__datas["TruckCarPic"]["task_car_selected"]
         return truck
 
     def find_track_car_task(self):
@@ -208,24 +208,24 @@ class GetConfig:
         寻找地图上的接镖NPC
         """
         truck_car_task = FindTruckCarTaskNPC()
-        truck_car_task.qin_xiu = self.__datas["TruckCarFindTask"]["qin_xiu"]
-        truck_car_task.qin_xiu_activity_list = self.__datas["TruckCarFindTask"]["qin_xiu_activity_list"]
-        truck_car_task.qin_xiu_truck_car_task = self.__datas["TruckCarFindTask"]["qin_xiu_truck_car_task"]
+        truck_car_task.qin_xiu = self.project_dir + self.__datas["TruckCarFindTask"]["qin_xiu"]
+        truck_car_task.qin_xiu_activity_list = self.project_dir + self.__datas["TruckCarFindTask"]["qin_xiu_activity_list"]
+        truck_car_task.qin_xiu_truck_car_task = self.project_dir + self.__datas["TruckCarFindTask"]["qin_xiu_truck_car_task"]
         # 成都
-        truck_car_task.task_point_chengdu = self.__datas["TruckCarFindTask"]["Area"]["chengdu"]["address"]
-        truck_car_task.task_point_chengdu_npc = self.__datas["TruckCarFindTask"]["Area"]["chengdu"]["npc"]
+        truck_car_task.task_point_chengdu = self.project_dir + self.__datas["TruckCarFindTask"]["Area"]["chengdu"]["address"]
+        truck_car_task.task_point_chengdu_npc = self.project_dir + self.__datas["TruckCarFindTask"]["Area"]["chengdu"]["npc"]
         # 燕京
-        truck_car_task.task_point_yanjing = self.__datas["TruckCarFindTask"]["Area"]["YanJin"]["address"]
-        truck_car_task.task_point_yanjing_npc = self.__datas["TruckCarFindTask"]["Area"]["YanJin"]["npc"]
+        truck_car_task.task_point_yanjing = self.project_dir + self.__datas["TruckCarFindTask"]["Area"]["YanJin"]["address"]
+        truck_car_task.task_point_yanjing_npc = self.project_dir + self.__datas["TruckCarFindTask"]["Area"]["YanJin"]["npc"]
         # 金陵
-        truck_car_task.task_point_jinling = self.__datas["TruckCarFindTask"]["Area"]["JinLing"]["address"]
-        truck_car_task.task_point_jinling_npc = self.__datas["TruckCarFindTask"]["Area"]["JinLing"]["npc"]
+        truck_car_task.task_point_jinling = self.project_dir + self.__datas["TruckCarFindTask"]["Area"]["JinLing"]["address"]
+        truck_car_task.task_point_jinling_npc = self.project_dir + self.__datas["TruckCarFindTask"]["Area"]["JinLing"]["npc"]
         # 苏州
-        truck_car_task.task_point_suzhou = self.__datas["TruckCarFindTask"]["Area"]["SuZhou"]["address"]
-        truck_car_task.task_point_suzhou_npc = self.__datas["TruckCarFindTask"]["Area"]["SuZhou"]["npc"]
+        truck_car_task.task_point_suzhou = self.project_dir + self.__datas["TruckCarFindTask"]["Area"]["SuZhou"]["address"]
+        truck_car_task.task_point_suzhou_npc = self.project_dir + self.__datas["TruckCarFindTask"]["Area"]["SuZhou"]["npc"]
         # 洛阳
-        truck_car_task.task_point_luoyang = self.__datas["TruckCarFindTask"]["Area"]["LuoYang"]["address"]
-        truck_car_task.task_point_luoyang_npc = self.__datas["TruckCarFindTask"]["Area"]["LuoYang"]["npc"]
+        truck_car_task.task_point_luoyang = self.project_dir + self.__datas["TruckCarFindTask"]["Area"]["LuoYang"]["address"]
+        truck_car_task.task_point_luoyang_npc = self.project_dir + self.__datas["TruckCarFindTask"]["Area"]["LuoYang"]["npc"]
         return truck_car_task
 
 

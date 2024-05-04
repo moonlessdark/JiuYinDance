@@ -119,8 +119,8 @@ class TruckCarPic:
     task_flag_status: str = dataclasses.field(default_factory=str)  # 运镖状态，有此图标表示任务进行中
     task_flags_yellow_car: str = dataclasses.field(default_factory=str)  # 镖车上的黄色小旗子，用于判断车的位置
     task_star_mode: str = dataclasses.field(default_factory=str)  # 运镖方式，驾车还是赶路
-    task_monster_fight: list = dataclasses.field(default_factory=list)  # 进入战斗，劫匪或者垃圾四害
-    task_monster_target: list = dataclasses.field(default_factory=list)  # 劫匪，数组，有多个判断标志,头像
+    task_monster_fight: str = dataclasses.field(default_factory=str)  # 进入战斗，劫匪或者垃圾四害
+    task_monster_target: str = dataclasses.field(default_factory=str)  # 劫匪，数组，有多个判断标志,头像
     task_monster_target_skil: str = dataclasses.field(default_factory=str)  # 劫匪NPC的技能，此时需要格挡
     task_car_selected: str = dataclasses.field(default_factory=str)  # 已经选中了镖车
 

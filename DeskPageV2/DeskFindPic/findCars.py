@@ -338,15 +338,15 @@ class FightMonster(TruckCar):
         pic = self.windows.capture(hwnd)
         # 高度1-300像素，宽度 画面右侧，查看所有状态栏
         pic_content = pic.pic_content[1:int(pic.pic_height * 0.5), int(pic.pic_width * 0.4):int(pic.pic_width)]
-        for fs in self.__find_task.task_monster_fight:
-            task_monster_fight = find_area(smaller_pic=self._load_pic(fs), bigger_img=pic_content)
-            if task_monster_fight[-1] > 0.5:
-                """
+        task_monster_fight = find_area(smaller_pic=self._load_pic(self.__find_task.task_monster_fight),
+                                       bigger_img=pic_content)
+        if task_monster_fight[-1] > 0.5:
+            """
                 如果出现了相似度大于0.5的 出现了战投的图标
                 方法2: 如果出现了 进入战斗的图标（进入战斗的文字模板和右上角的NPC标志），那么就说明进入战斗了
                 """
-                print("进入战斗: 查询到进入战斗的模板体魄")
-                return True
+            print("进入战斗: 查询到进入战斗的模板体魄")
+            return True
         # if len(self.ocr.find_ocr_arbitrarily(self.windows.capture(hwnd).pic_content,
         #                                        ["您正在观看风景时", "忽然一道身影一闪而过", "马受到惊吓"])) > 0:
         #     """
@@ -777,7 +777,7 @@ class TransportTaskFunc(TruckCar):
             time.sleep(0.5)
             find_pic = self.windows.capture(hwnd)
             find_pics = find_pic.pic_content[int(find_pic.pic_height * 0.1):int(find_pic.pic_height * 0.5),
-                                             int(find_pic.pic_width * 0.3):int(find_pic.pic_width * 0.7)]
+                        int(find_pic.pic_width * 0.3):int(find_pic.pic_width * 0.7)]
             if self.ocr.find_ocr(find_pics, "距离NPC太远") is not None:
                 """
                 如果出现距离NPC太远了，说明开车失败了
