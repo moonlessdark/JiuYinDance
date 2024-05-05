@@ -315,6 +315,14 @@ class SetGhostMouse(SetGhostDriver):
         result_int: int = self.ghost_driver.releasemousebutton(3)
         return True if result_int > 0 else False
 
+    def release_all_mouse_button(self):
+        """
+        抬起所有鼠标的按键
+        :return:
+        """
+        result_int: int = self.ghost_driver.releaseallmousebutton()
+        return True if result_int > 0 else False
+
     def press_mouse_middle_button(self):
         """
         抬起鼠标中键
