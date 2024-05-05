@@ -245,21 +245,31 @@ class FindButton:
 if __name__ == '__main__':
     import time
 
-    pic_path = "30.png"
-    # pic = cv2.imread(f"D:\\JiuYinScreenPic\\19_50\\{pic_path}", 1)
-
-    pic = cv2.imread(
-        f"D:\\SoftWare\\Game\\SnailGames\\JiuDancing\\JiuYinScreenPic\\10_35\\10_39_08.png",
+    pic_small = "D:\\SoftWare\\Developed\\Projected\\JiuYinDance\\DeskPageV2\\Resources\\TruckCarPic\\truck_type.png"
+    pic_a = cv2.imread(pic_small, 1)
+    pic_b = cv2.imread(
+        f"D:\\SoftWare\\Developed\\Projected\\JiuYinDance\\JiuYinScreenPic\\22_58\\23_00_45.png",
         1)  # 黑色
 
     start_time = time.time()
-    pic = WindowsCapture().clear_black_area2(pic)
+    # pic = WindowsCapture().clear_black_area2(pic)
     end_time = time.time()
     execution_time = end_time - start_time
     print("执行时间为: " + str(execution_time) + "秒")
 
     start_time = time.time()
-    b = FindButton().find_pic_by_bigger(bigger_pic_cap=pic, find_type="团练1", debug=False)
+    # b = FindButton().find_pic_by_bigger(bigger_pic_cap=pic, find_type="团练", debug=False)
+    b = find_area(smaller_pic=pic_a, bigger_img=pic_b)
+
+    img_result = pic_b.copy()
+    rect = b
+    cv2.rectangle(img_result, (rect[0][0], rect[0][1]), (rect[3][0], rect[3][1]), (0, 0, 220), 2)
+
+    # pic_content = img_result[int(50):int(200), int(1):int(1900)]
+
+    cv2.imshow('find_all_template_result.en.png', img_result)
+    cv2.waitKey()
+
     print(f"查询到的按钮：{b}")
     end_time = time.time()
     execution_time = end_time - start_time

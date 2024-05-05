@@ -5,8 +5,11 @@ from PySide6 import QtWidgets
 from PySide6.QtGui import QTextCursor
 from PySide6.QtWidgets import QMessageBox
 
-from DeskPageV2.DeskGUIQth.execut_th import DanceThByFindPic, ScreenGameQth, QProgressBarQth, AutoPressKeyQth, \
-    TruckCarTaskQth, TruckTaskFightMonsterQth, TruckTaskFindCarQth, FollowTheTrailOfTruckQth
+from DeskPageV2.DeskGUIQth.UIQth import QProgressBarQth
+from DeskPageV2.DeskGUIQth.danceQth import (DanceThByFindPic, ScreenGameQth)
+from DeskPageV2.DeskGUIQth.keyAutoQth import AutoPressKeyQth
+from DeskPageV2.DeskGUIQth.truckQth import (TruckCarTaskQth, TruckTaskFightMonsterQth, TruckTaskFindCarQth,
+                                            FollowTheTrailOfTruckQth)
 from DeskPageV2.DeskPageGUI.MainPage import MainGui
 from DeskPageV2.DeskTools.DmSoft.get_dm_driver import getDM, getWindows, getKeyBoardMouse
 from DeskPageV2.DeskTools.GhostSoft.get_driver_v3 import GetGhostDriver, SetGhostBoards
@@ -352,6 +355,7 @@ class Dance(MainGui):
             押镖
             """
             self.truck_task_func_switch(0)
+            self.th_truck_task.set_close()
         self.th_progress_bar.stop_init()
         self.changed_execute_button_text_and_status(False)
 
@@ -608,4 +612,3 @@ class Dance(MainGui):
             self.th_truck_fight_monster.get_param(windows_handle, False)  # 停止打怪
             self.th_truck_find_car.get_param(windows_handle, False)  # 停止找车
             self.th_follow_truck.get_param(windows_handle, False)  # 停止跟踪车辆
-            self.th_truck_task.set_close()

@@ -337,7 +337,7 @@ class FightMonster(TruckCar):
         self.__find_task: TruckCarPic = self._get_pic_truck_car()
         pic = self.windows.capture(hwnd)
         # 高度1-300像素，宽度 画面右侧，查看所有状态栏
-        pic_content = pic.pic_content[1:int(pic.pic_height * 0.5), int(pic.pic_width * 0.4):int(pic.pic_width)]
+        pic_content = pic.pic_content[1:int(pic.pic_height * 0.4), int(pic.pic_width * 0.5):int(pic.pic_width)]
         task_monster_fight = find_area(smaller_pic=self._load_pic(self.__find_task.task_monster_fight),
                                        bigger_img=pic_content)
         if task_monster_fight[-1] > 0.5:
@@ -347,19 +347,12 @@ class FightMonster(TruckCar):
                 """
             print("进入战斗: 查询到进入战斗的模板体魄")
             return True
-        # if len(self.ocr.find_ocr_arbitrarily(self.windows.capture(hwnd).pic_content,
-        #                                        ["您正在观看风景时", "忽然一道身影一闪而过", "马受到惊吓"])) > 0:
-        #     """
-        #     方法1：如果出现了文字 “马受到惊吓，停滞不前” 出现在屏幕上，那么说明即将出现劫镖的怪
-        #     """
-        #     return True
         return False
 
     def _check_monster_skill_status(self, hwnd: int):
         """
         检测NPC是不是在放技能
         """
-        print("开始检测NPC是否准备放技能")
         fight_tag_skill: str = self.__find_task.task_monster_target_skil
 
         pic = self.windows.capture(hwnd)
@@ -369,26 +362,38 @@ class FightMonster(TruckCar):
         if task_monster_fight[-1] > 0.5:
             print(f"检测到NPC要放技能了{task_monster_fight}")
             return True
-        print("NPC没有要放技能")
+        # print("NPC没有要放技能")
         return False
 
     def __fight_func(self, hwnd: int):
         """
         打怪啊
         """
+        is_skill_tag_status: int = 0  # 是否结束释放按钮， 0,表示 初始化，1 表示 技能条出现中，2表示技能条结束
         while 1:
             if self._check_monster_skill_status(hwnd):
-                if SetGhostMouse().is_mouse_button_pressed(3) is False:
-                    print("怪要放技能了，进行格挡")
-                    # 如果当前状态时格挡中
-                    SetGhostMouse().press_mouse_right_button()
-                    continue
 
-            SetGhostBoards().click_press_and_release_by_key_name("Q")  # 按Q
-            SetGhostBoards().click_press_and_release_by_key_name("1")  # 按Q
-            SetGhostBoards().click_press_and_release_by_key_name("Q")  # 按Q
-            SetGhostBoards().click_press_and_release_by_key_name("2")  # 按Q
+                is_skill_tag_status = 1
 
+                if is_skill_tag_status:
+                    if SetGhostMouse().is_mouse_button_pressed(3) is False:
+                        print("怪要放技能了，进行格挡")
+                        # 如果当前状态时格挡中
+                        SetGhostMouse().press_mouse_right_button()
+                        continue
+            else:
+                if is_skill_tag_status == 1:
+                    # 表示放技能的图标已经消失了，
+                    print("怪结束放技能了，多格挡2秒")
+                    time.sleep(2)
+                    is_skill_tag_status = 0
+                    SetGhostMouse().release_mouse_right_button()  # 放开格挡
+
+            SetGhostBoards().click_press_and_release_by_key_name("Q")
+            time.sleep(1)
+            SetGhostBoards().click_press_and_release_by_key_name("R")
+            SetGhostBoards().click_press_and_release_by_key_name("Q")
+            time.sleep(1)
             if self.check_fight_status(hwnd) is False:
                 """
                 如果怪消失了,右上角没有怪的buff了
@@ -787,6 +792,14 @@ class TransportTaskFunc(TruckCar):
             return True
         print(f"TransportTaskFunc: 未找到镖车的 “驾车” 按钮")
         return False
+
+    def goto_target(self, hwnd: int):
+        """
+        如果打完怪后，因为被怪的技能击飞的不知道哪里去了，需要重新找回镖车。
+        使用此方法的前置条件是：
+        在当前画面旋转 360度(4次大旋转)之后，依旧没有出现镖车
+        """
+        pass
 
     def find_truck_car_center_pos(self, hwnd: int, find_count: int = 10, is_break: bool = False) -> tuple or None:
         """
