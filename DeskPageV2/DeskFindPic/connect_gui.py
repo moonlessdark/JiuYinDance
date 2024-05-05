@@ -352,7 +352,6 @@ class Dance(MainGui):
             押镖
             """
             self.truck_task_func_switch(0)
-            self.th_truck_task.set_close()
         self.th_progress_bar.stop_init()
         self.changed_execute_button_text_and_status(False)
 
@@ -609,3 +608,4 @@ class Dance(MainGui):
             self.th_truck_fight_monster.get_param(windows_handle, False)  # 停止打怪
             self.th_truck_find_car.get_param(windows_handle, False)  # 停止找车
             self.th_follow_truck.get_param(windows_handle, False)  # 停止跟踪车辆
+            self.th_truck_task.set_close()

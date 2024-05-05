@@ -529,7 +529,7 @@ class TruckCarTaskQth(QThread):
                 return None
 
             __city_name: str = self.__team.get_map_and_person(self.windows_handle)
-
+            self.__get_task.reply_person_perspective(self.windows_handle)
             # 创建队伍
             self.__team.create_team(self.windows_handle)
             # 查询地图和NPC
@@ -565,6 +565,12 @@ class TruckCarTaskQth(QThread):
             print(f"{get_local_time()}:Single:接镖成功,发送信号: 4, 查找画面中的车辆")
 
             while 1:
+
+                if self.working is False:
+                    self.mutex.unlock()  # 解锁
+                    self.sin_work_status.emit(False)
+                    return None
+
                 if self.__transport_task.check_task_status(self.windows_handle) is False:
                     if self.__transport_task.check_task_end(self.windows_handle):
                         self.sin_out.emit(f"本次押镖(第{count_i + 1}轮已经完成)")
@@ -662,7 +668,9 @@ class TruckTaskFindCarQth(QThread):
                     time.sleep(1)
                     continue
                 if is_need_walk:
+
                     # 如果发现镖车在 画面中间的位置附近，就往前走2秒，靠近镖车
+                    SetGhostMouse().release_all_mouse_button()
                     SetGhostBoards().click_press_and_release_by_key_name_hold_time("w", 2)
                     print("往镖车方向走2步，直接上车")
                 if self.__transport_task.transport_truck(self.windows_handle):
@@ -731,6 +739,7 @@ class TruckTaskFindCarQth(QThread):
 
                                 break
                             else:
+                                SetGhostMouse().release_all_mouse_button()
                                 # 如果点了 运镖 但是 没有开车，那么就表示距离太远了，需要靠近
                                 SetGhostBoards().click_press_and_release_by_key_name_hold_time("w", 1)  # 往前走一步
                                 # 退出循环，从头再来一次
