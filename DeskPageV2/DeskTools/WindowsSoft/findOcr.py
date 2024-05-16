@@ -10,7 +10,7 @@ import cv2
 class FindPicOCR:
 
     def __init__(self):
-        self.text_sys = TextSystem()
+        self.text_sys = TextSystem(use_angle_cls=True)
 
     @staticmethod
     def _format_img(image: np.ndarray) -> np.ndarray:
@@ -74,7 +74,6 @@ class FindPicOCR:
                     y_center = (rect[0][1] + rect[2][1]) / 2
                     # print("有白色区域，镖车识别成功")
                     return [int(x_center), int(y_center)]
-            print("画面中没有识别到文字 镖车,可能是画面精度不够")
         end_time = time.time()
         elapsed_time = end_time - start_time
         print("本次识别耗时：", elapsed_time)
@@ -134,3 +133,10 @@ class FindPicOCR:
                 if result is not None:
                     person_name = person_name_school.replace(result, "")
         return pos, area, person_name
+
+    def find_ocr_all(self, image: np.ndarray):
+        images = self._format_img(image)
+        if images is not None:
+            res = self.text_sys.detect_and_ocr(images)
+            return res
+        return None
