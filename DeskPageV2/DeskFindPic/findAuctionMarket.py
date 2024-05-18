@@ -105,6 +105,15 @@ class FindAuctionMarket:
             return __summit_price
         return None
 
+    def find_re_summit_price(self, image: np.ndarray):
+        """
+        判断确认出价按钮是否可点击
+        """
+        __market_pic_re_summit_price = self.__market_pic_ok
+        __summit_price = find_area(__market_pic_re_summit_price, image)
+        if __summit_price[-1] > 0:
+            return __summit_price
+        return None
 
     def find_goods(self, image: np.ndarray) -> dict:
         """
@@ -157,24 +166,34 @@ class FindAuctionMarket:
                         break
 
                     person: str = "无" if __p.split("竞价者：")[1] in ['一', ""] else __p.split("竞价者：")[1]
+                    price_str: str = ""
+                    price: int = 0
+                    for price_index in goods_content[1:-1]:
+                        price_temp: str = price_index.ocr_text
+                        price_str += price_temp
+                        # print(f"遍历的价格：{price_str}")
 
-                    if len(goods_content) == 3:
-                        price_temp = goods_content[1].ocr_text
-                        if "两" not in price_temp:
-                            # 妈耶，上1000两银子了，有钱人啊
-                            price_temp += "000"
-                        price = int(''.join(map(str, get_numbers(price_temp))))
-                    else:
-                        price_str: str = ""
-                        for price_index in goods_content[1:-1]:
-                            price_temp: str = price_index.ocr_text
-                            price_str += price_temp
+                    thousands_list: list = ["锭", "锁", "键"]
+                    for thousand_str in thousands_list:
+                        if thousand_str in price_str:
+                            res_price: list = price_str.split(thousand_str)
+                            thousand = int(''.join(map(str, get_numbers(res_price[0])))) * 1000
+                            hundred = 0
+                            if res_price[1] != "":
+                                hundred = int(''.join(map(str, get_numbers(res_price[1]))))
+                            price = thousand + hundred
+                    if price == 0:
                         price = int(''.join(map(str, get_numbers(price_str))))
+
+                    if price < 10:
+                        # 如果出现了价格小于10的，因为起拍价就是10L，小于10就说明是没有识别到“锭”，给他补一下
+                        price = price * 1000
+
                     good_pos: numpy.ndarray = goods_content[-1].box  # 坐标
                     person_pic = cap_pic_all[int(good_pos[0][1]): int(good_pos[3][1]),
                                  int(good_pos[0][0]): int(good_pos[1][0])]
                     is_self = 1 if self.__check_person_self(person_pic) else 0
-                    # print(f"物品坐标: {goods_pic_pos}, 物品: {goods_name}, 价格: {price} 两, 竞拍人: {person}, 是否加价成功: {is_self}")
+                    print(f"物品: {goods_name}, 价格: {price} 两, 竞拍人: {person}, 是否加价成功: {is_self}")
                     __goods_find_res[f"goods_{__goods_index}"] = {"goods_pic_pos": goods_pic_pos,
                                                                   "goods_name": goods_name,
                                                                   "goods_price": price,

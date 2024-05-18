@@ -41,7 +41,7 @@ if __name__ == '__main__':
                                                 "\n3:开始执行后，请不要做其他操作，保持游戏窗口一直显示在最前面"
                                                 "\n4:双开时如果激活窗口失败，请尝试以“管理员权限”运行此脚本或修改注册表(请查看帮助说明)"
                                                 "\n5:本工具为免费工具，请勿支付金钱购买")
-    
+
         main_gui.show()
         app.aboutToQuit.connect(main_gui.on_application_about_to_quit)
         sys.exit(app.exec())

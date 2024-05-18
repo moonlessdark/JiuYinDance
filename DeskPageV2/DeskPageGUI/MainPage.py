@@ -1,11 +1,12 @@
 import ctypes
 import os
 import sys
+import time
 
 from PySide6 import QtWidgets, QtCore, QtGui
 from PySide6.QtCore import Qt, QObject, QEvent, QSettings
-from PySide6.QtGui import QIcon, QAction
-from PySide6.QtWidgets import QApplication, QListWidget, QMessageBox
+from PySide6.QtGui import QIcon, QAction, QIntValidator
+from PySide6.QtWidgets import QApplication, QListWidget, QMessageBox, QHeaderView
 
 
 class ListWidgetItemEventFilter(QObject):
@@ -60,7 +61,7 @@ class MainGui(QtWidgets.QMainWindow):
         # self.setWindowTitle("蜗牛跳舞小助手")
         # 加载任务栏和窗口左上角图标
         self.setWindowIcon(QIcon("./_internal/Resources/logo/logo.ico"))
-        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("myappid")
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("my_app_id")
 
         """
         加载事件筛选器
@@ -80,7 +81,7 @@ class MainGui(QtWidgets.QMainWindow):
         menu_bar.addMenu(file_menu)
         menu_bar.addMenu(about_menu)
 
-        action_open_config_file = QtGui.QAction("打开资源文件目录", self)
+        action_open_config_file = QtGui.QAction("打开文件目录", self)
         file_menu.addAction(action_open_config_file)
         action_open_config_file.triggered.connect(self.open_config_file)
 
@@ -88,11 +89,11 @@ class MainGui(QtWidgets.QMainWindow):
         file_menu.addAction(action_edit_config_file)
         action_edit_config_file.triggered.connect(self.edit_config_file)
 
-        action_open_url = QtGui.QAction("访问项目github", self)
+        action_open_url = QtGui.QAction("访问项目", self)
         about_menu.addAction(action_open_url)
         action_open_url.triggered.connect(self.open_url_project)
 
-        action_open_url_get_fore_ground_window_fail = QtGui.QAction("修复窗户激活失败", self)
+        action_open_url_get_fore_ground_window_fail = QtGui.QAction("修复窗口激活失败", self)
         about_menu.addAction(action_open_url_get_fore_ground_window_fail)
         action_open_url_get_fore_ground_window_fail.triggered.connect(self.open_url_get_fore_ground_window_fail)
 
@@ -185,6 +186,7 @@ class MainGui(QtWidgets.QMainWindow):
         self.push_button_start_or_stop_execute = QtWidgets.QPushButton(self.group_box_get_windows)
         self.push_button_start_or_stop_execute.setText("开始执行")
         self.push_button_start_or_stop_execute.setEnabled(False)
+        self.push_button_start_or_stop_execute.setToolTip("快捷键: F12")
 
         # 加载一个横向的布局
         self.layout_group_box_get_windows = QtWidgets.QHBoxLayout(self.group_box_get_windows)
@@ -256,12 +258,38 @@ class MainGui(QtWidgets.QMainWindow):
         layout_input.addWidget(self.push_button_save_key_press_save, 3, 1)
         layout_input.setAlignment(QtCore.Qt.AlignHCenter)
 
-        self.widget_dock = QtWidgets.QDockWidget("键盘按钮设置",self)
+        self.widget_dock = QtWidgets.QDockWidget("键盘按钮设置", self)
         self.widget_dock.setWidget(widget_key_press_auto)
         self.widget_dock.setFloating(True)  # 独立于主窗口之外
         self.addDockWidget(QtCore.Qt.DockWidgetArea.RightDockWidgetArea, self.widget_dock)
         self.widget_dock.setVisible(False)
         self.widget_dock.setFeatures(QtWidgets.QDockWidget.DockWidgetFloatable)  # dockWidget窗口禁止回到主窗口，且屏蔽关闭按钮
+
+        """
+        设置世界竞拍的最高价格
+        """
+        widget_market = QtWidgets.QWidget(self)
+
+        self.list_widget_market = QtWidgets.QTableWidget(widget_market)
+        self.list_widget_market.resizeColumnsToContents()  # 自适应列宽
+
+        header = self.list_widget_market.horizontalHeader()
+        header.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+
+        self.push_button_market_get_goods_list = QtWidgets.QPushButton("获取物品")
+
+        layout_input = QtWidgets.QGridLayout(widget_market)
+        layout_input.addWidget(self.list_widget_market, 0, 0, 10, 1)
+        layout_input.addWidget(self.push_button_market_get_goods_list, 0, 1)
+        layout_input.setAlignment(QtCore.Qt.AlignHCenter)
+
+        self.widget_dock_market = QtWidgets.QDockWidget("设置竞拍物品", self)
+        self.widget_dock_market.setFixedHeight(230)
+        self.widget_dock_market.setWidget(widget_market)
+        self.widget_dock_market.setFloating(True)  # 独立于主窗口之外
+        self.addDockWidget(QtCore.Qt.DockWidgetArea.RightDockWidgetArea, self.widget_dock_market)
+        self.widget_dock_market.setVisible(False)
+        self.widget_dock_market.setFeatures(QtWidgets.QDockWidget.DockWidgetFloatable)  # dockWidget窗口禁止回到主窗口，且屏蔽关闭按钮
 
         """
         设置配置文件窗口
@@ -376,6 +404,47 @@ class MainGui(QtWidgets.QMainWindow):
             self.widget_dock.setVisible(True)
         else:
             self.widget_dock.setVisible(False)
+
+    def set_ui_market_goods_list(self):
+        """
+        设置dockWidget是否显示
+        :return:
+        """
+        if self.radio_button_auction_market.isChecked():
+            self.widget_dock_market.setVisible(True)
+        else:
+            self.widget_dock_market.setVisible(False)
+
+    def set_market_goods_list(self, goods_name_list: list):
+        """
+        设置当前界面上的物品最大价格
+        """
+        # 设置表格的行数和列数
+        self.list_widget_market.setRowCount(len(goods_name_list))  # 设置表格有行数
+        self.list_widget_market.setColumnCount(2)  # 设置表格有2列
+
+        column_labels = ['物品名称', '最大价格']
+        self.list_widget_market.setHorizontalHeaderLabels(column_labels)
+
+        # 添加按钮控件到每个单元格
+        for row in range(len(goods_name_list)):
+            label = QtWidgets.QLabel(goods_name_list[row])
+            line = QtWidgets.QLineEdit()
+            line.setPlaceholderText("设置最低价格(两)")
+            line.setValidator(QIntValidator())
+            # 将按钮控件添加到单元格中
+            self.list_widget_market.setCellWidget(row, 0, label)
+            self.list_widget_market.setCellWidget(row, 1, line)
+
+        time.sleep(1)
+        self.list_widget_market.resizeColumnsToContents()
+        self.list_widget_market.resizeRowsToContents()
+
+        # 获取QDockWidget的建议大小
+        size_hint = self.widget_dock_market.sizeHint()
+
+        # 设置QDockWidget的新尺寸
+        self.widget_dock_market.resize(size_hint)
 
 
 if __name__ == '__main__':

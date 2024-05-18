@@ -3,6 +3,7 @@ import time
 
 from PySide6 import QtWidgets
 from PySide6.QtGui import QTextCursor
+
 from PySide6.QtWidgets import QMessageBox
 
 from DeskPageV2.DeskGUIQth.UIQth import QProgressBarQth
@@ -14,10 +15,11 @@ from DeskPageV2.DeskGUIQth.marketQth import MarKetQth
 from DeskPageV2.DeskPageGUI.MainPage import MainGui
 from DeskPageV2.DeskTools.DmSoft.get_dm_driver import getDM, getWindows, getKeyBoardMouse
 from DeskPageV2.DeskTools.GhostSoft.get_driver_v3 import GetGhostDriver, SetGhostBoards
-from DeskPageV2.DeskTools.WindowsSoft.get_windows import GetHandleList
+from DeskPageV2.DeskTools.WindowsSoft.get_windows import GetHandleList, WindowsCapture
 from DeskPageV2.Utils.dataClass import DmDll, GhostDll, Config
 from DeskPageV2.Utils.keyEvenQTAndGhost import check_ghost_code_is_def
 from DeskPageV2.Utils.load_res import GetConfig
+from DeskPageV2.DeskFindPic.findAuctionMarket import FindAuctionMarket
 
 
 class Dance(MainGui):
@@ -106,6 +108,8 @@ class Dance(MainGui):
         self.push_button_test_windows.clicked.connect(self.test_windows_handle)
         self.radio_button_key_auto.toggled.connect(self.set_ui_key_press_auto)
 
+        self.radio_button_auction_market.toggled.connect(self.set_ui_market_goods_list)
+
         # 按钮设置
         self.push_button_save_key_press_add.clicked.connect(self.key_press_even_add)
         self.push_button_save_key_press_delete.clicked.connect(self.key_press_even_del)
@@ -115,6 +119,9 @@ class Dance(MainGui):
         self.widget_dock_setting.visibilityChanged.connect(self.load_config)
         self.push_button_save_setting.clicked.connect(self.update_config)
         self.widget_dock.visibilityChanged.connect(self.on_top_level_changed)
+
+        # 获取竞拍物品列表
+        self.push_button_market_get_goods_list.clicked.connect(self.get_screen_market_goods_list)
 
     @staticmethod
     def on_application_about_to_quit():
@@ -451,14 +458,16 @@ class Dance(MainGui):
                 """
                 如果是世界竞拍
                 """
-                if len(windows_list) == 1:
-                    self.th_market.get_param(windows_list[0])
-                    self.th_market.start()
+                res_dict = self.__market_check_goods_max_price()
+                if res_dict is not None:
+                    if len(windows_list) == 1:
+                        self.th_market.get_param(windows_list[0], res_dict)
+                        self.th_market.start()
 
-                    self.__update_ui_changed_execute_button_text_and_status(True)
-                    # 开始执行跑马灯效果
-                    self.th_progress_bar.start_init()
-                    self.th_progress_bar.start()
+                        self.__update_ui_changed_execute_button_text_and_status(True)
+                        # 开始执行跑马灯效果
+                        self.th_progress_bar.start_init()
+                        self.th_progress_bar.start()
             else:
                 self.print_logs("还未选择需要执行的功能")
 
@@ -633,3 +642,45 @@ class Dance(MainGui):
             self.th_truck_fight_monster.get_param(windows_handle, False)  # 停止打怪
             self.th_truck_find_car.get_param(windows_handle, False)  # 停止找车
             self.th_follow_truck.get_param(windows_handle, False)  # 停止跟踪车辆
+
+    def get_screen_market_goods_list(self):
+        """
+        获取当前游戏窗口的竞拍物品
+        """
+        handle_list = self.check_handle_is_selected()
+        if len(handle_list) != 1:
+            self.print_logs("请勾选需要的窗口(只支持1个窗口)", is_clear=True)
+        else:
+            __res: dict = FindAuctionMarket().find_goods(WindowsCapture().capture(handle_list[0]).pic_content)
+            __goods_name_list: list = []
+            if len(__res) > 0:
+                for __good_line in __res:
+                    __goods_name = __res[__good_line]["goods_name"]
+                    __goods_name_list.append(__goods_name)
+            if len(__goods_name_list) == 0:
+                self.print_logs("游戏窗口未检测到世界竞拍列表", is_clear=True)
+                return False
+            self.set_market_goods_list(__goods_name_list)
+
+    def __market_check_goods_max_price(self):
+        """
+        检测是否填写了最大价格
+        """
+        _goods_price: dict = {}
+        for row in range(self.list_widget_market.rowCount()):
+            __goods_name_obj: QtWidgets.QLabel = self.list_widget_market.cellWidget(row, 0)
+            __goods_max_price_obj: QtWidgets.QLineEdit = self.list_widget_market.cellWidget(row, 1)
+
+            __goods_name, __goods_max_price = "", ""
+
+            __goods_name: str = __goods_name_obj.text()
+            __goods_max_price: str = __goods_max_price_obj.text()
+            if __goods_max_price != "":
+                print(f"物品: {__goods_name} 的最大价格：{__goods_max_price}")
+                _goods_price = {__goods_name: __goods_max_price}
+                continue
+            self.print_logs("还有物品没有设置价格")
+            return None
+        return _goods_price
+
+
