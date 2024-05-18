@@ -2,7 +2,7 @@
 import yaml
 
 from DeskPageV2.Utils.dataClass import DancePic, WhzDancePic, DmDll, GhostDll, Config, Team, TruckCarPic, \
-    FindTruckCarTaskNPC, TruckCarReceiveTask
+    FindTruckCarTaskNPC, TruckCarReceiveTask, MarketPic
 from DeskPageV2.Utils.project_path import PathUtil
 
 
@@ -98,10 +98,10 @@ class GetConfig:
         :return:
         """
         pic_config = Config()
-        pic_config.dance_threshold = self.__datas["config"]["dance_threshold_tl"]
-        pic_config.whz_dance_threshold = self.__datas["config"]["dance_threshold_whz"]
-        pic_config.area_dance_threshold = self.__datas["config"]["dance_threshold_area"]
-        pic_config.is_debug = self.__datas["config"]["debug"]
+        pic_config.dance_threshold = self.__datas["danceConfig"]["dance_threshold_tl"]
+        pic_config.whz_dance_threshold = self.__datas["danceConfig"]["dance_threshold_whz"]
+        pic_config.area_dance_threshold = self.__datas["danceConfig"]["dance_threshold_area"]
+        pic_config.is_debug = self.__datas["danceConfig"]["debug"]
         return pic_config
 
     def update_find_pic_config(self, *args, **kwargs):
@@ -114,7 +114,7 @@ class GetConfig:
 
         for item_key in kwargs:
 
-            self.__datas["config"][item_key] = kwargs.get(item_key)
+            self.__datas["danceConfig"][item_key] = kwargs.get(item_key)
             with open(_get_dir_path(), 'w', encoding='utf-8') as f:
                 yaml.dump(self.__datas, f, allow_unicode=True)  # allow_unicode=True，解决存储时unicode编码问题。
 
@@ -227,6 +227,16 @@ class GetConfig:
         truck_car_task.task_point_luoyang = self.project_dir + self.__datas["TruckCarFindTask"]["Area"]["LuoYang"]["address"]
         truck_car_task.task_point_luoyang_npc = self.project_dir + self.__datas["TruckCarFindTask"]["Area"]["LuoYang"]["npc"]
         return truck_car_task
+
+    def get_market_pic(self) -> MarketPic:
+        # 世界竞拍
+        __market_pic = MarketPic()
+        __market_pic.main_line = self.project_dir + self.__datas["MarketPic"]["main_line"]
+        __market_pic.ok = self.project_dir + self.__datas["MarketPic"]["ok"]
+        __market_pic.plus_price_10 = self.project_dir + self.__datas["MarketPic"]["plus_price"]
+        __market_pic.plus_price_100 = self.project_dir + self.__datas["MarketPic"]["plus_price_100"]
+        __market_pic.summit_price = self.project_dir + self.__datas["MarketPic"]["summit_price"]
+        return __market_pic
 
 
 if __name__ == '__main__':

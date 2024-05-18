@@ -146,9 +146,12 @@ class MainGui(QtWidgets.QMainWindow):
         # 按键宏
         self.radio_button_key_auto = QtWidgets.QRadioButton()
         self.radio_button_key_auto.setText("键盘连按")
-        # 按键宏
+        # 押镖
         self.radio_button_truck_car_task = QtWidgets.QRadioButton()
         self.radio_button_truck_car_task.setText("押镖任务")
+        # 世界竞拍
+        self.radio_button_auction_market = QtWidgets.QRadioButton()
+        self.radio_button_auction_market.setText("世界竞拍")
 
         """
         增加一下布局框
@@ -161,7 +164,7 @@ class MainGui(QtWidgets.QMainWindow):
         self.gridLayout_group_box_functional_area.addWidget(self.radio_button_game_screen, 0, 2, QtCore.Qt.AlignCenter)
         self.gridLayout_group_box_functional_area.addWidget(self.radio_button_key_auto, 1, 0, QtCore.Qt.AlignRight)
         self.gridLayout_group_box_functional_area.addWidget(self.radio_button_truck_car_task, 1, 1, QtCore.Qt.AlignCenter)
-
+        self.gridLayout_group_box_functional_area.addWidget(self.radio_button_auction_market, 1, 2, QtCore.Qt.AlignCenter)
         self.setLayout(self.gridLayout_group_box_functional_area)
 
         """

@@ -157,3 +157,13 @@ class Config:
     whz_dance_threshold: float = dataclasses.field(default_factory=float)
     area_dance_threshold: float = dataclasses.field(default_factory=float)
     is_debug: bool = dataclasses.field(default_factory=bool)
+
+
+@dataclasses.dataclass
+class MarketPic:
+    # 世界竞拍
+    main_line: str = dataclasses.field(default_factory=str)
+    ok: str = dataclasses.field(default_factory=str)
+    plus_price_10: str = dataclasses.field(default_factory=str)
+    plus_price_100: str = dataclasses.field(default_factory=str)
+    summit_price: str = dataclasses.field(default_factory=str)

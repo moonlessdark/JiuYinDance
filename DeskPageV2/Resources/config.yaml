@@ -52,7 +52,7 @@ TruckCarPic:
   task_monster_target: /Resources/TruckCarPic/fight_status_2.png
   task_monster_target_skill: /Resources/TruckCarPic/car_monster_skill_1.png
   task_star_mode: /Resources/TruckCarPic/truck_type.png
-config:
+danceConfig:
   dance_threshold_area: 0.3
   dance_threshold_tl: 0.9
   dance_threshold_whz: 0.8
@@ -85,3 +85,9 @@ team:
   flag_team: /Resources/Team/team_mark.png
   flag_team_status: /Resources/Team/队伍标志.png
   leave_team: /Resources/Team/离开队伍.png
+MarketPic:
+  main_line: /Resources/AuctionMarket/main_line_v2.png
+  ok: /Resources/AuctionMarket/ok.png
+  plus_price: /Resources/AuctionMarket/plus_10.png
+  plus_price_100: /Resources/AuctionMarket/plus_100.png
+  summit_price: /Resources/AuctionMarket/summit.png

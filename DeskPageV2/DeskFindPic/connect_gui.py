@@ -10,6 +10,7 @@ from DeskPageV2.DeskGUIQth.danceQth import (DanceThByFindPic, ScreenGameQth)
 from DeskPageV2.DeskGUIQth.keyAutoQth import AutoPressKeyQth
 from DeskPageV2.DeskGUIQth.truckQth import (TruckCarTaskQth, TruckTaskFightMonsterQth, TruckTaskFindCarQth,
                                             FollowTheTrailOfTruckQth)
+from DeskPageV2.DeskGUIQth.marketQth import MarKetQth
 from DeskPageV2.DeskPageGUI.MainPage import MainGui
 from DeskPageV2.DeskTools.DmSoft.get_dm_driver import getDM, getWindows, getKeyBoardMouse
 from DeskPageV2.DeskTools.GhostSoft.get_driver_v3 import GetGhostDriver, SetGhostBoards
@@ -33,6 +34,7 @@ class Dance(MainGui):
         self.th_screen = ScreenGameQth()
         self.th_progress_bar = QProgressBarQth()
         self.th_key_press_auto = AutoPressKeyQth()
+        self.th_market = MarKetQth()
 
         # 押镖
         self.th_truck_task = TruckCarTaskQth()  # 运镖
@@ -77,6 +79,9 @@ class Dance(MainGui):
 
         self.th_truck_task.sin_out.connect(self.print_logs)
         self.th_truck_task.sin_work_status.connect(self._th_execute_stop)
+
+        self.th_market.sin_out.connect(self.print_logs)
+        self.th_market.sin_work_status.connect(self._th_execute_stop)
 
         # 押镖相关的信号槽
         self.th_truck_task.sin_out.connect(self.print_logs)
@@ -295,7 +300,7 @@ class Dance(MainGui):
             windows_list.append(self.handle_dict["windows_3"])
         return windows_list
 
-    def changed_execute_button_text_and_status(self, button_status: bool):
+    def __update_ui_changed_execute_button_text_and_status(self, button_status: bool):
         """
         更新执行按钮的文字和状态
         :param button_status:
@@ -327,11 +332,11 @@ class Dance(MainGui):
             """
             如果当前状态是True，说明正在执行，接下来需要停止，开始发出结束命令，等待结束
             """
-            self._execute_stop()
+            self.__qth_single_stop_status()
 
-    def _execute_stop(self):
+    def __qth_single_stop_status(self):
         """
-        点击结束执行按钮
+        点击结束执行按钮，给线程发出停止命令
         :return:
         """
         self.print_logs("已发出停止指令，请等待")
@@ -356,8 +361,13 @@ class Dance(MainGui):
             """
             self.truck_task_func_switch(0)
             self.th_truck_task.set_close()
+        elif self.radio_button_auction_market.isChecked():
+            """
+            世界竞拍
+            """
+            self.th_market.stop_execute_init()
         self.th_progress_bar.stop_init()
-        self.changed_execute_button_text_and_status(False)
+        self.__update_ui_changed_execute_button_text_and_status(False)
 
     def _execute_start(self):
         """
@@ -386,7 +396,7 @@ class Dance(MainGui):
                                            key_board_mouse_driver_type=self.keyboard_type,
                                            debug=self.is_debug)
                 self.th.start()
-                self.changed_execute_button_text_and_status(True)
+                self.__update_ui_changed_execute_button_text_and_status(True)
                 # 开始执行跑马灯效果
                 self.th_progress_bar.start_init()
                 self.th_progress_bar.start()
@@ -397,7 +407,7 @@ class Dance(MainGui):
                 """
                 self.th_screen.get_param(windows_handle_list=windows_list, pic_save_path="./")
                 self.th_screen.start()
-                self.changed_execute_button_text_and_status(True)
+                self.__update_ui_changed_execute_button_text_and_status(True)
                 # 开始执行跑马灯效果
                 self.th_progress_bar.start_init()
                 self.th_progress_bar.start()
@@ -415,7 +425,7 @@ class Dance(MainGui):
                                                          press_count=self.line_key_press_execute_sum.value(),
                                                          press_wait_time=self.line_key_press_wait_time.value())
                         self.th_key_press_auto.start()
-                        self.changed_execute_button_text_and_status(True)
+                        self.__update_ui_changed_execute_button_text_and_status(True)
                         # 开始执行跑马灯效果
                         self.th_progress_bar.start_init()
                         self.th_progress_bar.start()
@@ -433,11 +443,22 @@ class Dance(MainGui):
                     self.th_truck_task.get_param(windows_list[0], 5)
                     self.th_truck_task.start()
 
-                    self.changed_execute_button_text_and_status(True)
+                    self.__update_ui_changed_execute_button_text_and_status(True)
                     # 开始执行跑马灯效果
                     self.th_progress_bar.start_init()
                     self.th_progress_bar.start()
+            elif self.radio_button_auction_market.isChecked():
+                """
+                如果是世界竞拍
+                """
+                if len(windows_list) == 1:
+                    self.th_market.get_param(windows_list[0])
+                    self.th_market.start()
 
+                    self.__update_ui_changed_execute_button_text_and_status(True)
+                    # 开始执行跑马灯效果
+                    self.th_progress_bar.start_init()
+                    self.th_progress_bar.start()
             else:
                 self.print_logs("还未选择需要执行的功能")
 
@@ -448,7 +469,7 @@ class Dance(MainGui):
         :return:
         """
         if execute_status is False:
-            self._execute_stop()
+            self.__qth_single_stop_status()
 
     def get_windows_handle(self):
         """
