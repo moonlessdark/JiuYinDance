@@ -87,6 +87,7 @@ team:
   leave_team: /Resources/Team/离开队伍.png
 MarketPic:
   main_line: /Resources/AuctionMarket/main_line_v2.png
+  follow_line: /Resources/AuctionMarket/my_follow_page.png
   ok: /Resources/AuctionMarket/ok.png
   plus_price: /Resources/AuctionMarket/plus_10.png
   plus_price_100: /Resources/AuctionMarket/plus_100.png

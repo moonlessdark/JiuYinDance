@@ -53,7 +53,6 @@ class MarKetQth(QThread):
         """
         检测2个物品名称的相似度
         """
-        # print(f"sssssss{self.__market_goods_price}")
         for key in self.__market_goods_price:
             for g_name in key:
                 self.sin_out.emit(f"正在查询物品: {name_a} 是否已经设置最大价格，当前匹配值 {g_name}")
@@ -80,7 +79,7 @@ class MarKetQth(QThread):
 
             _goods_price_temp: int = self.__check_goods_name_similarity(__goods.get("goods_name"))
             if _goods_price_temp is not None:
-                self.sin_out.emit(f"物品: {__goods.get('goods_name')}(当前价格{int(__goods.get('goods_price'))})(最大价格{_goods_price_temp}) 开始检测是否符合条件")
+                self.sin_out.emit(f"物品: {__goods.get('goods_name')}(价格{int(__goods.get('goods_price'))})) 开始检测是否符合条件")
                 # 拿出物品名字，和外面传进来的最大价格对比一下，如果超出了就跳过
                 if int(__goods.get("goods_price")) >= int(_goods_price_temp):
                     # print(f"物品: {__goods.get('goods_name')}(当前价格{int(__goods.get('goods_price'))})(最大价格{_goods_price_temp}) 已经到达设置的最大上限")
@@ -94,7 +93,7 @@ class MarKetQth(QThread):
                 if __goods.get("goods_price") <= __min_price:
                     __min_price = __goods.get("goods_price")
                     __min_goods = __goods
-        self.sin_out.emit(f"当前可以竞拍的价格最小的产品是 (价格 {__min_price})")
+        self.sin_out.emit(f"当前页面可以竞拍的价格最小的产品的价格是({__min_price})")
         # print(f"当前可以竞拍的价格最小的产品是 {__min_goods}(价格 {__min_price})")
         return __min_goods
 
@@ -114,8 +113,14 @@ class MarKetQth(QThread):
         while 1:
             if self.__market_working is False:
                 break
+
             time.sleep(0.5)
             __market_pic_contents: PicCapture = self.__market_windows_cap.capture(self.windows_handle)
+
+            if self.__market_func.check_in_follow_page(__market_pic_contents.pic_content) is False:
+                self.sin_out.emit("关注的列表中已经没有物品，程序即将停止")
+                break
+
             __res: dict = self.__market_func.find_goods(__market_pic_contents.pic_content)
             if len(__res) > 0:
                 __min_goods_res = self.__min_price(__res)
@@ -156,6 +161,10 @@ class MarKetQth(QThread):
                     SetGhostMouse().click_mouse_left_button()
 
                 time.sleep(0.2)
+
+                if self.__market_func.check_in_follow_page(__market_pic_contents.pic_content) is False:
+                    self.sin_out.emit("关注的列表中已经没有物品，程序即将停止")
+                    break
 
                 # 点击再次确认竞拍小窗口
                 __re_summit_pic_button_pos = self.__market_func.find_re_summit_price(

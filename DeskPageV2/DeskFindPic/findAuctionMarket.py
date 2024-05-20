@@ -26,6 +26,7 @@ class FindAuctionMarket:
         self.__market_pic = __market_config.get_market_pic()
 
         self.__market_pic_main_line = cv2.imdecode(fromfile(self.__market_pic.main_line, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
+        self.__market_pic_follow_line = cv2.imdecode(fromfile(self.__market_pic.follow_line, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
         self.__market_pic_ok = cv2.imdecode(fromfile(self.__market_pic.ok, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
         self.__market_pic_plus_price = cv2.imdecode(fromfile(self.__market_pic.plus_price_10, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
         self.__market_pic_plus_price_100 = cv2.imdecode(fromfile(self.__market_pic.plus_price_100, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
@@ -76,6 +77,15 @@ class FindAuctionMarket:
 
         # 如果非零像素的数量大于某个阈值，则认为色存在
         if red_exists > 100:
+            return True
+        return False
+
+    def check_in_follow_page(self, image: np.ndarray) -> bool:
+        """
+        检测 我的关注 是不是 高亮的，如果不是高亮的就需要结束竞拍
+        """
+        __follow_list_res = find_area(self.__market_pic_follow_line, image)
+        if __follow_list_res[-1] > 0.85:
             return True
         return False
 
@@ -213,4 +223,4 @@ class FindAuctionMarket:
 if __name__ == '__main__':
     find = FindAuctionMarket()
     pic = cv2.imread("D:\\SoftWare\\Game\\SnailGames\\JiuDancing\\JiuYinScreenPic\\21_34\\21_35_37.png")
-    find.find_goods(pic)
+    find.check_in_follow_page()

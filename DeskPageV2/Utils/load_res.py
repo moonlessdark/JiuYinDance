@@ -232,6 +232,7 @@ class GetConfig:
         # 世界竞拍
         __market_pic = MarketPic()
         __market_pic.main_line = self.project_dir + self.__datas["MarketPic"]["main_line"]
+        __market_pic.follow_line = self.project_dir + self.__datas["MarketPic"]["follow_line"]
         __market_pic.ok = self.project_dir + self.__datas["MarketPic"]["ok"]
         __market_pic.plus_price_10 = self.project_dir + self.__datas["MarketPic"]["plus_price"]
         __market_pic.plus_price_100 = self.project_dir + self.__datas["MarketPic"]["plus_price_100"]

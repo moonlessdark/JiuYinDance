@@ -163,6 +163,7 @@ class Config:
 class MarketPic:
     # 世界竞拍
     main_line: str = dataclasses.field(default_factory=str)
+    follow_line: str = dataclasses.field(default_factory=str)
     ok: str = dataclasses.field(default_factory=str)
     plus_price_10: str = dataclasses.field(default_factory=str)
     plus_price_100: str = dataclasses.field(default_factory=str)
