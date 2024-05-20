@@ -34,7 +34,7 @@ if __name__ == '__main__':
         app = QApplication(sys.argv)
         main_gui = Dance()
         main_gui.setWindowTitle("JDancing(经典)")
-        main_gui.text_browser_print_log.setText("更新日期: 2024-04-11"
+        main_gui.text_browser_print_log.setText("更新日期: 2024-05-20"
                                                 "\n注意："
                                                 "\n1:游戏客户端设置为【经典模式】，不然无法正常识别到游戏画面。窗口分辨率请确保大于1388*768"
                                                 "\n2:本工具需要搭配“幽灵键鼠”使用，请自行购买(淘宝8块钱的那个就可以了)"

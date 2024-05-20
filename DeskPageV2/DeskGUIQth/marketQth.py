@@ -41,7 +41,6 @@ class MarKetQth(QThread):
         # 线程状态改为和线程终止
         # self.wait()
         self.__market_working = False
-        self.__market_goods_price: dict = {}
 
     def stop_execute_init(self):
         """
@@ -49,20 +48,21 @@ class MarKetQth(QThread):
         :return:
         """
         self.__market_working = False
-        self.windows_handle = 0
-        self.__market_goods_price: dict = {}
 
     def __check_goods_name_similarity(self, name_a: str):
         """
         检测2个物品名称的相似度
         """
-        for g_name in self.__market_goods_price:
-
-            ratio = difflib.SequenceMatcher(None, name_a, g_name).ratio()
-            if round(ratio, 2) > 0.5:
-                return self.__market_goods_price.get(g_name)
+        # print(f"sssssss{self.__market_goods_price}")
+        for key in self.__market_goods_price:
+            for g_name in key:
+                self.sin_out.emit(f"正在查询物品: {name_a} 是否已经设置最大价格，当前匹配值 {g_name}")
+                ratio = difflib.SequenceMatcher(None, name_a, g_name).ratio()
+                if round(ratio, 2) > 0.70:
+                    self.sin_out.emit(f"已经找到物品: {g_name} 的最大价格 {key.get(g_name)}")
+                    return key.get(g_name)
+        self.sin_out.emit(f"没有找到物品: {name_a} 的最大价格")
         return None
-
 
     def __min_price(self, goods_res: dict) -> dict:
         """
@@ -74,26 +74,31 @@ class MarKetQth(QThread):
         for goods_key in goods_res:
             __goods = goods_res.get(goods_key)
             if __goods.get("goods_person_is_self") == 1:
+                self.sin_out.emit(f"检测到物品: {__goods.get('goods_name')} 已经加价成功，本次查询跳过此物品")
                 # 过滤掉已经加价成功的
                 continue
 
             _goods_price_temp: int = self.__check_goods_name_similarity(__goods.get("goods_name"))
             if _goods_price_temp is not None:
+                self.sin_out.emit(f"物品: {__goods.get('goods_name')}(当前价格{int(__goods.get('goods_price'))})(最大价格{_goods_price_temp}) 开始检测是否符合条件")
                 # 拿出物品名字，和外面传进来的最大价格对比一下，如果超出了就跳过
                 if int(__goods.get("goods_price")) >= int(_goods_price_temp):
-                    print(f"当前物品价格 {int(__goods.get('goods_price'))}, 最大价格：{int(_goods_price_temp)}")
+                    # print(f"物品: {__goods.get('goods_name')}(当前价格{int(__goods.get('goods_price'))})(最大价格{_goods_price_temp}) 已经到达设置的最大上限")
+                    self.sin_out.emit(f"物品: {__goods.get('goods_name')}(当前价格{int(__goods.get('goods_price'))})(最大价格{_goods_price_temp}) 已经到达设置的最大上限")
                     continue
 
-            if __min_price == 0:
-                # 如果为0，就初始化一下
-                __min_price = __goods.get("goods_price")
+                if __min_price == 0:
+                    # 如果为0，就初始化一下
+                    __min_price = __goods.get("goods_price")
 
-            if __goods.get("goods_price") <= __min_price:
-                __min_price = __goods.get("goods_price")
-                __min_goods = __goods
+                if __goods.get("goods_price") <= __min_price:
+                    __min_price = __goods.get("goods_price")
+                    __min_goods = __goods
+        self.sin_out.emit(f"当前可以竞拍的价格最小的产品是 (价格 {__min_price})")
+        # print(f"当前可以竞拍的价格最小的产品是 {__min_goods}(价格 {__min_price})")
         return __min_goods
 
-    def get_param(self, windows_handle: int, goods_price: dict):
+    def get_param(self, windows_handle: int, goods_price_list: list):
         """
         线程用到的参数初始化一下
         :return:
@@ -101,7 +106,7 @@ class MarKetQth(QThread):
         self.__market_working = True
         self.cond.wakeAll()
         self.windows_handle = windows_handle
-        self.__market_goods_price: dict = goods_price
+        self.__market_goods_price: list = goods_price_list
 
     def run(self):
         self.mutex.lock()  # 先加锁

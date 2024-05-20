@@ -459,7 +459,7 @@ class Dance(MainGui):
                 如果是世界竞拍
                 """
                 res_dict = self.__market_check_goods_max_price()
-                if res_dict is not None:
+                if len(res_dict) > 0:
                     if len(windows_list) == 1:
                         self.th_market.get_param(windows_list[0], res_dict)
                         self.th_market.start()
@@ -666,7 +666,7 @@ class Dance(MainGui):
         """
         检测是否填写了最大价格
         """
-        _goods_price: dict = {}
+        _goods_price_list: list = []
         for row in range(self.list_widget_market.rowCount()):
             __goods_name_obj: QtWidgets.QLabel = self.list_widget_market.cellWidget(row, 0)
             __goods_max_price_obj: QtWidgets.QLineEdit = self.list_widget_market.cellWidget(row, 1)
@@ -676,11 +676,10 @@ class Dance(MainGui):
             __goods_name: str = __goods_name_obj.text()
             __goods_max_price: str = __goods_max_price_obj.text()
             if __goods_max_price != "":
-                print(f"物品: {__goods_name} 的最大价格：{__goods_max_price}")
-                _goods_price = {__goods_name: __goods_max_price}
+                _goods_price_list.append({__goods_name: __goods_max_price})
                 continue
             self.print_logs("还有物品没有设置价格")
             return None
-        return _goods_price
+        return _goods_price_list
 
 

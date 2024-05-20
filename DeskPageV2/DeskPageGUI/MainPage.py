@@ -430,7 +430,7 @@ class MainGui(QtWidgets.QMainWindow):
         for row in range(len(goods_name_list)):
             label = QtWidgets.QLabel(goods_name_list[row])
             line = QtWidgets.QLineEdit()
-            line.setPlaceholderText("设置最低价格(两)")
+            line.setPlaceholderText("设置最高价格(两)")
             line.setValidator(QIntValidator())
             # 将按钮控件添加到单元格中
             self.list_widget_market.setCellWidget(row, 0, label)

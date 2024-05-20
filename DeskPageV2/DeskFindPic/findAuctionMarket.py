@@ -164,8 +164,10 @@ class FindAuctionMarket:
 
                     if "成交者" in __p:
                         break
-
-                    person: str = "无" if __p.split("竞价者：")[1] in ['一', ""] else __p.split("竞价者：")[1]
+                    try:
+                        person: str = "无" if __p.split("竞价者：")[1] in ['一', ""] else __p.split("竞价者：")[1]
+                    except IndexError as e:
+                        break
                     price_str: str = ""
                     price: int = 0
                     for price_index in goods_content[1:-1]:
@@ -185,15 +187,15 @@ class FindAuctionMarket:
                     if price == 0:
                         price = int(''.join(map(str, get_numbers(price_str))))
 
-                    if price < 10:
-                        # 如果出现了价格小于10的，因为起拍价就是10L，小于10就说明是没有识别到“锭”，给他补一下
-                        price = price * 1000
+                    # if price < 10:
+                    #     # 如果出现了价格小于10的，因为起拍价就是10L，小于10就说明是没有识别到“锭”，给他补一下
+                    #     price = price * 1000
 
                     good_pos: numpy.ndarray = goods_content[-1].box  # 坐标
                     person_pic = cap_pic_all[int(good_pos[0][1]): int(good_pos[3][1]),
                                  int(good_pos[0][0]): int(good_pos[1][0])]
                     is_self = 1 if self.__check_person_self(person_pic) else 0
-                    print(f"物品: {goods_name}, 价格: {price} 两, 竞拍人: {person}, 是否加价成功: {is_self}")
+                    # print(f"物品: {goods_name}, 价格: {price} 两, 竞拍人: {person}, 是否加价成功: {is_self}")
                     __goods_find_res[f"goods_{__goods_index}"] = {"goods_pic_pos": goods_pic_pos,
                                                                   "goods_name": goods_name,
                                                                   "goods_price": price,
@@ -202,7 +204,7 @@ class FindAuctionMarket:
                     __goods_index += 1
             end_time = time.time()
             elapsed_time = end_time - start_time
-            print(f"本次识别耗时: {round(elapsed_time, 2)} 秒")
+            # print(f"本次识别耗时: {round(elapsed_time, 2)} 秒")
             # cv2.imshow("ss", cap_pic_all)
             # cv2.waitKey()
             return __goods_find_res
