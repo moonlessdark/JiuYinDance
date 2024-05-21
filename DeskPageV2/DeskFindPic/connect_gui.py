@@ -123,6 +123,11 @@ class Dance(MainGui):
         # 获取竞拍物品列表
         self.push_button_market_get_goods_list.clicked.connect(self.get_screen_market_goods_list)
 
+    def hot_key_event(self, data):
+        # print(f"当前按下的键盘value是——{data}")
+        if data == 7995392:
+            self.click_execute_button()
+
     @staticmethod
     def on_application_about_to_quit():
         """
@@ -132,7 +137,6 @@ class Dance(MainGui):
         """
         SetGhostBoards().release_all_key()  # 释放所有按钮
         time.sleep(0.1)
-        SetGhostBoards().close_device()  # 关闭设备连接
 
     @staticmethod
     def get_windows_release() -> int:

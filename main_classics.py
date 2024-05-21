@@ -4,6 +4,7 @@ import platform
 
 from PySide6.QtWidgets import QApplication
 from DeskPageV2.DeskFindPic.connect_gui import Dance
+from DeskPageV2.DeskTools.WindowsSoft import hotKey
 
 
 def is_admin():
@@ -43,5 +44,8 @@ if __name__ == '__main__':
                                                 "\n5:本工具为免费工具，请勿支付金钱购买")
 
         main_gui.show()
+        hot_key = hotKey.HotKey()
+        hot_key.ShowWindow.connect(main_gui.hot_key_event)
+        hot_key.start()
         app.aboutToQuit.connect(main_gui.on_application_about_to_quit)
         sys.exit(app.exec())

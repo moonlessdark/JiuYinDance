@@ -186,7 +186,7 @@ class MainGui(QtWidgets.QMainWindow):
         self.push_button_start_or_stop_execute = QtWidgets.QPushButton(self.group_box_get_windows)
         self.push_button_start_or_stop_execute.setText("开始执行")
         self.push_button_start_or_stop_execute.setEnabled(False)
-        self.push_button_start_or_stop_execute.setToolTip("快捷键: F12")
+        self.push_button_start_or_stop_execute.setToolTip("快捷键: F11")
 
         # 加载一个横向的布局
         self.layout_group_box_get_windows = QtWidgets.QHBoxLayout(self.group_box_get_windows)

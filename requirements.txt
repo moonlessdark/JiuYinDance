@@ -1,6 +1,6 @@
 numpy
 comtypes
-PySide6==6.1.3
+PySide6
 pywin32
 opencv-python
 pyinstaller
