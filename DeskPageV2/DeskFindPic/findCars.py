@@ -1,4 +1,4 @@
-# encoding = utf-8
+# -*- coding: utf-8 -*-
 import time
 
 import cv2
@@ -13,6 +13,7 @@ from DeskPageV2.DeskTools.WindowsSoft.findOcr import FindPicOCR
 from DeskPageV2.DeskTools.WindowsSoft.get_windows import PicCapture, find_area
 from DeskPageV2.Utils.dataClass import FindTruckCarTaskNPC, Team, TruckCarPic, TruckCarReceiveTask
 from DeskPageV2.Utils.load_res import GetConfig
+from DeskPageV2.DeskFindPic.findSkill import SkillGroup
 
 
 class TruckCar:
@@ -25,10 +26,12 @@ class TruckCar:
 
         self.windows = WindowsCapture()
         self.ocr = FindPicOCR()
+        self._skill_func = SkillGroup()
 
         self.hwnd: int = 0
 
         self._area_map, self._person_name = None, None
+        self._skill_obj: dict = self._config.get_skill_group_list().get("金鼎绵掌")  # 当前正在使用的技能组
 
     def get_map_and_person(self, hwnd: int):
         _, self._area_map, self._person_name = self.ocr.get_person_map(self.windows.capture(hwnd).pic_content)
@@ -279,7 +282,7 @@ class TruckCar:
             """
             找到车了，把视角转到这个车
             """
-            print("屏幕出现镖车了")
+            print("镖车大概在屏幕中间了")
             if self._check_target_pos_is_center(__im, rec):
                 print(f"转OK了, 当前坐标是 ({rec[0], rec[1]})")
                 return coordinate_change_from_windows(hwnd, rec)
@@ -345,7 +348,7 @@ class FightMonster(TruckCar):
                 如果出现了相似度大于0.5的 出现了战投的图标
                 方法2: 如果出现了 进入战斗的图标（进入战斗的文字模板和右上角的NPC标志），那么就说明进入战斗了
                 """
-            print("进入战斗: 查询到进入战斗的模板体魄")
+            # print("进入战斗: 查询到进入战斗的模板")
             return True
         return False
 
@@ -360,7 +363,7 @@ class FightMonster(TruckCar):
         pic_content = pic.pic_content[1:int(pic.pic_height * 0.3), int(pic.pic_width * 0.3):int(pic.pic_width * 0.7)]
         task_monster_fight = find_area(smaller_pic=self._load_pic(fight_tag_skill), bigger_img=pic_content)
         if task_monster_fight[-1] > 0.5:
-            print(f"检测到NPC要放技能了{task_monster_fight}")
+            # print(f"检测到NPC要放技能了{task_monster_fight}")
             return True
         # print("NPC没有要放技能")
         return False
@@ -388,25 +391,18 @@ class FightMonster(TruckCar):
                     time.sleep(2)
                     is_skill_tag_status = 0
                     SetGhostMouse().release_mouse_right_button()  # 放开格挡
-
-            SetGhostBoards().click_press_and_release_by_key_name("Q")
-            time.sleep(1)
-            SetGhostBoards().click_press_and_release_by_key_name("R")
-            SetGhostBoards().click_press_and_release_by_key_name("Q")
-            time.sleep(1)
             if self.check_fight_status(hwnd) is False:
                 """
                 如果怪消失了,右上角没有怪的buff了
                 """
                 break
-
-            # if len(self.ocr.find_ocr_arbitrarily(self.windows.capture(hwnd).pic_content,
-            #                                      ["成功攻克劫匪", "完成此次运镖后将额外获得", "运镖失败"])) > 0:
-            #     """
-            #     如果出现了把怪打死的文字
-            #     """
-            #     print("把怪打死了，或者被怪打坏了镖车，可以退出了")
-            #     break
+            __skill_name: str = self._skill_func.get_skill(skill=self._skill_obj)
+            if __skill_name is None:
+                continue
+            __skill_key: str = self._skill_obj[__skill_name]["key"]
+            SetGhostBoards().click_press_and_release_by_key_name(__skill_key)
+            self._skill_obj[__skill_name]["click_time"] = time.time()
+            time.sleep(0.5)
         if SetGhostMouse().is_mouse_button_pressed(3):
             print("打怪结束当前是格挡状态，松开格挡")
             # 如果当前状态时格挡中
@@ -837,22 +833,22 @@ class TransportTaskFunc(TruckCar):
                         """a
                         如果在第一象限，但是不符合规则；那么就向 左侧 转一下
                         """
-                        SetGhostBoards().click_press_and_release_by_key_code_hold_time(37, 0.1)
+                        SetGhostBoards().click_press_and_release_by_key_code_hold_time(39, 0.1)
                     elif __car_quadrant == 2:
                         """
                         如果在第二象限，但是不符合规则；那么就向 右侧 转一下
                         """
-                        SetGhostBoards().click_press_and_release_by_key_code_hold_time(39, 0.1)
+                        SetGhostBoards().click_press_and_release_by_key_code_hold_time(37, 0.1)
                     elif __car_quadrant == 3:
                         """
                         如果在第三象限，就转一个大的，转到第一象限去
                         """
-                        SetGhostBoards().click_press_and_release_by_key_code_hold_time(37, 0.5)
+                        SetGhostBoards().click_press_and_release_by_key_code_hold_time(39, 0.5)
                     elif __car_quadrant == 4:
                         """
                         如果在第四象限，就转一个大的，转到第二象限去
                         """
-                        SetGhostBoards().click_press_and_release_by_key_code_hold_time(39, 0.4)
+                        SetGhostBoards().click_press_and_release_by_key_code_hold_time(37, 0.4)
                     print("转 20度 的视角")
             WindowsHandle().activate_windows(hwnd)
             SetGhostBoards().click_press_and_release_by_key_code_hold_time(37, 0.4)

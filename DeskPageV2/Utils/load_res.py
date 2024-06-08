@@ -1,4 +1,6 @@
 # encodings: utf-8
+import json
+
 import yaml
 
 from DeskPageV2.Utils.dataClass import DancePic, WhzDancePic, DmDll, GhostDll, Config, Team, TruckCarPic, \
@@ -22,6 +24,13 @@ def _get_dir_key_even_path() -> str:
     """
     # return PathUtil().get_path_from_resources("../Resources/config.yaml")
     return PathUtil().get_path_from_resources("KeyEvenList.ini")
+
+
+def _get_dir_skill_group() -> str:
+    """
+    获取技能组
+    """
+    return PathUtil().get_path_from_resources("SkillGroup.json")
 
 
 def _get_project_path() -> str:
@@ -127,6 +136,16 @@ class GetConfig:
         with open(_get_dir_key_even_path(), "r", encoding="UTF-8") as f:
             res = f.readlines()
             return res[0]
+
+    @staticmethod
+    def get_skill_group_list() -> dict:
+        """
+        获取技能组
+        """
+        with open(_get_dir_skill_group(), 'r', encoding="gbk") as f:
+            fs = f.read()
+            res = json.loads(fs)
+            return res
 
     @staticmethod
     def save_key_even_code_auto_list(key_list: list):
