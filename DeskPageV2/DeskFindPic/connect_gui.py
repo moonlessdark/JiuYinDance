@@ -29,6 +29,9 @@ class Dance(MainGui):
 
     file_config = GetConfig()
 
+    _fight_monster_qth_sub_thread = None  # 线程对象
+    _find_track_qth_sub_thread = None  # 线程对象
+
     def __init__(self):
         super().__init__()
         # 初始化一些对象
@@ -78,9 +81,6 @@ class Dance(MainGui):
 
         self.th_key_press_auto.sin_out.connect(self.print_logs)
         self.th_key_press_auto.sin_work_status.connect(self._th_execute_stop)
-
-        self.th_truck_task.sin_out.connect(self.print_logs)
-        self.th_truck_task.sin_work_status.connect(self._th_execute_stop)
 
         self.th_market.sin_out.connect(self.print_logs)
         self.th_market.sin_work_status.connect(self._th_execute_stop)
@@ -450,14 +450,13 @@ class Dance(MainGui):
                 如果是押镖
                 """
                 if len(windows_list) == 1:
-
-                    self.th_truck_task.get_param(windows_list[0], 5)
-                    self.th_truck_task.start()
-
-                    self.__update_ui_changed_execute_button_text_and_status(True)
-                    # 开始执行跑马灯效果
-                    self.th_progress_bar.start_init()
-                    self.th_progress_bar.start()
+                    if self.th_truck_task.isRunning() is False:
+                        self.th_truck_task.get_param(windows_list[0], 5)
+                        self.th_truck_task.start()
+                        self.__update_ui_changed_execute_button_text_and_status(True)
+                        # 开始执行跑马灯效果
+                        self.th_progress_bar.start_init()
+                        self.th_progress_bar.start()
             elif self.radio_button_auction_market.isChecked():
                 """
                 如果是世界竞拍
@@ -635,6 +634,7 @@ class Dance(MainGui):
             self.th_truck_find_car.get_param(windows_handle, False)
             self.th_follow_truck.get_param(windows_handle, False)  # 停止跟踪车辆
         elif step == 4:
+
             print("接收到信号 4，保持镖车在屏幕中心区域")
             self.th_follow_truck.get_param(windows_handle, True)
             self.th_follow_truck.start()

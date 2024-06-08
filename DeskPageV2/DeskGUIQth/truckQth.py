@@ -29,7 +29,7 @@ class TruckCarTaskQth(QThread):
         super().__init__()
 
         self.truck_count = None
-        self.working = True
+        self.TruckCarTaskQth_working = False
         self.cond = QWaitCondition()
 
         self.windows_opt = GetHandleList()
@@ -47,26 +47,31 @@ class TruckCarTaskQth(QThread):
     def __del__(self):
         # 线程状态改为和线程终止
         # self.wait()
-        self.working = False
+        self.TruckCarTaskQth_working = False
 
     def set_close(self):
-        self.working = False
+        self.TruckCarTaskQth_working = False
 
     def get_param(self, windows_handle: int, truck_count: int):
         """
         线程用到的参数初始化一下
         :return:
         """
-        self.working = True
         self.windows_handle = windows_handle
         self.truck_count = truck_count
 
     def run(self):
+
+        self.TruckCarTaskQth_working = True
         self.mutex.lock()  # 先加锁
-        self.sin_out.emit("5秒后开始启动")
+        self.sin_out.emit(f"5秒后开始启动")
         time.sleep(5)
         for count_i in range(self.truck_count):
-            if self.working is False:
+            self.sin_out.emit(f"开始执行第：{count_i+1} 次押镖")
+            if self.TruckCarTaskQth_working is False:
+                # 结束了
+                self.quit()
+                self.wait()  # 等待线程结束
                 self.mutex.unlock()  # 解锁
                 self.sin_work_status.emit(False)
                 return None
@@ -80,7 +85,6 @@ class TruckCarTaskQth(QThread):
             # 接取任务
             self.__get_task.receive_task(self.windows_handle)
 
-            # self.__get_task.reply_person_perspective(self.windows_handle)
             global person_viewpoint
             person_viewpoint = 1
 
@@ -98,6 +102,8 @@ class TruckCarTaskQth(QThread):
             pos = coordinate_change_from_windows(self.windows_handle, (100, 100))
             SetGhostMouse().move_mouse_to(pos[0], pos[1])
 
+            self.sin_out.emit(f"开始执行发送信号了")
+
             # 发送信号，等待劫匪出现
             self.next_step.emit(1)
             # 发送信号，等待劫匪出现
@@ -106,7 +112,9 @@ class TruckCarTaskQth(QThread):
 
             while 1:
 
-                if self.working is False:
+                if self.TruckCarTaskQth_working is False:
+                    self.quit()
+                    self.wait()  # 等待线程结束
                     self.mutex.unlock()  # 解锁
                     self.sin_work_status.emit(False)
                     return None
@@ -136,7 +144,6 @@ class TruckTaskFindCarQth(QThread):
 
     def __init__(self):
         super().__init__()
-        self.wait = False
         self.working = True
         self.mutex = QMutex()
         self.windows_handle = 0
@@ -145,7 +152,6 @@ class TruckTaskFindCarQth(QThread):
 
     def __del__(self):
         # 线程状态改为和线程终止
-        self.wait = False
         self.working = False
 
     def stop_execute_init(self):
@@ -153,7 +159,6 @@ class TruckTaskFindCarQth(QThread):
         线程暂停,所有参数重置为null
         :return:
         """
-        self.wait = False
         self.working = False
         self.windows_handle = 0
 
@@ -171,6 +176,8 @@ class TruckTaskFindCarQth(QThread):
         while 1:
             if self.working is False:
                 # 结束了
+                self.quit()
+                self.wait()  # 等待线程结束
                 self.mutex.unlock()  # 解锁
                 return None
 
@@ -205,7 +212,6 @@ class TruckTaskFindCarQth(QThread):
                     time.sleep(1)
                     continue
                 if is_need_walk:
-
                     # 如果发现镖车在 画面中间的位置附近，就往前走2秒，靠近镖车
                     SetGhostMouse().release_all_mouse_button()
                     SetGhostBoards().click_press_and_release_by_key_name_hold_time("w", 2)
@@ -294,13 +300,11 @@ class TruckTaskFightMonsterQth(QThread):
 
         self.mutex = QMutex()
         self.windows_handle = 0
-        self.wait = False
 
         self.__fight_monster = FightMonster()
 
     def __del__(self):
         # 线程状态改为和线程终止
-        self.wait = False
         self.working = False
 
     def get_param(self, windows_handle: int, working_status: bool = True):
@@ -312,11 +316,14 @@ class TruckTaskFightMonsterQth(QThread):
         self.windows_handle = windows_handle
 
     def run(self):
+
         self.mutex.lock()  # 先加锁
 
         while 1:
             if self.working is False:
                 # 结束了
+                self.quit()
+                self.wait()  # 等待线程结束
                 self.mutex.unlock()  # 解锁
                 return None
             if self.__fight_monster.check_fight_status(self.windows_handle):
@@ -359,13 +366,11 @@ class FollowTheTrailOfTruckQth(QThread):
 
         self.mutex = QMutex()
         self.windows_handle = 0
-        self.wait = False
 
         self.__transport_task = TransportTaskFunc()  # 查找镖车
 
     def __del__(self):
         # 线程状态改为和线程终止
-        self.wait = False
         self.working = False
 
     def stop_execute_init(self):
@@ -375,7 +380,6 @@ class FollowTheTrailOfTruckQth(QThread):
         """
         self.working = False
         self.windows_handle = 0
-        self.wait = False
 
     def set_wait_status(self, is_wait: bool):
         self.is_wait = is_wait
@@ -394,6 +398,8 @@ class FollowTheTrailOfTruckQth(QThread):
         while 1:
             if self.working is False:
                 # 结束了
+                self.quit()
+                self.wait()  # 等待线程结束
                 self.mutex.unlock()  # 解锁
                 return None
 
@@ -422,24 +428,31 @@ class FollowTheTrailOfTruckQth(QThread):
                     # 如果镖车本身就就没有出现在屏幕上，那么就继续就好了
                     continue
                 elif follow_car_quadrant == 1:
+                    print(f"当前镖车在第一象限，按a转向")
                     # 如果镖车在画面中消失前，是在第1象限，那么就往这个方向走一下
                     SetGhostBoards().click_press_by_key_name("w")
                     SetGhostBoards().click_press_by_key_name("a")
                     time.sleep(0.5)
                     SetGhostBoards().release_all_key()
                 elif follow_car_quadrant == 2:
+                    print(f"当前镖车在第二象限，按d转向")
+
                     # 第二象限，右上角
                     SetGhostBoards().click_press_by_key_name("w")
                     SetGhostBoards().click_press_by_key_name("d")
                     time.sleep(0.5)
                     SetGhostBoards().release_all_key()
                 elif follow_car_quadrant == 3:
+                    print(f"当前镖车在第3象限，按a转向")
+
                     # 第三象限，左下角
                     SetGhostBoards().click_press_by_key_name("s")
                     SetGhostBoards().click_press_by_key_name("a")
                     time.sleep(0.5)
                     SetGhostBoards().release_all_key()
                 elif follow_car_quadrant == 4:
+                    print(f"当前镖车在第一象限，按d转向")
+
                     # 第四象限，右下角
                     SetGhostBoards().click_press_by_key_name("s")
                     SetGhostBoards().click_press_by_key_name("d")
