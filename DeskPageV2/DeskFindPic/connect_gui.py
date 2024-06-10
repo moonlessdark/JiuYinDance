@@ -630,14 +630,15 @@ class Dance(MainGui):
             self.th_truck_find_car.get_param(windows_handle, True)
             self.th_truck_find_car.start()
         elif step == 3:
-            print("接收到信号 3，正在打怪中，暂时停止找车和驾车")
-            self.th_truck_find_car.get_param(windows_handle, False)
-            self.th_follow_truck.get_param(windows_handle, False)  # 停止跟踪车辆
-        elif step == 4:
-
-            print("接收到信号 4，保持镖车在屏幕中心区域")
+            print("接收到信号 3，保持镖车在屏幕中心区域")
             self.th_follow_truck.get_param(windows_handle, True)
             self.th_follow_truck.start()
+        elif step == 4:
+            print("接收到信号 4，正在打怪中，暂时停止驾车")
+            self.th_truck_find_car.get_param(windows_handle, False)
+        elif step == 5:
+            print("接收到信号 5，正在打怪中，暂时停止跟踪车辆")
+            self.th_follow_truck.get_param(windows_handle, False)  # 停止跟踪车辆
         elif step == 0:
             """
             如果是其他值，一般是 0，就表示结束

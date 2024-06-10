@@ -289,7 +289,7 @@ class TruckCar:
             print("还没有转到符合条件的地方")
         return None
 
-    def _find_car_pos_in_display(self, hwnd: int):
+    def find_car_pos_in_display(self, hwnd: int):
         """
         查询小车在哪
         """
@@ -785,17 +785,34 @@ class TransportTaskFunc(TruckCar):
                 """
                 print("TransportTaskFunc: 出现“距离NPC太远”的提示")
                 return False
+            # 鼠标离镖车远一点
+            pos = coordinate_change_from_windows(hwnd, (100, 100))
+            SetGhostMouse().move_mouse_to(pos[0], pos[1])
             return True
         print(f"TransportTaskFunc: 未找到镖车的 “驾车” 按钮")
         return False
 
-    def goto_target(self, hwnd: int):
+    def find_truck_car_in_display(self, hwnd: int) -> bool:
         """
-        如果打完怪后，因为被怪的技能击飞的不知道哪里去了，需要重新找回镖车。
-        使用此方法的前置条件是：
-        在当前画面旋转 360度(4次大旋转)之后，依旧没有出现镖车
+        查找镖车释放在屏幕中
         """
-        pass
+        # 看看镖车在不在
+        res_car = self.find_car_pos_in_display(hwnd)
+        if res_car is not None:
+            return True
+        return False
+
+    def find_car_pos_in_display_quadrant(self, hwnd: int) -> int:
+        """
+        查找镖车在第几象限
+        :return 0 表示没找到镖车，1-4表示1-4象限
+        """
+        __res_car = self.find_car_pos_in_display(hwnd)
+        if __res_car is None:
+            return 0
+        cap = self.windows.capture(hwnd)
+        __car_quadrant: int = self.check_target_pos_direction(cap, target_pos=__res_car)
+        return __car_quadrant
 
     def find_truck_car_center_pos(self, hwnd: int, find_count: int = 10, is_break: bool = False) -> tuple or None:
         """
@@ -809,7 +826,7 @@ class TransportTaskFunc(TruckCar):
                 break
 
             # 看看镖车在不在
-            res_car = self._find_car_pos_in_display(hwnd)
+            res_car = self.find_car_pos_in_display(hwnd)
             if res_car is not None:
                 # 如果镖车在，那么就看看在不在中间
                 while 1:
@@ -823,7 +840,7 @@ class TransportTaskFunc(TruckCar):
                         print("镖车在屏幕中间位置")
                         return res_center_car
                     print("镖车在屏幕上，但是不在中间位置")
-                    __res_car = self._find_car_pos_in_display(hwnd)
+                    __res_car = self.find_car_pos_in_display(hwnd)
                     if __res_car is None:
                         return None
                     cap = self.windows.capture(hwnd)
@@ -849,7 +866,6 @@ class TransportTaskFunc(TruckCar):
                         如果在第四象限，就转一个大的，转到第二象限去
                         """
                         SetGhostBoards().click_press_and_release_by_key_code_hold_time(37, 0.4)
-                    print("转 20度 的视角")
             WindowsHandle().activate_windows(hwnd)
             SetGhostBoards().click_press_and_release_by_key_code_hold_time(37, 0.4)
             time.sleep(0.5)
