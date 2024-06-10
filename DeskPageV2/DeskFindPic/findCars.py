@@ -402,7 +402,7 @@ class FightMonster(TruckCar):
             __skill_key: str = self._skill_obj[__skill_name]["key"]
             SetGhostBoards().click_press_and_release_by_key_name(__skill_key)
             self._skill_obj[__skill_name]["click_time"] = time.time()
-            time.sleep(0.5)
+            time.sleep(self._skill_obj[__skill_name]["active_cd"])  # 技能按下去后会有个动作，这个动作的持续时间
         if SetGhostMouse().is_mouse_button_pressed(3):
             print("打怪结束当前是格挡状态，松开格挡")
             # 如果当前状态时格挡中
