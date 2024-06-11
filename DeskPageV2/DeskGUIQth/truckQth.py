@@ -131,11 +131,11 @@ class TruckCarTaskQth(QThread):
                         self.sin_out.emit("押镖未完成，超时或者镖车被毁")
                     self.next_step.emit(0)  # 全部结束
                     # 参数初始化我
-                    is_stop_find_car: bool = False  # 是否停止寻找镖车
-                    is_need_walk: bool = True  # 是否需要走2步前往镖车
-                    is_fight_npc_end: bool = False  # 是否已经和NPC战斗，如有没有战斗，就直接上车。 如果已经战斗，那么就需要查询点击镖车再上车
-                    is_fight_npc_visible: bool = False  # 是否出现NPC
-                    person_viewpoint: int = 0  # 0，默认，无， 1：平视， 2：俯视
+                    is_stop_find_car = False  # 是否停止寻找镖车
+                    is_need_walk = True  # 是否需要走2步前往镖车
+                    is_fight_npc_end = False  # 是否已经和NPC战斗，如有没有战斗，就直接上车。 如果已经战斗，那么就需要查询点击镖车再上车
+                    is_fight_npc_visible = False  # 是否出现NPC
+                    person_viewpoint = 0  # 0，默认，无， 1：平视， 2：俯视
                     is_first_find_car = True
                     break
         self.mutex.unlock()  # 解锁
@@ -230,6 +230,7 @@ class TruckTaskFindCarQth(QThread):
 
                     person_viewpoint = 2
                     # 成功开车
+                    self.next_step.emit(3)  # 上车后，开始保持镖车在画面中
                     self.working = False
                     is_first_find_car = False
                     continue
@@ -241,6 +242,9 @@ class TruckTaskFindCarQth(QThread):
                 if is_car_pos_direction in [1, 2]:
                     self.next_step.emit(5)
                 __car_center_pos = self.__transport_task.find_car_pos_in_display(self.windows_handle)
+
+                if __car_center_pos is None:
+                    continue
 
                 SetGhostMouse().move_mouse_to(__car_center_pos[0], __car_center_pos[1])  # 鼠标移动到初始化位置
                 time.sleep(0.5)
@@ -414,9 +418,6 @@ class FollowTheTrailOfTruckQth(QThread):
             if is_stop_find_car or is_fight_npc_visible:
                 time.sleep(1)
                 continue
-
-            __car_pos = self.__transport_task.find_truck_car_center_pos(self.windows_handle, 1,
-                                                                        is_break=is_stop_find_car)
 
             __car_pos = self.__transport_task.find_truck_car_in_display(hwnd=self.windows_handle)
             if __car_pos:
