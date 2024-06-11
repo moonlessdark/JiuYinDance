@@ -4,7 +4,7 @@ import time
 
 from PySide6.QtCore import QThread, Signal, QWaitCondition, QMutex
 
-from DeskPageV2.DeskFindPic.findCars import TeamFunc, FindTaskNPCFunc, ReceiveTruckTask, TransportTaskFunc, FightMonster
+from DeskPageV2.DeskFindPic.findCars import TeamFunc, FindTaskNPCFunc, ReceiveTruckTask, TransportTaskFunc, FightMonster, UserGoods
 from DeskPageV2.DeskTools.GhostSoft.get_driver_v3 import SetGhostBoards, SetGhostMouse
 from DeskPageV2.DeskTools.WindowsSoft.MonitorDisplay import coordinate_change_from_windows
 from DeskPageV2.DeskTools.WindowsSoft.WindowsCapture import WindowsCapture
@@ -46,6 +46,7 @@ class TruckCarTaskQth(QThread):
         self.__find_npc = FindTaskNPCFunc()  # 查找当地的NPC
         self.__get_task = ReceiveTruckTask()  # 接任务
         self.__transport_task = TransportTaskFunc()  # 开始运镖
+        self.__use_goods = UserGoods()
 
     def __del__(self):
         # 线程状态改为和线程终止
@@ -81,6 +82,9 @@ class TruckCarTaskQth(QThread):
 
             __city_name: str = self.__team.get_map_and_person(self.windows_handle)
             self.__get_task.reply_person_perspective(self.windows_handle)
+
+            self.__use_goods.user_yu_feng_shen_shui(self.windows_handle)
+
             # 创建队伍
             self.__team.create_team(self.windows_handle)
             # 查询地图和NPC

@@ -11,7 +11,7 @@ from DeskPageV2.DeskTools.WindowsSoft.WindowsCapture import WindowsCapture
 from DeskPageV2.DeskTools.WindowsSoft.WindowsHandle import WindowsHandle
 from DeskPageV2.DeskTools.WindowsSoft.findOcr import FindPicOCR
 from DeskPageV2.DeskTools.WindowsSoft.get_windows import PicCapture, find_area
-from DeskPageV2.Utils.dataClass import FindTruckCarTaskNPC, Team, TruckCarPic, TruckCarReceiveTask
+from DeskPageV2.Utils.dataClass import FindTruckCarTaskNPC, Team, TruckCarPic, TruckCarReceiveTask, Goods
 from DeskPageV2.Utils.load_res import GetConfig
 from DeskPageV2.DeskFindPic.findSkill import SkillGroup
 
@@ -23,6 +23,7 @@ class TruckCar:
         self._find_team = None  # 查询队伍是否创建
         self._receive_task = None  # 接取押镖任务
         self._receive_task_road = None  # 运镖路上...
+        self._find_tag_goods = None  # 物品背包
 
         self.windows = WindowsCapture()
         self.ocr = FindPicOCR()
@@ -60,6 +61,14 @@ class TruckCar:
         if self._find_team is None:
             self._find_team = self._config.get_team()
         return self._find_team
+
+    def _get_bag_goods(self) -> Goods:
+        """
+        获取物品背包
+        """
+        if self._find_tag_goods is None:
+            self._find_tag_goods = self._config.get_bag_goods()
+        return self._find_tag_goods
 
     def _get_pic_receive_task(self) -> TruckCarReceiveTask:
         """
@@ -476,11 +485,36 @@ class TeamFunc(TruckCar):
         """
         pass
 
-    def close_team(self):
+    def close_team(self, hwnd):
         """
         解散队伍
         """
-        pass
+        find_team: Team = self._get_pic_team()
+        flag_status = find_team.leave_team
+
+        WindowsHandle().activate_windows(hwnd)
+        SetGhostBoards().click_press_by_key_name("o")
+        time.sleep(1)
+
+        if self.windows.find_windows_coordinate_rect(handle=hwnd, img=find_team.create_team) is not None:
+            """
+            如果有创建的按钮,说明当前已经是非组队状态
+            """
+            return True
+
+        __rec = self.windows.find_windows_coordinate_rect(hwnd, img=self._load_pic(flag_status))
+        if __rec is not None:
+            """
+            找到了解散队伍的按钮
+            """
+            time.sleep(0.2)
+            SetGhostMouse().move_mouse_to(__rec[0], __rec[1])
+            time.sleep(1)
+            SetGhostMouse().click_mouse_left_button()
+            time.sleep(1)
+            SetGhostBoards().click_press_and_release_by_key_name("o")
+            return True
+        return False
 
 
 class FindTaskNPCFunc(TruckCar):
@@ -901,3 +935,79 @@ class TransportTaskFunc(TruckCar):
         if self._check_person_move_status(hwnd, pos) is False:
             return False
         return True
+
+
+class UserGoods(TruckCar):
+    """
+    使用物品
+    """
+    def __init__(self):
+        super().__init__()
+
+    def open_bag(self, hwnd: int):
+        """
+        打开物品背包
+        """
+        __bag: Goods = self._get_bag_goods()
+        __goods_bag_tag_clickable = __bag.goods_bag_tag_clickable  # 没有点击
+        __goods_bag_tag_clicked = __bag.goods_bag_tag_clicked  # 已经点击
+
+        WindowsHandle().activate_windows(hwnd)
+        time.sleep(1)
+        print("打开背包")
+        SetGhostBoards().click_press_and_release_by_key_code_hold_time(66, 0.3)
+        time.sleep(1)
+
+        __rec_goods_bag_tag_clicked = self.windows.find_windows_coordinate_rect(hwnd, img=self._load_pic(__goods_bag_tag_clicked))
+        __rec_goods_bag_tag_clickable = self.windows.find_windows_coordinate_rect(hwnd, img=self._load_pic(__goods_bag_tag_clickable))
+
+        __rec_bag = __rec_goods_bag_tag_clicked if __rec_goods_bag_tag_clicked is not None else __rec_goods_bag_tag_clickable if __rec_goods_bag_tag_clickable is not None else None
+
+        if __rec_bag is not None:
+            print("打开物品栏")
+            time.sleep(1)
+            SetGhostMouse().move_mouse_to(__rec_bag[0], __rec_bag[1])
+            SetGhostMouse().click_mouse_left_button()
+            return True
+        print("没有找到物品栏")
+        return False
+
+    def user_yu_feng_shen_shui(self, hwnd):
+        """
+        使用御风神水
+        """
+
+        __bag: Goods = self._get_bag_goods()
+        __yf_goods = __bag.run_goods
+        __yf_goods_ready = __bag.run_goods_ready
+        __yf_goods_buff = __bag.run_goods_buff
+
+        pic = self.windows.capture(hwnd)
+        # 高度1-300像素，宽度 画面右侧，查看所有状态栏
+        pic_content = pic.pic_content[1:int(pic.pic_height * 0.4), int(pic.pic_width * 0.5):int(pic.pic_width)]
+        __yf_buff_status = find_area(smaller_pic=self._load_pic(__yf_goods_buff), bigger_img=pic_content)
+        if __yf_buff_status[-1] > 0.5:
+            print("说明当前已经是御风状态了,不需要启动")
+            return True
+
+        self.open_bag(hwnd)
+
+        __rec_yf_goods = self.windows.find_windows_coordinate_rect(hwnd, img=self._load_pic(__yf_goods))
+        if __rec_yf_goods is not None:
+            """
+            如果找到了御风神水
+            """
+            time.sleep(1)
+            SetGhostMouse().move_mouse_to(__rec_yf_goods[0], __rec_yf_goods[1])
+            time.sleep(1)
+            SetGhostMouse().click_mouse_right_button()
+            for i in range(10):
+                # 等待10秒
+                time.sleep(1)
+                __rec_yf_goods_ready = self.windows.find_windows_coordinate_rect(hwnd, img=self._load_pic(__yf_goods_ready))
+
+                if __rec_yf_goods_ready is not None or self.ocr.find_ocr(image=self.windows.capture(hwnd).pic_content, temp_text="不断跑动跳跃"):
+                    SetGhostBoards().click_press_and_release_by_key_code_hold_time(66, 0.3)
+                    return True
+        SetGhostBoards().click_press_and_release_by_key_code_hold_time(66, 0.3)
+        return False

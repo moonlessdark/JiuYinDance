@@ -4,7 +4,7 @@ import json
 import yaml
 
 from DeskPageV2.Utils.dataClass import DancePic, WhzDancePic, DmDll, GhostDll, Config, Team, TruckCarPic, \
-    FindTruckCarTaskNPC, TruckCarReceiveTask, MarketPic
+    FindTruckCarTaskNPC, TruckCarReceiveTask, MarketPic, Goods
 from DeskPageV2.Utils.project_path import PathUtil
 
 
@@ -100,6 +100,18 @@ class GetConfig:
         ghost_dm = GhostDll()
         ghost_dm.dll_ghost = self.project_dir + self.__datas["keyBoardMouseDll"]["ghostDll"]["ghost_dll"]
         return ghost_dm
+
+    def get_bag_goods(self) -> Goods:
+        """
+        获取背包中的物品
+        """
+        __goods = Goods()
+        __goods.goods_bag_tag_clickable = self.project_dir + self.__datas["goods"]["goods_bag_tag_clickable"]
+        __goods.goods_bag_tag_clicked = self.project_dir + self.__datas["goods"]["goods_bag_tag_clicked"]
+        __goods.run_goods = self.project_dir + self.__datas["goods"]["run_goods"]
+        __goods.run_goods_ready = self.project_dir + self.__datas["goods"]["run_goods_ready"]
+        __goods.run_goods_buff = self.project_dir + self.__datas["goods"]["run_goods_buff"]
+        return __goods
 
     def get_find_pic_config(self) -> Config:
         """

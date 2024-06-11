@@ -58,6 +58,18 @@ class Team:
 
 
 @dataclasses.dataclass
+class Goods:
+    """
+    物品信息，背包中的物品
+    """
+    goods_bag_tag_clickable: str = dataclasses.field(default_factory=str)
+    goods_bag_tag_clicked: str = dataclasses.field(default_factory=str)
+    run_goods: str = dataclasses.field(default_factory=str)
+    run_goods_ready: str = dataclasses.field(default_factory=str)
+    run_goods_buff: str = dataclasses.field(default_factory=str)
+
+
+@dataclasses.dataclass
 class TaskDay:
     """
     日常勤修任务，在这里用于进入押镖
