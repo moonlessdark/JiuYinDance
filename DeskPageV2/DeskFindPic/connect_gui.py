@@ -637,7 +637,7 @@ class Dance(MainGui):
             print("接收到信号 4，正在打怪中，暂时停止驾车")
             self.th_truck_find_car.get_param(windows_handle, False)
         elif step == 5:
-            print("接收到信号 5，正在打怪中，暂时停止跟踪车辆")
+            print("接收到信号 5，寻找到镖车了，暂时停止跟踪车辆")
             self.th_follow_truck.get_param(windows_handle, False)  # 停止跟踪车辆
         elif step == 0:
             """

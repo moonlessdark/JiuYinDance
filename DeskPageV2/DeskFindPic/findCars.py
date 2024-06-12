@@ -110,7 +110,8 @@ class TruckCar:
         time.sleep(0.5)
         SetGhostBoards().click_press_and_release_by_key_code_hold_time(38, 2)
         time.sleep(0.5)
-        SetGhostMouse().move_mouse_wheel(-15)  # 视角拉远一些
+        SetGhostMouse().move_mouse_wheel(-30)  # 视角拉远一些
+        time.sleep(0.5)
 
     @staticmethod
     def reply_person_perspective_left(hwnd: int):
@@ -149,7 +150,6 @@ class TruckCar:
         """
         __img = img
         __w, __h = __img.pic_width, __img.pic_height
-        print(f"图片的宽高 {__w}_{__h}")
 
         if int(__w * 0.4) < target_pos[0] < int(__w * 0.60) and target_pos[1] < int(__h * 0.5):
             """
@@ -291,11 +291,30 @@ class TruckCar:
             """
             找到车了，把视角转到这个车
             """
-            print("镖车大概在屏幕中间了")
+            # print("镖车大概在屏幕中间了")
             if self._check_target_pos_is_center(__im, rec):
-                print(f"转OK了, 当前坐标是 ({rec[0], rec[1]})")
+                # print(f"转OK了, 当前坐标是 ({rec[0], rec[1]})")
                 return coordinate_change_from_windows(hwnd, rec)
-            print("还没有转到符合条件的地方")
+            # print("还没有转到符合条件的地方")
+        return None
+
+    def find_car_center_pos_in_display_v2(self, hwnd: int):
+        """
+        查询小车是不是在屏幕中间
+        """
+        time.sleep(0.5)
+        __im = self.windows.capture(hwnd)
+        _rec = self.ocr.find_truck_ocr_ocr(__im.pic_content, "的镖车")
+        if _rec is not None:
+            """
+            找到车了，把视角转到这个车
+            """
+            __new_pic = __im.pic_content[int(__im.pic_height * 0.1):int(__im.pic_height * 0.6), int(__im.pic_width * 0.3):int(__im.pic_width * 0.7)]
+            __rec = self.ocr.find_truck_ocr_ocr(__new_pic, "的镖车")
+            if __rec is not None:
+                print("镖车大概在屏幕中间了V2版本")
+                return coordinate_change_from_windows(hwnd, _rec)
+                # print("还没有转到符合条件的地方")
         return None
 
     def find_car_pos_in_display(self, hwnd: int):
@@ -389,14 +408,14 @@ class FightMonster(TruckCar):
 
                 if is_skill_tag_status:
                     if SetGhostMouse().is_mouse_button_pressed(3) is False:
-                        print("怪要放技能了，进行格挡")
+                        # print("怪要放技能了，进行格挡")
                         # 如果当前状态时格挡中
                         SetGhostMouse().press_mouse_right_button()
                         continue
             else:
                 if is_skill_tag_status == 1:
                     # 表示放技能的图标已经消失了，
-                    print("怪结束放技能了，多格挡2秒")
+                    # print("怪结束放技能了，多格挡2秒")
                     time.sleep(2)
                     is_skill_tag_status = 0
                     SetGhostMouse().release_mouse_right_button()  # 放开格挡
@@ -413,7 +432,7 @@ class FightMonster(TruckCar):
             self._skill_obj[__skill_name]["click_time"] = time.time()
             time.sleep(self._skill_obj[__skill_name]["active_cd"])  # 技能按下去后会有个动作，这个动作的持续时间
         if SetGhostMouse().is_mouse_button_pressed(3):
-            print("打怪结束当前是格挡状态，松开格挡")
+            # print("打怪结束当前是格挡状态，松开格挡")
             # 如果当前状态时格挡中
             SetGhostMouse().release_mouse_right_button()  # 放开格挡
         return True
@@ -458,7 +477,7 @@ class TeamFunc(TruckCar):
                 """
                 说明没有队伍，需要创建一下
                 """
-                print("未检测到队伍，进行创建")
+                # print("未检测到队伍，进行创建")
                 WindowsHandle().activate_windows(hwnd)
                 time.sleep(0.2)
                 SetGhostBoards().click_press_and_release_by_key_name("o")
@@ -513,6 +532,7 @@ class TeamFunc(TruckCar):
             SetGhostMouse().click_mouse_left_button()
             time.sleep(1)
             SetGhostBoards().click_press_and_release_by_key_name("o")
+            time.sleep(1)
             return True
         return False
 
@@ -549,7 +569,7 @@ class FindTaskNPCFunc(TruckCar):
                 """
                 找到了勤修图标
                 """
-                print(f"FindTaskNpc: 找到 勤修 图标({qin_xiu_rec[0]},{qin_xiu_rec[1]})")
+                # print(f"FindTaskNpc: 找到 勤修 图标({qin_xiu_rec[0]},{qin_xiu_rec[1]})")
                 SetGhostMouse().move_mouse_to(qin_xiu_rec[0], qin_xiu_rec[1])
                 time.sleep(1)
                 SetGhostMouse().click_mouse_left_button()
@@ -571,7 +591,7 @@ class FindTaskNPCFunc(TruckCar):
                 """
                 找到活动列表
                 """
-                print(f"FindTaskNpc: 找到 活动列表 图标({qin_xiu_activity_list[0]},{qin_xiu_activity_list[1]})")
+                # print(f"FindTaskNpc: 找到 活动列表 图标({qin_xiu_activity_list[0]},{qin_xiu_activity_list[1]})")
                 SetGhostMouse().move_mouse_to(qin_xiu_activity_list[0], qin_xiu_activity_list[1])
                 time.sleep(1)
                 SetGhostMouse().click_mouse_left_button()
@@ -593,7 +613,7 @@ class FindTaskNPCFunc(TruckCar):
                 """
                 找到了每日运镖图标
                 """
-                print(f"FindTaskNpc: 找到 每日运镖 图标({qin_xiu_truck_task[0]},{qin_xiu_truck_task[1]})")
+                # print(f"FindTaskNpc: 找到 每日运镖 图标({qin_xiu_truck_task[0]},{qin_xiu_truck_task[1]})")
                 SetGhostMouse().move_mouse_to(qin_xiu_truck_task[0], qin_xiu_truck_task[1])
                 time.sleep(1)
                 SetGhostMouse().click_mouse_left_button()
@@ -628,7 +648,7 @@ class FindTaskNPCFunc(TruckCar):
                 """
                 找到了成都
                 """
-                print(f"FindTaskNpc: 找到 {self._area_map} 图标({qin_xiu_truck_point[0]},{qin_xiu_truck_point[1]})")
+                # print(f"FindTaskNpc: 找到 {self._area_map} 图标({qin_xiu_truck_point[0]},{qin_xiu_truck_point[1]})")
                 SetGhostMouse().move_mouse_to(qin_xiu_truck_point[0], qin_xiu_truck_point[1])
                 time.sleep(1)
                 SetGhostMouse().click_mouse_left_button()
@@ -664,8 +684,7 @@ class FindTaskNPCFunc(TruckCar):
                 """
                 找到了押镖NPC
                 """
-                print(
-                    f"FindTaskNpc: 找到 {self._area_map} 的NPC图标({qin_xiu_truck_point_npc[0]},{qin_xiu_truck_point_npc[1]})")
+                # print(f"FindTaskNpc: 找到 {self._area_map} 的NPC图标({qin_xiu_truck_point_npc[0]},{qin_xiu_truck_point_npc[1]})")
                 SetGhostMouse().move_mouse_to(qin_xiu_truck_point_npc[0], qin_xiu_truck_point_npc[1])
                 time.sleep(1)
                 SetGhostMouse().click_mouse_left_button()
@@ -700,8 +719,7 @@ class ReceiveTruckTask(TruckCar):
                 """
                 已经点开了NPC
                 """
-                print(
-                    f"ReceiveTruckTask: 已经找到 接取任务的NPC 图标({truck_npc_receive_task_talk[0]},{truck_npc_receive_task_talk[1]})")
+                # print(f"ReceiveTruckTask: 已经找到 接取任务的NPC 图标({truck_npc_receive_task_talk[0]},{truck_npc_receive_task_talk[1]})")
 
                 SetGhostMouse().move_mouse_to(truck_npc_receive_task_talk[0], truck_npc_receive_task_talk[1])
                 time.sleep(1)
@@ -731,8 +749,7 @@ class ReceiveTruckTask(TruckCar):
                 """
                 选择押镖目的地
                 """
-                print(
-                    f"ReceiveTruckTask: 已经找到 目的地 图标({truck_npc_receive_task_address[0]},{truck_npc_receive_task_address[1]})")
+                # print(f"ReceiveTruckTask: 已经找到 目的地 图标({truck_npc_receive_task_address[0]},{truck_npc_receive_task_address[1]})")
 
                 SetGhostMouse().move_mouse_to(truck_npc_receive_task_address[0], truck_npc_receive_task_address[1])
                 time.sleep(1)
@@ -747,7 +764,7 @@ class ReceiveTruckTask(TruckCar):
                 """
                 选择镖车的车型
                 """
-                print(f"ReceiveTruckTask: 已经找到 镖车车型 图标({truck_car_type[0]},{truck_car_type[1]})")
+                # print(f"ReceiveTruckTask: 已经找到 镖车车型 图标({truck_car_type[0]},{truck_car_type[1]})")
 
                 SetGhostMouse().move_mouse_to(truck_car_type[0], truck_car_type[1])
                 time.sleep(1)
@@ -763,7 +780,7 @@ class ReceiveTruckTask(TruckCar):
                 """
                 接镖
                 """
-                print(f"ReceiveTruckTask: 已经找到 接镖 图标({truck_receive_task[0]},{truck_receive_task[1]})")
+                # print(f"ReceiveTruckTask: 已经找到 接镖 图标({truck_receive_task[0]},{truck_receive_task[1]})")
 
                 SetGhostMouse().move_mouse_to(truck_receive_task[0], truck_receive_task[1])
                 time.sleep(1)
@@ -779,8 +796,7 @@ class ReceiveTruckTask(TruckCar):
                 """
                 确认接镖
                 """
-                print(
-                    f"ReceiveTruckTask: 已经找到 确认接镖 图标({truck_receive_task_confirm[0]},{truck_receive_task_confirm[1]})")
+                # print(f"ReceiveTruckTask: 已经找到 确认接镖 图标({truck_receive_task_confirm[0]},{truck_receive_task_confirm[1]})")
 
                 SetGhostMouse().move_mouse_to(truck_receive_task_confirm[0], truck_receive_task_confirm[1])
                 time.sleep(1)
@@ -817,13 +833,13 @@ class TransportTaskFunc(TruckCar):
                 """
                 如果出现距离NPC太远了，说明开车失败了
                 """
-                print("TransportTaskFunc: 出现“距离NPC太远”的提示")
+                # print("TransportTaskFunc: 出现“距离NPC太远”的提示")
                 return False
             # 鼠标离镖车远一点
             pos = coordinate_change_from_windows(hwnd, (100, 100))
             SetGhostMouse().move_mouse_to(pos[0], pos[1])
             return True
-        print(f"TransportTaskFunc: 未找到镖车的 “驾车” 按钮")
+        # print(f"TransportTaskFunc: 未找到镖车的 “驾车” 按钮")
         return False
 
     def find_truck_car_in_display(self, hwnd: int) -> bool:
@@ -954,7 +970,6 @@ class UserGoods(TruckCar):
 
         WindowsHandle().activate_windows(hwnd)
         time.sleep(1)
-        print("打开背包")
         SetGhostBoards().click_press_and_release_by_key_code_hold_time(66, 0.3)
         time.sleep(1)
 
@@ -964,15 +979,13 @@ class UserGoods(TruckCar):
         __rec_bag = __rec_goods_bag_tag_clicked if __rec_goods_bag_tag_clicked is not None else __rec_goods_bag_tag_clickable if __rec_goods_bag_tag_clickable is not None else None
 
         if __rec_bag is not None:
-            print("打开物品栏")
             time.sleep(1)
             SetGhostMouse().move_mouse_to(__rec_bag[0], __rec_bag[1])
             SetGhostMouse().click_mouse_left_button()
             return True
-        print("没有找到物品栏")
         return False
 
-    def user_yu_feng_shen_shui(self, hwnd):
+    def use_yu_feng_shen_shui(self, hwnd):
         """
         使用御风神水
         """
@@ -987,7 +1000,7 @@ class UserGoods(TruckCar):
         pic_content = pic.pic_content[1:int(pic.pic_height * 0.4), int(pic.pic_width * 0.5):int(pic.pic_width)]
         __yf_buff_status = find_area(smaller_pic=self._load_pic(__yf_goods_buff), bigger_img=pic_content)
         if __yf_buff_status[-1] > 0.5:
-            print("说明当前已经是御风状态了,不需要启动")
+            print("已经有御风Buff，无需启用")
             return True
 
         self.open_bag(hwnd)
