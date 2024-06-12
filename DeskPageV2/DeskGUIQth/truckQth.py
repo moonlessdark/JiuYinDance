@@ -367,6 +367,7 @@ class TruckTaskFightMonsterQth(QThread):
                 # 开始战斗
                 self.__fight_monster.fight_monster(self.windows_handle)
                 self.working = False
+                self.__fight_monster.reply_person_perspective_up(self.windows_handle)  # 成功上车，拉远一下视角
 
                 # 修改一下全局变量，已经和NPC战斗过了
                 is_stop_find_car = False
@@ -375,7 +376,6 @@ class TruckTaskFightMonsterQth(QThread):
                 # 修改全局变量，战斗结束，继续寻找车辆
                 self.next_step.emit(2)  # 打怪结束，继续上车跑路
                 self.next_step.emit(3)  # 打怪结束，继续保持车辆在屏幕上
-                self.__fight_monster.reply_person_perspective_up(self.windows_handle)  # 成功上车，拉远一下视角
 
 
 class FollowTheTrailOfTruckQth(QThread):
