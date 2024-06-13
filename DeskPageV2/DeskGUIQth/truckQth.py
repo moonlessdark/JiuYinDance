@@ -87,6 +87,7 @@ class TruckCarTaskQth(QThread):
             if map_name == "":
                 __city_name: str = self.__team.get_map_and_person(self.windows_handle)
                 map_name = __city_name
+
             self.__get_task.reply_person_perspective(self.windows_handle)
 
             # 创建队伍
@@ -123,7 +124,7 @@ class TruckCarTaskQth(QThread):
                 self.next_step.emit(1)
                 # 发送信号，等待劫匪出现
                 self.next_step.emit(2)
-                self.next_step.emit(4)
+                self.next_step.emit(3)
 
             while 1:
 
@@ -237,21 +238,21 @@ class TruckTaskFindCarQth(QThread):
                     # 如果是已经转到了屏幕中间
                     # 如果发现镖车在 画面中间的位置附近，就往前走2秒，靠近镖车
                     self.next_step.emit(5)  # 停止找车的位置
-
+                    time.sleep(1)
                     SetGhostMouse().release_all_mouse_button()
                     SetGhostBoards().click_press_and_release_by_key_name_hold_time("w", 2)
 
-                if self.__transport_task.transport_truck(self.windows_handle):
-                    # 如果出现了“驾车”的按钮，尝试点击 “驾车”
-                    self.sin_out.emit("开始押镖")
-                    self.__transport_task.reply_person_perspective_up(self.windows_handle)  # 成功上车，拉远一下视角
+                    if self.__transport_task.transport_truck(self.windows_handle):
+                        # 如果出现了“驾车”的按钮，尝试点击 “驾车”
+                        self.sin_out.emit("开始押镖")
+                        self.__transport_task.reply_person_perspective_up(self.windows_handle)  # 成功上车，拉远一下视角
 
-                    person_viewpoint = 2
-                    # 成功开车
-                    self.next_step.emit(3)  # 上车后，开始保持镖车在画面中
-                    self.working = False
-                    is_first_find_car = False
-                    continue
+                        person_viewpoint = 2
+                        # 成功开车
+                        self.next_step.emit(3)  # 上车后，开始保持镖车在画面中
+                        self.working = False
+                        is_first_find_car = False
+                        continue
             else:
                 # 如果是打完怪后
                 print("打完怪了，开始检测镖车的位置")

@@ -171,7 +171,7 @@ class TruckCar:
 
         center_x = int(__w * 0.5)  # 屏幕正中间
         center_y = int(__h * 0.5)  # 屏幕正中间
-        print(f"图片的宽高 {__w}_{__h}, 中心坐标是 ({center_x},{center_y})")
+        # print(f"图片的宽高 {__w}_{__h}, 中心坐标是 ({center_x},{center_y})")
 
         if target_pos[0] < center_x:
             if target_pos[1] < center_y:
@@ -401,24 +401,25 @@ class FightMonster(TruckCar):
         打怪啊
         """
         is_skill_tag_status: int = 0  # 是否结束释放按钮， 0,表示 初始化，1 表示 技能条出现中，2表示技能条结束
+        SetGhostMouse().press_mouse_right_button()
         while 1:
             if self._check_monster_skill_status(hwnd):
-
+                print("怪要放技能了，进行格挡")
                 is_skill_tag_status = 1
-
-                if is_skill_tag_status:
-                    if SetGhostMouse().is_mouse_button_pressed(3) is False:
-                        # print("怪要放技能了，进行格挡")
-                        # 如果当前状态时格挡中
-                        SetGhostMouse().press_mouse_right_button()
-                        continue
+                continue
+                # if is_skill_tag_status:
+                #     if SetGhostMouse().is_mouse_button_pressed(3) is False:
+                #         print("怪要放技能了，进行格挡")
+                #         # 如果当前状态时格挡中
+                #         SetGhostMouse().press_mouse_right_button()
+                #         continue
             else:
                 if is_skill_tag_status == 1:
                     # 表示放技能的图标已经消失了，
-                    # print("怪结束放技能了，多格挡2秒")
+                    print("怪结束放技能了，多格挡2秒")
                     time.sleep(2)
                     is_skill_tag_status = 0
-                    SetGhostMouse().release_mouse_right_button()  # 放开格挡
+                    # SetGhostMouse().release_mouse_right_button()  # 放开格挡
             if self.check_fight_status(hwnd) is False:
                 """
                 如果怪消失了,右上角没有怪的buff了
@@ -450,6 +451,7 @@ class FightMonster(TruckCar):
         SetGhostMouse().click_mouse_right_button()  # 按住鼠标右键
 
         if self.__fight_func(hwnd):
+            time.sleep(2)
             return True
 
 
@@ -1000,7 +1002,6 @@ class UserGoods(TruckCar):
         pic_content = pic.pic_content[1:int(pic.pic_height * 0.4), int(pic.pic_width * 0.5):int(pic.pic_width)]
         __yf_buff_status = find_area(smaller_pic=self._load_pic(__yf_goods_buff), bigger_img=pic_content)
         if __yf_buff_status[-1] > 0.5:
-            print("已经有御风Buff，无需启用")
             return True
 
         self.open_bag(hwnd)
