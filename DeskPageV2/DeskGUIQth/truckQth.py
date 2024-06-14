@@ -4,12 +4,13 @@ import time
 
 from PySide6.QtCore import QThread, Signal, QWaitCondition, QMutex
 
-from DeskPageV2.DeskFindPic.findCars import TeamFunc, FindTaskNPCFunc, ReceiveTruckTask, TransportTaskFunc, FightMonster, UserGoods
+from DeskPageV2.DeskFindPic.findCars import TeamFunc, FindTaskNPCFunc, ReceiveTruckTask, TransportTaskFunc, \
+    FightMonster, UserGoods
 from DeskPageV2.DeskTools.GhostSoft.get_driver_v3 import SetGhostBoards, SetGhostMouse
 from DeskPageV2.DeskTools.WindowsSoft.MonitorDisplay import coordinate_change_from_windows
-from DeskPageV2.DeskTools.WindowsSoft.WindowsCapture import WindowsCapture
 from DeskPageV2.DeskTools.WindowsSoft.get_windows import GetHandleList
 
+is_car_side: bool = False  # 是否在车旁边，可以点击上车
 is_first_find_car: bool = True  # 是否是首次查找镖车
 is_not_find_car_sum: int = 0  # 已经连续多少次没有找到镖车
 is_car_in_center_pos_display: bool = False  # 镖车是否在屏幕中间
@@ -68,7 +69,7 @@ class TruckCarTaskQth(QThread):
 
     def run(self):
         # 声明一下全局变量
-        global person_viewpoint, is_stop_find_car, is_fight_npc_end, is_need_walk, is_fight_npc_visible, \
+        global person_viewpoint, is_stop_find_car, is_fight_npc_end, is_need_walk, is_fight_npc_visible, is_car_side, \
             is_first_find_car, is_not_find_car_sum, map_name, is_car_in_center_pos_display, is_car_pos_direction
         self.TruckCarTaskQth_working = True
         self.mutex.lock()  # 先加锁
@@ -117,14 +118,9 @@ class TruckCarTaskQth(QThread):
             if map_name in ["苏州", "成都"]:
                 # 如果是成都和苏州，就不需要走了，直接上车就行了
                 is_need_walk = False
+                is_car_side = True
                 # 发送信号，等待劫匪出现
-                self.next_step.emit(1)
-                self.next_step.emit(2)
-            else:
-                self.next_step.emit(1)
-                # 发送信号，等待劫匪出现
-                self.next_step.emit(2)
-                self.next_step.emit(3)
+            self.next_step.emit(2)  # 等待上车
 
             while 1:
 
@@ -155,6 +151,7 @@ class TruckCarTaskQth(QThread):
                     is_fight_npc_end = False  # 是否已经和NPC战斗，如有没有战斗，就直接上车。 如果已经战斗，那么就需要查询点击镖车再上车
                     is_fight_npc_visible = False  # 是否出现NPC
                     person_viewpoint = 0  # 0，默认，无， 1：平视， 2：俯视
+                    is_car_side = False
                     map_name = ""
                     break
         self.mutex.unlock()  # 解锁
@@ -202,7 +199,7 @@ class TruckTaskFindCarQth(QThread):
         self.windows_handle = windows_handle
 
     def run(self):
-        global person_viewpoint, is_need_walk, is_car_in_center_pos_display, is_car_pos_direction, is_first_find_car
+        global person_viewpoint, is_need_walk, is_car_in_center_pos_display, is_car_pos_direction, is_first_find_car, is_car_side, is_fight_npc_end
 
         self.mutex.lock()  # 先加锁
         while 1:
@@ -217,43 +214,57 @@ class TruckTaskFindCarQth(QThread):
                 # 如果不需要走2步，那么就是苏州和成都了，直接上车就行。其他的都要走2步
                 if self.__transport_task.transport_truck(self.windows_handle):
                     # 如果出现了“驾车”的按钮，尝试点击 “驾车”
-                    self.sin_out.emit("开始押镖")
+                    self.sin_out.emit("开始押镖...")
                     self.__transport_task.reply_person_perspective_up(self.windows_handle)  # 成功上车，拉远一下视角
                     person_viewpoint = 2
                     # 成功开车
                     self.working = False  # 好了，找镖车结束，等待打怪后再次来找镖车
                     is_need_walk = True
                     self.next_step.emit(3)  # 成都，苏州上车后，开始保持镖车在画面中
+                    self.next_step.emit(1)  # 等待出怪
                     is_first_find_car = False
                     continue
             # 以下的逻辑可以适用于往前走2步并上车
             # 特别注意，在进行此操作时，需要随时注意释放出怪了，一旦出怪了就需要停止
             if is_first_find_car:
+
+                if self.__transport_task.find_truck_car_center_pos(self.windows_handle) is not None and is_need_walk:
+                    # 如果是已经转到了屏幕中间
+                    # 如果发现镖车在 画面中间的位置附近，就往前走2秒，靠近镖车
+
+                    time.sleep(1)
+                    SetGhostMouse().release_all_mouse_button()
+                    SetGhostBoards().click_press_and_release_by_key_name_hold_time("w", 2)
+                    is_car_side = True
+                if is_car_side is False:
+                    continue
+
                 if is_stop_find_car or is_fight_npc_visible:
                     # 出怪了，停止查找
                     self.working = False
                     continue
 
-                if is_car_in_center_pos_display:
-                    # 如果是已经转到了屏幕中间
-                    # 如果发现镖车在 画面中间的位置附近，就往前走2秒，靠近镖车
-                    self.next_step.emit(5)  # 停止找车的位置
-                    time.sleep(1)
-                    SetGhostMouse().release_all_mouse_button()
-                    SetGhostBoards().click_press_and_release_by_key_name_hold_time("w", 2)
+                if self.__transport_task.transport_truck(self.windows_handle):
+                    # 如果出现了“驾车”的按钮，尝试点击 “驾车”
+                    self.sin_out.emit("开始押镖")
+                    self.__transport_task.reply_person_perspective_up(self.windows_handle)  # 成功上车，拉远一下视角
 
-                    if self.__transport_task.transport_truck(self.windows_handle):
-                        # 如果出现了“驾车”的按钮，尝试点击 “驾车”
-                        self.sin_out.emit("开始押镖")
-                        self.__transport_task.reply_person_perspective_up(self.windows_handle)  # 成功上车，拉远一下视角
+                    person_viewpoint = 2
+                    # 成功开车
+                    self.next_step.emit(3)  # 上车后，开始保持镖车在画面中
+                    self.next_step.emit(1)  # 等待出怪
 
-                        person_viewpoint = 2
-                        # 成功开车
-                        self.next_step.emit(3)  # 上车后，开始保持镖车在画面中
-                        self.working = False
-                        is_first_find_car = False
-                        continue
+                    self.working = False
+
+                    is_first_find_car = False
+
+                    if is_fight_npc_end:
+                        self.next_step.emit(5)
+
+                    continue
+
             else:
+
                 # 如果是打完怪后
                 print("打完怪了，开始检测镖车的位置")
                 __car_center_pos = self.__transport_task.find_car_center_pos_in_display_v2(hwnd=self.windows_handle)
@@ -368,7 +379,9 @@ class TruckTaskFightMonsterQth(QThread):
                 # 开始战斗
                 self.__fight_monster.fight_monster(self.windows_handle)
                 self.working = False
-                self.__fight_monster.reply_person_perspective_up(self.windows_handle)  # 成功上车，拉远一下视角
+
+                if is_first_find_car is False:
+                    self.__fight_monster.reply_person_perspective_up(self.windows_handle)  # 成功上车，拉远一下视角
 
                 # 修改一下全局变量，已经和NPC战斗过了
                 is_stop_find_car = False
@@ -425,30 +438,28 @@ class FollowTheTrailOfTruckQth(QThread):
     def run(self):
         global is_car_in_center_pos_display, is_car_pos_direction, is_not_find_car_sum
         self.mutex.lock()  # 先加锁
-        follow_car_quadrant: int = 0  # 追踪车辆在第几象限，用于车辆离开了屏幕后可以尝试去找回来
+        self.sin_out.emit("正在持续追踪镖车...")
         while 1:
             if self.working is False:
                 # 结束了
+                self.sin_out.emit("停止追踪镖车...")
                 self.quit()
                 self.wait()  # 等待线程结束
                 self.mutex.unlock()  # 解锁
                 return None
 
             if is_stop_find_car or is_fight_npc_visible:
-                time.sleep(1)
                 continue
 
             __car_pos = self.__transport_task.find_truck_car_in_display(hwnd=self.windows_handle)
-            if __car_pos:
+            if __car_pos is True:
                 if person_viewpoint == 1:
-                    __car_center_pos = self.__transport_task.find_car_center_pos_in_display(hwnd=self.windows_handle)
+                    __car_center_pos = self.__transport_task.find_car_in_center_display_v3(hwnd=self.windows_handle, display_area=0)
                 else:
-                    __car_center_pos = self.__transport_task.find_car_center_pos_in_display_v2(hwnd=self.windows_handle)
+                    __car_center_pos = self.__transport_task.find_car_in_center_display_v3(hwnd=self.windows_handle, display_area=1)
                 if __car_center_pos is not None:
-                    self.sin_out.emit("正在持续追踪镖车...")
                     # 存储一下镖车在屏幕哪个位置
                     is_car_in_center_pos_display = True
-                    time.sleep(5)
                     continue
 
             follow_car_quadrant = self.__transport_task.find_car_pos_in_display_quadrant(self.windows_handle)
@@ -464,17 +475,17 @@ class FollowTheTrailOfTruckQth(QThread):
                 self.mutex.unlock()  # 解锁
                 return None
 
-            if person_viewpoint == 1:
-                # 如果当前角色视角是平视的话，那么就说明是在查找镖车的时候。
-                continue
+            # if person_viewpoint == 1:
+            #     # 如果当前角色视角是平视的话，那么就说明是在查找镖车的时候。
+            #     continue
+            # if person_viewpoint == 2:
+            #     # 如果是俯视的时候，
+            if follow_car_quadrant > 0:
+                is_not_find_car_sum = 0
             else:
-                if person_viewpoint == 2:
-                    # 如果是俯视的时候，
-                    if follow_car_quadrant > 0:
-                        is_not_find_car_sum = 0
-                    else:
-                        # 如果每次象限都是0，那么就没有找到镖车的次数+1
-                        is_not_find_car_sum += 1
+                # 如果每次象限都是0，那么就没有找到镖车的次数+1
+                is_not_find_car_sum += 1
+
             if follow_car_quadrant == 0:
                 # 如果镖车本身就就没有出现在屏幕上，那么就转一下大的
                 SetGhostBoards().click_press_and_release_by_key_code_hold_time(37, 0.4)
@@ -498,5 +509,3 @@ class FollowTheTrailOfTruckQth(QThread):
 
                 # 第四象限，右下角
                 SetGhostBoards().click_press_and_release_by_key_code_hold_time(39, 0.4)
-
-            time.sleep(0.5)

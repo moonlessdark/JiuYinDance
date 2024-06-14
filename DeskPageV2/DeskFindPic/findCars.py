@@ -16,6 +16,19 @@ from DeskPageV2.Utils.load_res import GetConfig
 from DeskPageV2.DeskFindPic.findSkill import SkillGroup
 
 
+def bitwise_and(image: np.ndarray, mask_position: tuple):
+    """
+    给图片加个掩膜遮罩，避免干扰
+    :param image: 图片
+    :param mask_position: # 指定掩膜位置（左上角坐标， 右下角坐标） mask_position = (50, 50, 200, 200)
+    """
+    if image is not None:
+        # 绘制掩膜（矩形）
+        # 参数分别为：图像、矩形左上角坐标、矩形右下角坐标、颜色（BGR）、线条粗细
+        return cv2.rectangle(image, mask_position[0:2], mask_position[2:4], (0, 255, 0), -1)
+    return image
+
+
 class TruckCar:
     def __init__(self):
         self._config = GetConfig()
@@ -112,36 +125,6 @@ class TruckCar:
         time.sleep(0.5)
         SetGhostMouse().move_mouse_wheel(-30)  # 视角拉远一些
         time.sleep(0.5)
-
-    @staticmethod
-    def reply_person_perspective_left(hwnd: int):
-        """
-        角色向左转
-        """
-        WindowsHandle().activate_windows(hwnd)
-        SetGhostBoards().click_press_and_release_by_key_code_hold_time(37, 0.4)
-        time.sleep(0.1)
-        # SetGhostBoards().click_press_and_release_by_key_name("w")
-
-    @staticmethod
-    def reply_person_perspective_right(hwnd: int):
-        """
-        角色向右转
-        """
-        WindowsHandle().activate_windows(hwnd)
-        SetGhostBoards().click_press_and_release_by_key_code_hold_time(39, 0.4)
-        time.sleep(0.1)
-        # SetGhostBoards().click_press_and_release_by_key_name("w")
-
-    @staticmethod
-    def reply_person_perspective_back(hwnd: int):
-        """
-        角色向后转
-        """
-        WindowsHandle().activate_windows(hwnd)
-        SetGhostBoards().click_press_and_release_by_key_code_hold_time(39, 0.8)  # 先向上到底3秒
-        time.sleep(0.1)
-        # SetGhostBoards().click_press_and_release_by_key_name("w")
 
     @staticmethod
     def _check_target_pos_is_center(img: PicCapture, target_pos: tuple) -> bool:
@@ -244,20 +227,21 @@ class TruckCar:
             return False
         return True
 
-    def _check_transport_truck_status(self, hwnd: int, old_pos: int):
+    def __find_car_in_display(self, hwnd: int, image: np.ndarray = None):
         """
-        检查点击了开始 驾车 后，出现了距离太远 或者 当前人物的坐标没有更新.
-        如果坐标更新了，那就说明正式开始运镖了
+        查询当前页面是否存在镖车
         """
-        img = self.windows.capture(hwnd)
-        new_pic = img.pic_content[int(img.pic_height * 0.2):int(img.pic_height * 0.6),
-                  int(img.pic_width * 0.4):int(img.pic_width * 0.6)]
-        cc = self.ocr.find_ocr(image=new_pic, temp_text="你距离NPC太远了")
-        if cc is not None:
-            return False
-        elif self._check_person_move_status(hwnd, old_pos) is False:
-            return False
-        return True
+        if image is not None:
+            __content = image
+        else:
+            __img_car = self.windows.capture(hwnd)
+            __h, __w, __content = __img_car.pic_height, __img_car.pic_width, __img_car.pic_content
+        __cos_text = self.ocr.find_truck_car_ocr(__content, "的镖车")
+        if __cos_text is not None:
+            driver_res = coordinate_change_from_windows(hwnd, __cos_text)
+            print(f"DriverTruckCarFuc: 发现了 运镖(驾车) 文字({driver_res[0]},{driver_res[1]})")
+            return driver_res
+        return None
 
     def _find_driver_truck_type(self, hwnd: int):
         """
@@ -270,29 +254,21 @@ class TruckCar:
         find_task: TruckCarPic = self._get_pic_truck_car()
         cos = self.windows.find_windows_coordinate_rect(hwnd, find_task.task_star_mode)
         if cos is not None:
-            # print(f"DriverTruckCarFuc: 发现了 运镖(驾车) 图标({cos2[0]},{cos2[1]})")
             return cos
-        # 再找文字的驾车按钮在不在
-        cos_text = self.ocr.find_truck_ocr_ocr(__img_car.pic_content, "驾车")
-        if cos is not None:
-            driver_res = coordinate_change_from_windows(hwnd, cos_text)
-            # print(f"DriverTruckCarFuc: 发现了 运镖(驾车) 文字({driver_res[0]},{driver_res[1]})")
-            return driver_res
+
         return None
 
     def find_car_center_pos_in_display(self, hwnd: int):
         """
         查询小车是不是在屏幕中间
         """
-        time.sleep(0.5)
-        __im = self.windows.capture(hwnd)
-        rec = self.ocr.find_truck_ocr_ocr(__im.pic_content, "的镖车")
+        __cap_display = self.windows.capture(hwnd)
+        rec = self.__find_car_in_display(hwnd=hwnd, image=__cap_display.pic_content)
         if rec is not None:
             """
-            找到车了，把视角转到这个车
+            找到车了，把视角转到这个车aw
             """
-            # print("镖车大概在屏幕中间了")
-            if self._check_target_pos_is_center(__im, rec):
+            if self._check_target_pos_is_center(__cap_display, rec):
                 # print(f"转OK了, 当前坐标是 ({rec[0], rec[1]})")
                 return coordinate_change_from_windows(hwnd, rec)
             # print("还没有转到符合条件的地方")
@@ -304,17 +280,44 @@ class TruckCar:
         """
         time.sleep(0.5)
         __im = self.windows.capture(hwnd)
-        _rec = self.ocr.find_truck_ocr_ocr(__im.pic_content, "的镖车")
+        _rec = self.ocr.find_truck_car_ocr(__im.pic_content, "的镖车")
+
         if _rec is not None:
             """
             找到车了，把视角转到这个车
             """
             __new_pic = __im.pic_content[int(__im.pic_height * 0.1):int(__im.pic_height * 0.6), int(__im.pic_width * 0.3):int(__im.pic_width * 0.7)]
-            __rec = self.ocr.find_truck_ocr_ocr(__new_pic, "的镖车")
+            __rec = self.ocr.find_truck_car_ocr(__new_pic, "的镖车")
+
             if __rec is not None:
                 print("镖车大概在屏幕中间了V2版本")
                 return coordinate_change_from_windows(hwnd, _rec)
                 # print("还没有转到符合条件的地方")
+        return None
+
+    def find_car_in_center_display_v3(self, hwnd: int = None, image: PicCapture = None, display_area: int = 0):
+        """
+        :param hwnd: 句柄
+        :param image: 图片
+        :param display_area: 0，表示 1，2象限的屏幕中间，用于接镖找车. 1，表示1234象限中间。用于打怪后找车
+        """
+        if image is not None:
+            __h, __w, __content = image.pic_height, image.pic_width, image.pic_content
+        else:
+            image = self.windows.capture(hwnd)
+            __h, __w, __content = image.pic_height, image.pic_width, image.pic_content
+        _v3_res = self.__find_car_in_display(hwnd=hwnd, image=__content)
+        if _v3_res is None:
+            return None
+        if display_area == 0:
+            _v3_new_pic = image.pic_content[int(image.pic_height * 0.1):int(image.pic_height * 0.6), int(image.pic_width * 0.4):int(image.pic_width * 0.6)]
+        else:
+            _v3_new_pic = image.pic_content[int(image.pic_height * 0.1):int(image.pic_height * 0.6), int(image.pic_width * 0.3):int(image.pic_width * 0.7)]
+
+        __rec = self.ocr.find_truck_car_ocr(_v3_new_pic, "的镖车")
+        if __rec is not None:
+            print("镖车大概在屏幕中间了V3版本")
+            return coordinate_change_from_windows(hwnd, __rec)
         return None
 
     def find_car_pos_in_display(self, hwnd: int):
@@ -323,7 +326,8 @@ class TruckCar:
         """
         self.get_map_and_person(hwnd)
         im = self.windows.capture(hwnd)
-        rec = self.ocr.find_truck_ocr_ocr(im.pic_content, "的镖车")
+        rec = self.ocr.find_truck_car_ocr(im.pic_content, "的镖车")
+
         if rec is not None:
             """
             找到车了，把视角转到这个车
@@ -331,23 +335,6 @@ class TruckCar:
             print("屏幕出现镖车了")
             return coordinate_change_from_windows(hwnd, rec)
         print("还没有转到符合条件的地方")
-        return None
-
-    def _find_car_pos_in_display_quadrant(self, hwnd: int):
-        """
-        查询小车在屏幕的哪个象限
-        1: 左上角
-        2：右上角
-        3：左下角
-        4：右下角
-        """
-        im = self.windows.capture(hwnd)
-        rec = self.ocr.find_truck_ocr_ocr(im.pic_content, "的镖车")
-        if rec is not None:
-            """
-            找到车了，把视角转到这个车
-            """
-            return self.check_target_pos_direction(im, rec)
         return None
 
 
@@ -404,7 +391,7 @@ class FightMonster(TruckCar):
         SetGhostMouse().press_mouse_right_button()
         while 1:
             if self._check_monster_skill_status(hwnd):
-                print("怪要放技能了，进行格挡")
+                # print("怪要放技能了，进行格挡")
                 is_skill_tag_status = 1
                 continue
                 # if is_skill_tag_status:
@@ -416,7 +403,7 @@ class FightMonster(TruckCar):
             else:
                 if is_skill_tag_status == 1:
                     # 表示放技能的图标已经消失了，
-                    print("怪结束放技能了，多格挡2秒")
+                    # print("怪结束放技能了，多格挡2秒")
                     time.sleep(2)
                     is_skill_tag_status = 0
                     # SetGhostMouse().release_mouse_right_button()  # 放开格挡
@@ -489,6 +476,7 @@ class TeamFunc(TruckCar):
                     """
                     如果有离开的按钮,说明当前已经是组队状态
                     """
+                    SetGhostBoards().click_press_and_release_by_key_name("o")
                     return True
                 rec_create = self.windows.find_windows_coordinate_rect(handle=hwnd, img=find_team.create_team)
                 if rec_create is not None:
@@ -642,8 +630,15 @@ class FindTaskNPCFunc(TruckCar):
                 __image_city: str = find_npc.task_point_luoyang
             else:
                 __image_city: str = find_npc.task_point_chengdu
-            qin_xiu_truck_point = self.windows.find_windows_coordinate_rect(handle=hwnd,
-                                                                            img=__image_city)
+            # qin_xiu_truck_point = self.windows.find_windows_coordinate_rect(handle=hwnd,
+            #                                                                 img=__image_city)
+
+            __pic = self.windows.capture(hwnd)
+            __cap_pic = bitwise_and(__pic.pic_content, (0, 0, __pic.pic_width, int(__pic.pic_height * 0.4)))
+
+            qin_xiu_truck_point = self.windows.find_windows_coordinate_rect_img(handle=hwnd, img=__image_city,
+                                                                                origin_img=__cap_pic)
+
             if qin_xiu_truck_point is None:
                 continue
             else:
@@ -678,8 +673,12 @@ class FindTaskNPCFunc(TruckCar):
                 __image_city_npc: str = find_npc.task_point_luoyang_npc
             else:
                 __image_city_npc: str = find_npc.task_point_chengdu_npc
-            qin_xiu_truck_point_npc = self.windows.find_windows_coordinate_rect(handle=hwnd,
-                                                                                img=__image_city_npc)
+
+            __pic = self.windows.capture(hwnd)
+            __cap_pic = bitwise_and(__pic.pic_content, (0, 0, __pic.pic_width, int(__pic.pic_height * 0.4)))
+
+            qin_xiu_truck_point_npc = self.windows.find_windows_coordinate_rect_img(handle=hwnd, img=__image_city_npc,
+                                                                                    origin_img=__cap_pic)
             if qin_xiu_truck_point_npc is None:
                 continue
             else:
@@ -902,24 +901,24 @@ class TransportTaskFunc(TruckCar):
                         """a
                         如果在第一象限，但是不符合规则；那么就向 左侧 转一下
                         """
-                        SetGhostBoards().click_press_and_release_by_key_code_hold_time(39, 0.1)
+                        SetGhostBoards().click_press_and_release_by_key_code_hold_time(37, 0.1)
                     elif __car_quadrant == 2:
                         """
                         如果在第二象限，但是不符合规则；那么就向 右侧 转一下
                         """
-                        SetGhostBoards().click_press_and_release_by_key_code_hold_time(37, 0.1)
+                        SetGhostBoards().click_press_and_release_by_key_code_hold_time(39, 0.1)
                     elif __car_quadrant == 3:
                         """
                         如果在第三象限，就转一个大的，转到第一象限去
                         """
-                        SetGhostBoards().click_press_and_release_by_key_code_hold_time(39, 0.5)
+                        SetGhostBoards().click_press_and_release_by_key_code_hold_time(37, 0.4)
                     elif __car_quadrant == 4:
                         """
                         如果在第四象限，就转一个大的，转到第二象限去
                         """
-                        SetGhostBoards().click_press_and_release_by_key_code_hold_time(37, 0.4)
+                        SetGhostBoards().click_press_and_release_by_key_code_hold_time(39, 0.4)
             WindowsHandle().activate_windows(hwnd)
-            SetGhostBoards().click_press_and_release_by_key_code_hold_time(37, 0.4)
+            SetGhostBoards().click_press_and_release_by_key_code_hold_time(37, 0.5)
             time.sleep(0.5)
             print("镖车不在在屏幕上，转个45度")
         return None

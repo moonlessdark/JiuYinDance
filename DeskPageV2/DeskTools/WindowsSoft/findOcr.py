@@ -10,7 +10,7 @@ import cv2
 class FindPicOCR:
 
     def __init__(self):
-        self.text_sys = TextSystem(use_angle_cls=True)
+        self.text_sys = TextSystem(use_angle_cls=False)
 
     @staticmethod
     def _format_img(image: np.ndarray) -> np.ndarray:
@@ -42,16 +42,21 @@ class FindPicOCR:
                     return [int(x_center), int(y_center)]
         return None
 
-    def find_truck_ocr_ocr(self, image: np.ndarray, temp_text: str) -> list or None:
+    def find_truck_car_ocr(self, image: np.ndarray, temp_text: str) -> list or None:
         """
         :param image: 专门来找镖车
         :param temp_text: 想要再图片中查询的文字
         :return 查找到的第一个匹配的文字的坐标
         """
-        start_time = time.time()
+
         images = self._format_img(image)
         if images is not None:
+            start_time = time.time()
+            # print(f"正在识别图片中的文字“{time.time()}")
             res = self.text_sys.detect_and_ocr(images)
+            end_time = time.time()
+            elapsed_time = end_time - start_time
+            print("本次识别耗时：", elapsed_time)
             for boxed_result in res:
                 if temp_text in boxed_result.ocr_text:
                     rect = boxed_result.box
@@ -74,9 +79,6 @@ class FindPicOCR:
                     y_center = (rect[0][1] + rect[2][1]) / 2
                     # print("有白色区域，镖车识别成功")
                     return [int(x_center), int(y_center)]
-        end_time = time.time()
-        elapsed_time = end_time - start_time
-        print("本次识别耗时：", elapsed_time)
         return None
 
     def find_ocr_arbitrarily(self, image: np.ndarray, temp_text_list: list) -> dict:

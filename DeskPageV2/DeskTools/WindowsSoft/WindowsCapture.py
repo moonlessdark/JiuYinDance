@@ -2,6 +2,7 @@
 from ctypes import c_ubyte, windll, wintypes
 
 import cv2
+import numpy
 import win32gui
 from _ctypes import byref
 from numpy import fromfile, uint8, frombuffer
@@ -149,16 +150,20 @@ class WindowsCapture:
         cap_pic = PicCapture(pre1_picture, pre1_picture.shape[1], pre1_picture.shape[0])
         return cap_pic
 
-    def find_coordinate_area(self, handle: int, img, threshold: float, edge: bool):
+    def find_coordinate_area(self, handle: int, img, threshold: float, edge: bool, origin_img: numpy.ndarray = None):
         """
         查找图片在目标窗口中的区域,返回匹配度最高的
         :param edge:
         :param threshold:
         :param handle: 句柄
         :param img: 要查找的图片,可以是opencv已加载的，也可以是文件路径
+        :param origin_img:
         :return: 目标窗口内的坐标
         """
-        cap_img, width, high = self.capture(handle)
+        if origin_img is not None:
+            cap_img = origin_img
+        else:
+            cap_img, width, high = self.capture(handle)
         if isinstance(img, str):
             """
             如果时字符串形式的，说明时本地图片，那么就读取吧
@@ -208,6 +213,16 @@ class WindowsCapture:
         :param edge: 是否支持边缘查找
         """
         res = self.find_coordinate_area(handle=handle, img=img, threshold=threshold, edge=edge)
+        if len(res) > 0:
+            co = coordinate_change_from_windows(handle, res)
+            return co
+        return None
+
+    def find_windows_coordinate_rect_img(self, handle,  origin_img: numpy.ndarray, img, threshold: float = 0.8, edge: bool = False):
+        """
+        方法同上find_windows_coordinate_rect，只不过是不传handle进来
+        """
+        res = self.find_coordinate_area(handle=handle, img=img, threshold=threshold, edge=edge, origin_img=origin_img)
         if len(res) > 0:
             co = coordinate_change_from_windows(handle, res)
             return co
