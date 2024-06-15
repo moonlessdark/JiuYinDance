@@ -1007,6 +1007,7 @@ class UserGoods(TruckCar):
 
         self.open_bag(hwnd)
 
+        time.sleep(1)
         __rec_yf_goods = self.windows.find_windows_coordinate_rect(hwnd, img=self._load_pic(__yf_goods))
         if __rec_yf_goods is not None:
             """

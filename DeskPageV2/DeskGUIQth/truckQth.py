@@ -382,9 +382,6 @@ class TruckTaskFightMonsterQth(QThread):
                 self.__fight_monster.fight_monster(self.windows_handle)
                 self.working = False
 
-                if is_first_find_car is False:
-                    self.__fight_monster.reply_person_perspective_up(self.windows_handle)  # 成功上车，拉远一下视角
-
                 self.sin_out.emit("劫镖NPC消失...")
                 # 修改一下全局变量，已经和NPC战斗过了
                 is_stop_find_car = False

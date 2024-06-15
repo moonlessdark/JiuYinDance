@@ -20,7 +20,7 @@ class MarkdownViewer(QMainWindow):
         layout.addWidget(self.text_browser)
         central_widget.setLayout(layout)
 
-        self.load_markdown('D:\\SoftWare\\Developed\\Projected\\JiuYinDance\\README.md')
+        self.load_markdown('.\\_internal\\README.md')
 
     def load_markdown(self, file_path):
         with open(file_path, 'r', encoding='utf-8') as f:
