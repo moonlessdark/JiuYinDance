@@ -45,7 +45,7 @@ class TruckCar:
         self.hwnd: int = 0
 
         self._area_map, self._person_name = None, None
-        self._skill_obj: dict = self._config.get_skill_group_list().get("金鼎绵掌")  # 当前正在使用的技能组
+        self._skill_obj: dict = self._config.get_skill_group_list().get("打怪套路")  # 当前正在使用的技能组
 
     def get_map_and_person(self, hwnd: int):
         _, self._area_map, self._person_name = self.ocr.get_person_map(self.windows.capture(hwnd).pic_content)
