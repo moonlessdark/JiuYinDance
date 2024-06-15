@@ -713,11 +713,11 @@ class ReceiveTruckTask(TruckCar):
         """
         退出不小心点到别人的镖车触发劫镖
         """
-        WindowsHandle().activate_windows(hwnd)
         __find_task_car: TruckCarPic = self._get_pic_truck_car()
         __break_car_talk = self.windows.find_windows_coordinate_rect(handle=hwnd, img=__find_task_car.fight_other_truck_car)
         if __break_car_talk is None:
             return False
+        WindowsHandle().activate_windows(hwnd)
         SetGhostBoards().click_press_and_release_by_code(27)
         time.sleep(0.5)
         return True
@@ -726,12 +726,12 @@ class ReceiveTruckTask(TruckCar):
         """
         退出和NPC对话的窗口
         """
-        WindowsHandle().activate_windows(hwnd)
         __find_task: TruckCarReceiveTask = self._get_pic_receive_task()
         __break_npc_talk = self.windows.find_windows_coordinate_rect(handle=hwnd, img=__find_task.break_npc_talk)
         __receive_task_talk = self.windows.find_windows_coordinate_rect(handle=hwnd, img=__find_task.receive_task_talk)
         if __break_npc_talk is None or __receive_task_talk is not None:
             return False
+        WindowsHandle().activate_windows(hwnd)
         SetGhostMouse().move_mouse_to(__break_npc_talk[0], __break_npc_talk[1])
         time.sleep(1)
         SetGhostMouse().click_mouse_left_button()
@@ -742,7 +742,6 @@ class ReceiveTruckTask(TruckCar):
         接取任务,
         暂时只实现了成都和燕京
         """
-        WindowsHandle().activate_windows(hwnd)
         find_task: TruckCarReceiveTask = self._get_pic_receive_task()
         self.get_map_and_person(hwnd)
         while 1:
@@ -756,7 +755,7 @@ class ReceiveTruckTask(TruckCar):
                 已经点开了NPC
                 """
                 # print(f"ReceiveTruckTask: 已经找到 接取任务的NPC 图标({truck_npc_receive_task_talk[0]},{truck_npc_receive_task_talk[1]})")
-
+                WindowsHandle().activate_windows(hwnd)
                 SetGhostMouse().move_mouse_to(truck_npc_receive_task_talk[0], truck_npc_receive_task_talk[1])
                 time.sleep(1)
                 SetGhostMouse().click_mouse_left_button()
