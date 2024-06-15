@@ -443,7 +443,7 @@ class WindowsCapture:
         :return: 图片在屏幕上的坐标
         """
         x, y = self.find_coordinate(handle, img, x_offset, y_offset)
-        return mapping_coordinates(x, y)
+        return mapping_coordinates(handle, x, y)
 
     def find_coordinate_to_rect_2(self, handle: int, img, x_offset: int = 0, y_offset: int = 0):
         """

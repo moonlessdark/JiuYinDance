@@ -89,7 +89,7 @@ class Dance(MainGui):
         self.th_truck_task.sin_out.connect(self.print_logs)
         self.th_truck_task.next_step.connect(self.truck_task_func_switch)
         self.th_truck_task.sin_work_status.connect(self._th_execute_stop)
-        self.th_truck_task.sin_status_bar_out.connect(self.print_status_bar)
+        self.th_truck_task.sin_status_bar_out.connect(self.print_status_track_bar)
 
         self.th_truck_find_car.sin_out.connect(self.print_logs)
         self.th_truck_find_car.next_step.connect(self.truck_task_func_switch)
@@ -290,6 +290,16 @@ class Dance(MainGui):
             self.progress_bar.setValue(step)
 
     def print_status_bar(self, text: str = None, find_button_count: int = 0):
+        """
+        打印底部状态栏的日志
+        :param find_button_count: 已经找到了几个按钮了
+        :param text: 打印的日志
+        :return:
+        """
+
+        self.status_bar_label_right.setText(f"一共识别了 {find_button_count} 轮")
+
+    def print_status_track_bar(self, text: str = None, find_button_count: int = 0):
         """
         打印底部状态栏的日志
         :param find_button_count: 已经找到了几个按钮了
