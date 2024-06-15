@@ -8,6 +8,8 @@ from PySide6.QtCore import Qt, QObject, QEvent, QSettings
 from PySide6.QtGui import QIcon, QAction, QIntValidator
 from PySide6.QtWidgets import QApplication, QListWidget, QMessageBox, QHeaderView
 
+from DeskPageV2.DeskPageGUI.MarkdownViewer import MarkdownViewer
+
 
 class ListWidgetItemEventFilter(QObject):
     def __init__(self, parent):
@@ -70,6 +72,8 @@ class MainGui(QtWidgets.QMainWindow):
         event_filter = ListWidgetItemEventFilter(self.list_widget)
         self.list_widget.installEventFilter(event_filter)
 
+        self.__new_windows = None
+
         """
         顶部菜单栏
         """
@@ -81,7 +85,7 @@ class MainGui(QtWidgets.QMainWindow):
         menu_bar.addMenu(file_menu)
         menu_bar.addMenu(about_menu)
 
-        action_open_config_file = QtGui.QAction("打开文件目录", self)
+        action_open_config_file = QtGui.QAction("资源目录", self)
         file_menu.addAction(action_open_config_file)
         action_open_config_file.triggered.connect(self.open_config_file)
 
@@ -96,6 +100,10 @@ class MainGui(QtWidgets.QMainWindow):
         action_open_url_get_fore_ground_window_fail = QtGui.QAction("修复窗口激活失败", self)
         about_menu.addAction(action_open_url_get_fore_ground_window_fail)
         action_open_url_get_fore_ground_window_fail.triggered.connect(self.open_url_get_fore_ground_window_fail)
+
+        action_func_detail = QtGui.QAction("功能说明", self)
+        about_menu.addAction(action_func_detail)
+        action_func_detail.triggered.connect(self.open_func_detail_widget)
 
         """
         底部状态栏显示区域
@@ -339,7 +347,7 @@ class MainGui(QtWidgets.QMainWindow):
         if not os.path.exists(config_file):  # 如果主目录+小时+分钟这个文件路径不存在的话
             config_file = ".\\DeskPageV2\\Resources\\"
         QtWidgets.QFileDialog.getOpenFileName(self, "资源文件", config_file,
-                                              "Text Files (*.yaml;*.bat;*.png;*.ico;*.dll)")
+                                              "Text Files (*.yaml;*.bat;*.png;*.ico;*.dll;*.json;*.*)")
 
     def edit_config_file(self):
         if self.widget_dock_setting.isVisible() is False:
@@ -361,6 +369,13 @@ class MainGui(QtWidgets.QMainWindow):
         :return:
         """
         QtGui.QDesktopServices.openUrl(QtCore.QUrl("https://github.com/moonlessdark/JiuYinDance"))
+
+    def open_func_detail_widget(self):
+        """
+        打开功能说明
+        """
+        self.__new_windows = MarkdownViewer()
+        self.__new_windows.show()
 
     def set_ui_load_windows_check_box_init(self):
         """

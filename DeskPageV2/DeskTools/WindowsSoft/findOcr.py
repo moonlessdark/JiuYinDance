@@ -10,7 +10,7 @@ import cv2
 class FindPicOCR:
 
     def __init__(self):
-        self.text_sys = TextSystem(use_angle_cls=False)
+        self.text_sys = TextSystem(use_angle_cls=True)
 
     @staticmethod
     def _format_img(image: np.ndarray) -> np.ndarray:
@@ -56,7 +56,7 @@ class FindPicOCR:
             res = self.text_sys.detect_and_ocr(images)
             end_time = time.time()
             elapsed_time = end_time - start_time
-            print("本次识别耗时：", elapsed_time)
+            # print("本次识别耗时：", elapsed_time)
             for boxed_result in res:
                 if temp_text in boxed_result.ocr_text:
                     rect = boxed_result.box
@@ -73,7 +73,7 @@ class FindPicOCR:
                                 edges += 1
                     r = edges / element_sum
                     if r < 0.1:
-                        print("白色区域太少")
+                        # print("白色区域太少")
                         return None
                     x_center = (rect[0][0] + rect[2][0]) / 2
                     y_center = (rect[0][1] + rect[2][1]) / 2
@@ -102,7 +102,7 @@ class FindPicOCR:
                         result[text] = [int(x_center), int(y_center)]
         end_time = time.time()
         elapsed_time = end_time - start_time
-        print("本次识别耗时：", elapsed_time)
+        # print("本次识别耗时：", elapsed_time)
         return result
 
     def get_person_map(self, image: np.ndarray):

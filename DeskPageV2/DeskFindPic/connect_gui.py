@@ -89,6 +89,7 @@ class Dance(MainGui):
         self.th_truck_task.sin_out.connect(self.print_logs)
         self.th_truck_task.next_step.connect(self.truck_task_func_switch)
         self.th_truck_task.sin_work_status.connect(self._th_execute_stop)
+        self.th_truck_task.sin_status_bar_out.connect(self.print_status_bar)
 
         self.th_truck_find_car.sin_out.connect(self.print_logs)
         self.th_truck_find_car.next_step.connect(self.truck_task_func_switch)
@@ -288,14 +289,17 @@ class Dance(MainGui):
                 self.progress_bar.setVisible(True)
             self.progress_bar.setValue(step)
 
-    def print_status_bar(self, text: str, find_button_count: int = 0):
+    def print_status_bar(self, text: str = None, find_button_count: int = 0):
         """
         打印底部状态栏的日志
         :param find_button_count: 已经找到了几个按钮了
         :param text: 打印的日志
         :return:
         """
-        self.status_bar_label_right.setText(f"一共执行了 {find_button_count} 轮")
+        if text is not None:
+            self.status_bar_label_right.setText(text)
+        else:
+            self.status_bar_label_right.setText(f"一共执行了 {find_button_count} 轮")
 
     def check_handle_is_selected(self) -> list:
         """
@@ -622,28 +626,28 @@ class Dance(MainGui):
         # 前面已经做了判断，只能有一个窗口执行，所以这里直接获取
         windows_handle = self.check_handle_is_selected()[0]
         if step == 1:
-            print("接收到信号 1，开始等待出怪")
+            # self.print_logs("开启线程:等待劫镖NPC...")
             self.th_truck_fight_monster.get_param(windows_handle, True)
             self.th_truck_fight_monster.start()
         elif step == 2:
-            print("接收到信号 2，开始查找镖车")
+            # self.print_logs("开启线程:查找镖车...")
             self.th_truck_find_car.get_param(windows_handle, True)
             self.th_truck_find_car.start()
         elif step == 3:
-            print("接收到信号 3，保持镖车在屏幕中心区域")
+            # self.print_logs("开启线程:保持镖车在屏幕中心...")
             self.th_follow_truck.get_param(windows_handle, True)
             self.th_follow_truck.start()
         elif step == 4:
-            print("接收到信号 4，正在打怪中，暂时停止驾车")
+            # self.print_logs("关闭线程:保持镖车在屏幕中心...")
             self.th_truck_find_car.get_param(windows_handle, False)
         elif step == 5:
-            print("接收到信号 5，寻找到镖车了，暂时停止跟踪车辆")
+            # self.print_logs("关闭线程:查找镖车...")
             self.th_follow_truck.get_param(windows_handle, False)  # 停止跟踪车辆
         elif step == 0:
             """
             如果是其他值，一般是 0，就表示结束
             """
-            print("接收到信号 0，本次押镖结束")
+            self.print_logs("本次押镖结束,关闭所有线程")
             self.th_truck_fight_monster.get_param(windows_handle, False)  # 停止打怪
             self.th_truck_find_car.get_param(windows_handle, False)  # 停止找车
             self.th_follow_truck.get_param(windows_handle, False)  # 停止跟踪车辆

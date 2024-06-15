@@ -1,5 +1,6 @@
 
-九阴真经OL团练/授业脚本  
+# 九阴真经OL摸鱼小助手 
+
 ![Image text](https://github.com/moonlessdark/JiuYinDance/blob/master/DeskPageV2/Resources/cover.png)
 
 # 前言:  

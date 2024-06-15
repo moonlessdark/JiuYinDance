@@ -105,8 +105,10 @@ class TruckCar:
         恢复角色向前的视角
         """
         WindowsHandle().activate_windows(hwnd)
+        time.sleep(1)
+        SetGhostBoards().click_press_and_release_by_key_code_hold_time(38, 0.6)  # 再向上1秒
         time.sleep(0.5)
-        SetGhostBoards().click_press_and_release_by_key_code_hold_time(40, 4)  # 先向下到底3秒
+        SetGhostBoards().click_press_and_release_by_key_code_hold_time(40, 3)  # 先向下到底3秒
         time.sleep(1)
         SetGhostBoards().click_press_and_release_by_key_code_hold_time(38, 0.6)  # 再向上1秒
         time.sleep(1)
@@ -138,9 +140,9 @@ class TruckCar:
             """
             如果目标在屏幕的上半区域
             """
-            print("镖车处于屏幕的上半区域，符合要求")
+            # print("镖车处于屏幕的上半区域，符合要求")
             return True
-        print("镖车所处的坐标不符合要求")
+        # "镖车所处的坐标不符合要求")
         return False
 
     @staticmethod
@@ -182,7 +184,7 @@ class TruckCar:
                 返回 象限4. 右下角
                 """
                 quadrant_pos = 4
-        print(f"镖车在第 {quadrant_pos} 象限")
+        # print(f"镖车在第 {quadrant_pos} 象限")
         return quadrant_pos
 
     def _check_task_status(self, hwnd: int) -> bool:
@@ -203,7 +205,7 @@ class TruckCar:
             2、打怪失败
             3、被四害干扰了
             """
-            print("未找到押镖状态")
+            # print("未找到押镖状态")
             return False
         return True
 
@@ -213,7 +215,7 @@ class TruckCar:
         """
         if len(self.ocr.find_ocr_arbitrarily(self.windows.capture(hwnd).pic_content,
                                              ["获得帮派贡献度", "为帮会带来"])) > 0:
-            print("DriverTruckCarFuc: 运镖结束")
+            # print("DriverTruckCarFuc: 运镖结束")
             return True
         return False
 
@@ -239,7 +241,7 @@ class TruckCar:
         __cos_text = self.ocr.find_truck_car_ocr(__content, "的镖车")
         if __cos_text is not None:
             driver_res = coordinate_change_from_windows(hwnd, __cos_text)
-            print(f"DriverTruckCarFuc: 发现了 运镖(驾车) 文字({driver_res[0]},{driver_res[1]})")
+            # print(f"DriverTruckCarFuc: 发现了 运镖(驾车) 文字({driver_res[0]},{driver_res[1]})")
             return driver_res
         return None
 
@@ -290,7 +292,7 @@ class TruckCar:
             __rec = self.ocr.find_truck_car_ocr(__new_pic, "的镖车")
 
             if __rec is not None:
-                print("镖车大概在屏幕中间了V2版本")
+                # print("镖车大概在屏幕中间了V2版本")
                 return coordinate_change_from_windows(hwnd, _rec)
                 # print("还没有转到符合条件的地方")
         return None
@@ -316,7 +318,7 @@ class TruckCar:
 
         __rec = self.ocr.find_truck_car_ocr(_v3_new_pic, "的镖车")
         if __rec is not None:
-            print("镖车大概在屏幕中间了V3版本")
+            # print("镖车大概在屏幕中间了V3版本")
             return coordinate_change_from_windows(hwnd, __rec)
         return None
 
@@ -332,9 +334,9 @@ class TruckCar:
             """
             找到车了，把视角转到这个车
             """
-            print("屏幕出现镖车了")
+            # print("屏幕出现镖车了")
             return coordinate_change_from_windows(hwnd, rec)
-        print("还没有转到符合条件的地方")
+        # print("还没有转到符合条件的地方")
         return None
 
 
@@ -888,15 +890,15 @@ class TransportTaskFunc(TruckCar):
                     res_center_car = self.find_car_center_pos_in_display(hwnd)
                     if res_center_car is not None:
                         # 在中间
-                        print("镖车在屏幕中间位置")
+                        # print("镖车在屏幕中间位置")
                         return res_center_car
-                    print("镖车在屏幕上，但是不在中间位置")
+                    # print("镖车在屏幕上，但是不在中间位置")
                     __res_car = self.find_car_pos_in_display(hwnd)
                     if __res_car is None:
                         return None
                     cap = self.windows.capture(hwnd)
                     __car_quadrant: int = self.check_target_pos_direction(cap, target_pos=__res_car)
-                    print(f"镖车在屏幕的第 {__car_quadrant} 象限")
+                    # print(f"镖车在屏幕的第 {__car_quadrant} 象限")
                     if __car_quadrant == 1:
                         """a
                         如果在第一象限，但是不符合规则；那么就向 左侧 转一下
@@ -920,7 +922,7 @@ class TransportTaskFunc(TruckCar):
             WindowsHandle().activate_windows(hwnd)
             SetGhostBoards().click_press_and_release_by_key_code_hold_time(37, 0.5)
             time.sleep(0.5)
-            print("镖车不在在屏幕上，转个45度")
+            # print("镖车不在在屏幕上，转个45度")
         return None
 
     def find_driver_truck_type(self, hwnd: int):
