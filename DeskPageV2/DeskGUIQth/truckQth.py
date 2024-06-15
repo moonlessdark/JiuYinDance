@@ -107,7 +107,7 @@ class TruckCarTaskQth(QThread):
                 is_need_walk = False
                 is_car_side = True
                 # 发送信号，等待劫匪出现
-            print(f"当前地图是: {map_name}, is_need_walk:{is_need_walk}")
+            # print(f"当前地图是: {map_name}, is_need_walk:{is_need_walk}")
 
             self.__get_task.reply_person_perspective(self.windows_handle)
 
