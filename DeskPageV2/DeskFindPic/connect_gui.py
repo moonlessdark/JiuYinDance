@@ -237,7 +237,7 @@ class Dance(MainGui):
         if GetGhostDriver.dll is not None:
             SetGhostBoards().open_device()  # 启动幽灵键鼠标
             if SetGhostBoards().check_usb_connect():
-                self.print_logs("幽灵键鼠加载成功")
+                self.print_logs("幽灵键鼠加载成功。\n如有疑问，请查看“帮助”-“功能说明”")
                 self.keyboard_type = "ghost"
                 return True
             else:
