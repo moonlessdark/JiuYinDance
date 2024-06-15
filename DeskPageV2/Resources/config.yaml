@@ -50,6 +50,7 @@ TruckCarFindTask:
   receive_task: /Resources/TruckCarFindTask/receive_task.png
   receive_task_confirm: /Resources/TruckCarFindTask/receive_task_confirm.png
   receive_task_talk: /Resources/TruckCarFindTask/receive_task_talk.png
+  break_npc_talk: /Resources/TruckCarFindTask/break_talk.png
 TruckCarPic:
   car_flag: /Resources/TruckCarPic/CarsFlag.png
   task_car_selected: /Resources/TruckCarPic/truck_car_selected.png
@@ -59,6 +60,7 @@ TruckCarPic:
   task_monster_target: /Resources/TruckCarPic/fight_status_2.png
   task_monster_target_skill: /Resources/TruckCarPic/car_monster_skill_1.png
   task_star_mode: /Resources/TruckCarPic/truck_type.png
+  fight_other_truck_car: /Resources/TruckCarPic/镖车切磋.png
 danceConfig:
   dance_threshold_area: 0.3
   dance_threshold_tl: 0.9

@@ -221,6 +221,8 @@ class GetConfig:
         get_track_car.car_type_little = self.project_dir + self.__datas["TruckCarFindTask"]["car_type_little"]
         get_track_car.car_type_medium = self.project_dir + self.__datas["TruckCarFindTask"]["car_type_medium"]
         get_track_car.car_type_big = self.project_dir + self.__datas["TruckCarFindTask"]["car_type_big"]
+        # npc对话
+        get_track_car.break_npc_talk = self.project_dir + self.__datas["TruckCarFindTask"]["break_npc_talk"]
         return get_track_car
 
     def truck_task(self):
@@ -233,6 +235,7 @@ class GetConfig:
         truck.task_monster_target = self.project_dir + self.__datas["TruckCarPic"]["task_monster_target"]
         truck.task_monster_target_skil = self.project_dir + self.__datas["TruckCarPic"]["task_monster_target_skill"]
         truck.task_car_selected = self.project_dir + self.__datas["TruckCarPic"]["task_car_selected"]
+        truck.fight_other_truck_car = self.project_dir + self.__datas["TruckCarPic"]["fight_other_truck_car"]
         return truck
 
     def find_track_car_task(self):

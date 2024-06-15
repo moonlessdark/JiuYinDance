@@ -93,6 +93,8 @@ class TruckCarReceiveTask:
     car_type_medium: str = dataclasses.field(default_factory=str)  # 镖车类型：中镖车
     car_type_big: str = dataclasses.field(default_factory=str)  # 镖车类型：大镖车
 
+    break_npc_talk: str = dataclasses.field(default_factory=str)  # 退出NPC对话界面
+
     # 成都
     task_chengdu_GaiBang: str = dataclasses.field(default_factory=str)  # 选择目的地：成都丐帮
     task_chengdu_NanGongShiJia: str = dataclasses.field(default_factory=str)  # 选择目的地：南宫世家
@@ -135,6 +137,7 @@ class TruckCarPic:
     task_monster_target: str = dataclasses.field(default_factory=str)  # 劫匪，数组，有多个判断标志,头像
     task_monster_target_skil: str = dataclasses.field(default_factory=str)  # 劫匪NPC的技能，此时需要格挡
     task_car_selected: str = dataclasses.field(default_factory=str)  # 已经选中了镖车
+    fight_other_truck_car: str = dataclasses.field(default_factory=str)  # 镖车切磋
 
 
 @dataclasses.dataclass

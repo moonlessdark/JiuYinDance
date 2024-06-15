@@ -257,7 +257,6 @@ class TruckCar:
         cos = self.windows.find_windows_coordinate_rect(hwnd, find_task.task_star_mode)
         if cos is not None:
             return cos
-
         return None
 
     def find_car_center_pos_in_display(self, hwnd: int):
@@ -703,6 +702,33 @@ class ReceiveTruckTask(TruckCar):
 
     def __init__(self):
         super().__init__()
+
+    def break_other_truck_car(self, hwnd: int):
+        """
+        退出不小心点到别人的镖车触发劫镖
+        """
+        WindowsHandle().activate_windows(hwnd)
+        __find_task_car: TruckCarPic = self._get_pic_truck_car()
+        __break_car_talk = self.windows.find_windows_coordinate_rect(handle=hwnd, img=__find_task_car.fight_other_truck_car)
+        if __break_car_talk is None:
+            return False
+        SetGhostBoards().click_press_and_release_by_code(27)
+        time.sleep(0.5)
+        return True
+
+    def break_npc_talk(self, hwnd: int):
+        """
+        退出和NPC对话的窗口
+        """
+        WindowsHandle().activate_windows(hwnd)
+        __find_task: TruckCarReceiveTask = self._get_pic_receive_task()
+        __break_npc_talk = self.windows.find_windows_coordinate_rect(handle=hwnd, img=__find_task.break_npc_talk)
+        if __break_npc_talk is None:
+            return False
+        SetGhostMouse().move_mouse_to(__break_npc_talk[0], __break_npc_talk[1])
+        time.sleep(1)
+        SetGhostMouse().click_mouse_left_button()
+        return True
 
     def receive_task(self, hwnd: int):
         """

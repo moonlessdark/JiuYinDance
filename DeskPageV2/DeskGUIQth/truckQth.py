@@ -133,6 +133,9 @@ class TruckCarTaskQth(QThread):
                     self.sin_work_status.emit(False)
                     return None
 
+                self.__get_task.break_npc_talk(self.windows_handle)  # 检测是否误触了NPC对话
+                self.__get_task.break_other_truck_car(self.windows_handle)  # 不小心点到劫镖了，就退出一下
+
                 if is_not_find_car_sum > 60:
                     self.sin_out.emit(f"{is_not_find_car_sum} 秒内没有找到镖车，队伍解散重组")
                     self.__team.close_team(self.windows_handle)
