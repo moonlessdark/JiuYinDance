@@ -35,7 +35,7 @@ TruckCarFindTask:
       npc: /Resources/TruckCarFindTask/NPC/燕京npc.png
     chengdu:
       GaiBang: /Resources/TruckCarFindTask/Area/ChengDu/丐帮驻地.png
-      NanGong: /Resources/TruckCarPic/Area/ChengDu/南宫世家.png
+      NanGong: /Resources/TruckCarFindTask/Area/ChengDu/南宫世家.png
       QianDengZheng: /Resources/TruckCarFindTask/Area/ChengDu/千灯镇.png
       ShenJiaBao: /Resources/TruckCarFindTask/Area/ChengDu/沈家堡.png
       address: /Resources/TruckCarFindTask/NPC/成都.png

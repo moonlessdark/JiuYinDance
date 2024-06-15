@@ -48,9 +48,14 @@ class TruckCar:
         self._skill_obj: dict = self._config.get_skill_group_list().get("打怪套路")  # 当前正在使用的技能组
 
     def get_map_and_person(self, hwnd: int):
-        _, self._area_map, self._person_name = self.ocr.get_person_map(self.windows.capture(hwnd).pic_content)
+        pos, self._area_map, self._person_name = self.ocr.get_person_map(self.windows.capture(hwnd).pic_content)
         # print(f"当前地图是 {self._area_map}, 当前角色是 {self._person_name}")
         return self._area_map
+
+    def get_map_and_pos(self, hwnd: int):
+        pos, self._area_map, self._person_name = self.ocr.get_person_map(self.windows.capture(hwnd).pic_content)
+        # print(f"当前地图是 {self._area_map}, 当前角色是 {self._person_name}")
+        return pos
 
     @staticmethod
     def _load_pic(pic_dir: str):
@@ -643,9 +648,10 @@ class FindTaskNPCFunc(TruckCar):
             if qin_xiu_truck_point is None:
                 continue
             else:
-                """
-                找到了成都
-                """
+
+                if self._area_map == "成都":
+                    break
+
                 # print(f"FindTaskNpc: 找到 {self._area_map} 图标({qin_xiu_truck_point[0]},{qin_xiu_truck_point[1]})")
                 SetGhostMouse().move_mouse_to(qin_xiu_truck_point[0], qin_xiu_truck_point[1])
                 time.sleep(1)
@@ -723,7 +729,8 @@ class ReceiveTruckTask(TruckCar):
         WindowsHandle().activate_windows(hwnd)
         __find_task: TruckCarReceiveTask = self._get_pic_receive_task()
         __break_npc_talk = self.windows.find_windows_coordinate_rect(handle=hwnd, img=__find_task.break_npc_talk)
-        if __break_npc_talk is None:
+        __receive_task_talk = self.windows.find_windows_coordinate_rect(handle=hwnd, img=__find_task.receive_task_talk)
+        if __break_npc_talk is None or __receive_task_talk is not None:
             return False
         SetGhostMouse().move_mouse_to(__break_npc_talk[0], __break_npc_talk[1])
         time.sleep(1)

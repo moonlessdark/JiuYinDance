@@ -663,7 +663,7 @@ class Dance(MainGui):
             """
             如果是其他值，一般是 0，就表示结束
             """
-            self.print_logs("本次押镖结束,关闭所有线程")
+            # self.print_logs("本次押镖结束,即将关闭所有线程")
             self.th_truck_fight_monster.get_param(windows_handle, False)  # 停止打怪
             self.th_truck_find_car.get_param(windows_handle, False)  # 停止找车
             self.th_follow_truck.get_param(windows_handle, False)  # 停止跟踪车辆
