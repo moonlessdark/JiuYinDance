@@ -75,6 +75,7 @@ class TruckCarTaskQth(QThread):
         self.TruckCarTaskQth_working = True
         self.mutex.lock()  # 先加锁
         self.sin_out.emit(f"5秒后开始启动押镖...")
+        self.sin_out.emit(f"本轮押镖次数为: {self.truck_count} 次")
         self.sin_status_bar_out.emit(f"已经押镖了 {0} 次", 0)
         time.sleep(5)
         for count_i in range(self.truck_count):
@@ -318,8 +319,9 @@ class TruckTaskFindCarQth(QThread):
                         else:
                             SetGhostMouse().release_all_mouse_button()
                             # 如果点了 运镖 但是 没有开车，那么就表示距离太远了，需要靠近
-                            SetGhostBoards().click_press_and_release_by_key_name_hold_time("w", 1)  # 往前走一步
+                            SetGhostBoards().click_press_and_release_by_key_name_hold_time("w", 0.5)  # 往前走一步
                             # 退出循环，从头再来一次
+                            self.next_step.emit(3)
                             break
 
 

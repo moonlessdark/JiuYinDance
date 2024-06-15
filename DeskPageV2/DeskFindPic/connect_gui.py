@@ -167,10 +167,11 @@ class Dance(MainGui):
             dance_threshold: float = config_ini.dance_threshold
             whz_dance_threshold: float = config_ini.whz_dance_threshold
             area_dance_threshold: float = config_ini.area_dance_threshold
+            truck_car_max_sum: int = config_ini.truck_car_sum
             self.line_dance_threshold.setValue(dance_threshold)
             self.line_whz_dance_threshold.setValue(whz_dance_threshold)
             self.line_area_dance_threshold.setValue(area_dance_threshold)
-
+            self.line_max_truck_car_sum.setValue(truck_car_max_sum)
             if is_debug:
                 self.check_debug_mode.setChecked(True)
             else:
@@ -193,11 +194,13 @@ class Dance(MainGui):
         dance_threshold = self.line_dance_threshold.value()
         whz_dance_threshold = self.line_whz_dance_threshold.value()
         area_dance_threshold = self.line_area_dance_threshold.value()
+        truck_car_max_sum = self.line_max_truck_car_sum.value()
         is_debug = True if self.check_debug_mode.isChecked() else False
 
         self.file_config.update_find_pic_config(dance_threshold_tl=dance_threshold,
                                                 dance_threshold_whz=whz_dance_threshold,
                                                 dance_threshold_area=area_dance_threshold,
+                                                truck_car_max_sum=truck_car_max_sum,
                                                 debug=is_debug)
 
         self.show_dialog("更新成功")
@@ -464,8 +467,11 @@ class Dance(MainGui):
                 如果是押镖
                 """
                 if len(windows_list) == 1:
+
+                    __truck_car_sum: int = int(self.line_max_truck_car_sum.value())
+
                     if self.th_truck_task.isRunning() is False:
-                        self.th_truck_task.get_param(windows_list[0], 5)
+                        self.th_truck_task.get_param(windows_list[0], int(__truck_car_sum))
                         self.th_truck_task.start()
                         self.__update_ui_changed_execute_button_text_and_status(True)
                         # 开始执行跑马灯效果

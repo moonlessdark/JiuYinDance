@@ -318,6 +318,11 @@ class MainGui(QtWidgets.QMainWindow):
         self.line_area_dance_threshold.setToolTip("最低匹配阈值，影响按钮区域的识别率，越低越好。")
         self.line_area_dance_threshold.setRange(0.01, 1.00)
 
+        self.label_max_truck_car_sum = QtWidgets.QLabel("押镖次数设置", widget_setting)
+        self.line_max_truck_car_sum = QtWidgets.QSpinBox(widget_setting)
+        self.line_max_truck_car_sum.setToolTip("押镖最大次数,4L碎银一次，最多80次")
+        self.line_max_truck_car_sum.setRange(1, 80)
+
         self.check_debug_mode = QtWidgets.QCheckBox("Debug", widget_setting)
         self.push_button_save_setting = QtWidgets.QPushButton("保存设置", widget_setting)
 
@@ -328,8 +333,10 @@ class MainGui(QtWidgets.QMainWindow):
         layout_setting.addWidget(self.line_whz_dance_threshold, 1, 1)
         layout_setting.addWidget(self.label_area_dance_threshold, 2, 0)
         layout_setting.addWidget(self.line_area_dance_threshold, 2, 1)
-        layout_setting.addWidget(self.check_debug_mode, 3, 0)
-        layout_setting.addWidget(self.push_button_save_setting, 3, 1)
+        layout_setting.addWidget(self.label_max_truck_car_sum, 3, 0)
+        layout_setting.addWidget(self.line_max_truck_car_sum, 3, 1)
+        layout_setting.addWidget(self.check_debug_mode, 4, 0)
+        layout_setting.addWidget(self.push_button_save_setting, 4, 1)
 
         self.widget_dock_setting = QtWidgets.QDockWidget("配置信息", self)
         self.widget_dock_setting.setWidget(widget_setting)

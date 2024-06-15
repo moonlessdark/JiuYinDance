@@ -169,6 +169,7 @@ class Config:
     whz_dance_threshold: float = dataclasses.field(default_factory=float)
     area_dance_threshold: float = dataclasses.field(default_factory=float)
     is_debug: bool = dataclasses.field(default_factory=bool)
+    truck_car_sum: int = dataclasses.field(default_factory=int)
 
 
 @dataclasses.dataclass

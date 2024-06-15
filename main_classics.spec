@@ -8,7 +8,7 @@ a = Analysis(
     ['main_classics.py'],
     pathex=[],
     binaries=[],
-    datas=[('DeskPageV2/Resources/.', 'Resources/.'), ('DeskPageV2/Resources/ppocronnx/.', 'ppocronnx/.')],
+    datas=[('DeskPageV2/Resources/.', 'Resources/.'), ('DeskPageV2/Resources/ppocronnx/.', 'ppocronnx/.'), ('README.md', '.')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

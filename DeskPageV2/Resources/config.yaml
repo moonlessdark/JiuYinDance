@@ -1,3 +1,10 @@
+MarketPic:
+  follow_line: /Resources/AuctionMarket/my_follow_page.png
+  main_line: /Resources/AuctionMarket/main_line_v2.png
+  ok: /Resources/AuctionMarket/ok.png
+  plus_price: /Resources/AuctionMarket/plus_10.png
+  plus_price_100: /Resources/AuctionMarket/plus_100.png
+  summit_price: /Resources/AuctionMarket/summit.png
 TruckCarFindTask:
   Area:
     JinLing:
@@ -57,6 +64,7 @@ danceConfig:
   dance_threshold_tl: 0.9
   dance_threshold_whz: 0.8
   debug: false
+  truck_car_max_sum: 5
 dancePic:
   tlDancePic:
     button_down: /Resources/DancePic/down.png
@@ -74,6 +82,12 @@ dancePic:
     button_left: /Resources/DancePic/whzDance_left.png
     button_right: /Resources/DancePic/whzDance_right.png
     button_up: /Resources/DancePic/whzDance_UP.png
+goods:
+  goods_bag_tag_clickable: /Resources/Goods/物品包02.png
+  goods_bag_tag_clicked: /Resources/Goods/物品包01.png
+  run_goods: /Resources/Goods/御风神水.png
+  run_goods_buff: /Resources/Goods/御风神水buff.png
+  run_goods_ready: /Resources/Goods/御风神水ready.png
 keyBoardMouseDll:
   dmDll:
     dm: /Resources/KeyBoardDriver/dm.dll
@@ -85,16 +99,3 @@ team:
   flag_team: /Resources/Team/team_mark.png
   flag_team_status: /Resources/Team/队伍标志.png
   leave_team: /Resources/Team/解散队伍.png
-goods:
-  goods_bag_tag_clicked: /Resources/Goods/物品包01.png
-  goods_bag_tag_clickable: /Resources/Goods/物品包02.png
-  run_goods: /Resources/Goods/御风神水.png
-  run_goods_ready: /Resources/Goods/御风神水ready.png
-  run_goods_buff: /Resources/Goods/御风神水buff.png
-MarketPic:
-  main_line: /Resources/AuctionMarket/main_line_v2.png
-  follow_line: /Resources/AuctionMarket/my_follow_page.png
-  ok: /Resources/AuctionMarket/ok.png
-  plus_price: /Resources/AuctionMarket/plus_10.png
-  plus_price_100: /Resources/AuctionMarket/plus_100.png
-  summit_price: /Resources/AuctionMarket/summit.png

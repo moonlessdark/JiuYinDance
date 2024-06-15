@@ -123,6 +123,7 @@ class GetConfig:
         pic_config.whz_dance_threshold = self.__datas["danceConfig"]["dance_threshold_whz"]
         pic_config.area_dance_threshold = self.__datas["danceConfig"]["dance_threshold_area"]
         pic_config.is_debug = self.__datas["danceConfig"]["debug"]
+        pic_config.truck_car_sum = self.__datas["danceConfig"]["truck_car_max_sum"]
         return pic_config
 
     def update_find_pic_config(self, *args, **kwargs):
