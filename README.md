@@ -2,9 +2,10 @@
 # <div align='center'>九阴真经OL摸鱼小助手</div> 
 
 ![Image text](https://github.com/moonlessdark/JiuYinDance/blob/master/DeskPageV2/Resources/cover.png)
+![Image text](https://github.com/moonlessdark/JiuYinDance/blob/master/DeskPageV2/Resources/cover2.png)
 
 ## 前言:  
-本项目是用于学习opencv与PySide6的实操作品，仅供学习。请勿用于商业。  
+本项目是用于学习opencv与PySide6的实操作品，仅供学习。免费作品,请勿用于商业。  
 
 此脚本支持的功能较少，且不算稳定，抗干扰性较差，只适合在老区养老，不适合新区养号。  
 若您需要更多的功能，建议参考以下2种收费的脚本:  
