@@ -32,10 +32,14 @@ if __name__ == '__main__':
     except RuntimeError as e:
         raise e
     finally:
+
         app = QApplication(sys.argv)
-        main_gui = Dance()
-        main_gui.setWindowTitle("摸鱼助手(经典模式)")
-        main_gui.show()
+        try:
+            main_gui = Dance()
+            main_gui.setWindowTitle("摸鱼助手(经典模式)")
+            main_gui.show()
+        except RuntimeError as e:
+            main_gui.print_logs(str(e))
         hot_key = hotKey.HotKey()
         hot_key.ShowWindow.connect(main_gui.hot_key_event)
         hot_key.start()

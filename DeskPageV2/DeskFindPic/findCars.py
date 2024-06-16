@@ -734,7 +734,7 @@ class ReceiveTruckTask(TruckCar):
         __find_task: TruckCarReceiveTask = self._get_pic_receive_task()
         __break_npc_talk = self.windows.find_windows_coordinate_rect(handle=hwnd, img=__find_task.break_npc_talk)
         __receive_task_talk = self.windows.find_windows_coordinate_rect(handle=hwnd, img=__find_task.receive_task_talk)
-        if __break_npc_talk is None or __receive_task_talk is not None:
+        if __break_npc_talk is None:
             return False
         WindowsHandle().activate_windows(hwnd)
         SetGhostMouse().move_mouse_to(__break_npc_talk[0], __break_npc_talk[1])

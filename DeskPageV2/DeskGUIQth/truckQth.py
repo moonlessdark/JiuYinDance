@@ -144,7 +144,6 @@ class TruckCarTaskQth(QThread):
                     # 如果已经打了怪并且在车旁，那么就可以把处了主线程之外的其他线程都停止了
                     self.next_step.emit(0)  # 全部结束
 
-                self.__get_task.break_npc_talk(self.windows_handle)  # 检测是否误触了NPC对话
                 self.__get_task.break_other_truck_car(self.windows_handle)  # 不小心点到劫镖了，就退出一下
 
                 # print(f"当前已经“{is_not_in_car_sum}”次没有成功上车")
@@ -155,6 +154,12 @@ class TruckCarTaskQth(QThread):
                     self.__team.close_team(self.windows_handle)
 
                 if self.__transport_task.check_task_status(self.windows_handle) is False:
+
+                    if self.__get_task.break_npc_talk(self.windows_handle):  # 检测是否误触了NPC对话
+                        self.sin_out("不小心点到路人NPC对话了")
+                        time.sleep(2)
+                        break
+
                     if self.__transport_task.check_task_end(self.windows_handle):
                         self.sin_out.emit(f"本次押镖(第{count_i + 1}轮已经完成)")
                     else:
