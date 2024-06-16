@@ -222,7 +222,7 @@ class TruckTaskFindCarQth(QThread):
 
     def run(self):
         global person_viewpoint, is_need_walk, is_first_find_car, is_fight_npc_end, is_car_in, is_not_in_car_sum
-
+        self.sin_out.emit("线程:开始尝试驾驶镖车")
         self.mutex.lock()  # 先加锁
         while 1:
             if self.working is False:
@@ -404,9 +404,8 @@ class TruckTaskFightMonsterQth(QThread):
         self.windows_handle = windows_handle
 
     def run(self):
-
+        self.sin_out.emit("线程:开始查找/检测劫匪NPC")
         self.mutex.lock()  # 先加锁
-
         while 1:
             if self.working is False:
                 # 结束了
@@ -434,7 +433,7 @@ class TruckTaskFightMonsterQth(QThread):
                 if self.__fight_monster.fight_monster(self.windows_handle) is True:
                     self.working = False
 
-                    self.sin_out.emit("劫镖NPC消失(击杀)...")
+                    self.sin_out.emit("劫镖NPC已消失(击杀)...")
                     # 修改一下全局变量，已经和NPC战斗过了
                     mutex.acquire()
                     is_stop_find_car = False
@@ -487,9 +486,9 @@ class FollowTheTrailOfTruckQth(QThread):
         self.windows_handle = windows_handle
 
     def run(self):
-        self.mutex.lock()  # 先加锁
-        self.sin_out.emit("正在保持镖车在画面中...")
 
+        self.sin_out.emit("线程:开始保持镖车在画面中")
+        self.mutex.lock()  # 先加锁
         global is_not_in_car_sum
 
         while 1:
