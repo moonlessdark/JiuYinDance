@@ -1,8 +1,9 @@
 
 # <div align='center'>九阴真经OL摸鱼小助手</div> 
 
-![Image text](https://github.com/moonlessdark/JiuYinDance/blob/master/DeskPageV2/Resources/cover.png)
-![Image text](https://github.com/moonlessdark/JiuYinDance/blob/master/DeskPageV2/Resources/cover2.PNG)
+<div align=center>
+<img src="https://github.com/moonlessdark/JiuYinDance/blob/master/DeskPageV2/Resources/cover.PNG">
+</div>
 
 ## 前言:  
 本项目是用于学习opencv与PySide6的实操作品，仅供学习。免费作品,请勿用于商业。  
@@ -39,6 +40,11 @@
 如果出现识别不到按钮的情况，请下调0.1再尝试。但不要设置过高，毕竟切图后模板的精度不太高。  
 
 ##  功能说明事项
+<div align=center>
+<img src="https://github.com/moonlessdark/JiuYinDance/blob/master/DeskPageV2/Resources/cover2.PNG">
+</div>
+
+
 ### 关于团练授业，隐士势力的修炼  
 * 注意：功能列表中的“隐士势力”不是指隐士势力中的日常任务，而是某些隐士势力会有绿色的 “上下左右JK” 按钮。当前版本在 望辉洲 的舞蹈周长，天涯海阁的瀑布修炼，钓鱼。 挖宝活动中BOSS的修罗刀 存在此按钮。    
 
