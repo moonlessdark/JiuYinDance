@@ -368,32 +368,19 @@ class Dance(MainGui):
         :return:
         """
         self.print_logs("已发出停止指令，请等待")
-        if self.radio_button_game_screen.isChecked():
-            """
-            如果当前是截图模式
-            """
-            self.th_screen.stop_execute_init()
-        elif self.radio_button_school_dance.isChecked() or self.radio_button_party_dance.isChecked():
-            """
-            如果当前团练授业模式
-            """
-            self.th.stop_execute_init()
-        elif self.radio_button_key_auto.isChecked():
-            """
-            键盘连按
-            """
-            self.th_key_press_auto.stop_execute_init()
-        elif self.radio_button_truck_car_task.isChecked():
-            """
-            押镖
-            """
-            self.truck_task_func_switch(0)
-            self.th_truck_task.set_close()
-        elif self.radio_button_auction_market.isChecked():
-            """
-            世界竞拍
-            """
-            self.th_market.stop_execute_init()
+        # 如果当前是截图模式
+        self.th_screen.stop_execute_init()
+        # 如果当前团练授业模式
+        self.th.stop_execute_init()
+        # 键盘连按
+        self.th_key_press_auto.stop_execute_init()
+
+        # 世界竞拍
+        self.th_market.stop_execute_init()
+        # 押镖
+        self.truck_task_func_switch(step=0)
+        self.th_truck_task.set_close()
+        # 进度条跑马灯
         self.th_progress_bar.stop_init()
         self.__update_ui_changed_execute_button_text_and_status(False)
 
@@ -643,16 +630,20 @@ class Dance(MainGui):
         windows_handle = self.check_handle_is_selected()[0]
         if step == 1:
             # self.print_logs("开启线程:等待劫镖NPC...")
-            self.th_truck_fight_monster.get_param(windows_handle, True)
-            self.th_truck_fight_monster.start()
+            if self.th_truck_fight_monster.isRunning() is False:
+                self.th_truck_fight_monster.get_param(windows_handle, True)
+                self.th_truck_fight_monster.start()
         elif step == 2:
             # self.print_logs("开启线程:查找镖车...")
-            self.th_truck_find_car.get_param(windows_handle, True)
-            self.th_truck_find_car.start()
+            if self.th_truck_find_car.isRunning() is False:
+                self.th_truck_find_car.get_param(windows_handle, True)
+                self.th_truck_find_car.start()
         elif step == 3:
             # self.print_logs("开启线程:保持镖车在屏幕中心...")
-            self.th_follow_truck.get_param(windows_handle, True)
-            self.th_follow_truck.start()
+            if self.th_follow_truck.isRunning() is False:
+
+                self.th_follow_truck.get_param(windows_handle, True)
+                self.th_follow_truck.start()
         elif step == 4:
             # self.print_logs("关闭线程:保持镖车在屏幕中心...")
             self.th_truck_find_car.get_param(windows_handle, False)
@@ -664,9 +655,9 @@ class Dance(MainGui):
             如果是其他值，一般是 0，就表示结束
             """
             # self.print_logs("本次押镖结束,即将关闭所有线程")
+            self.th_follow_truck.get_param(windows_handle, False)  # 停止跟踪车辆
             self.th_truck_fight_monster.get_param(windows_handle, False)  # 停止打怪
             self.th_truck_find_car.get_param(windows_handle, False)  # 停止找车
-            self.th_follow_truck.get_param(windows_handle, False)  # 停止跟踪车辆
 
     def get_screen_market_goods_list(self):
         """

@@ -323,6 +323,10 @@ class TruckCar:
         __rec = self.ocr.find_truck_car_ocr(_v3_new_pic, "的镖车")
         if __rec is not None:
             # print("镖车大概在屏幕中间了V3版本")
+            __images = self.windows.capture(hwnd)
+            __rec = self.ocr.find_truck_car_ocr(__images.pic_content, "的镖车")
+            if __rec is None:
+                return None
             return coordinate_change_from_windows(hwnd, __rec)
         return None
 
@@ -508,7 +512,8 @@ class TeamFunc(TruckCar):
         flag_status = find_team.leave_team
 
         WindowsHandle().activate_windows(hwnd)
-        SetGhostBoards().click_press_by_key_name("o")
+        time.sleep(0.5)
+        SetGhostBoards().click_press_and_release_by_key_name("o")
         time.sleep(1)
 
         if self.windows.find_windows_coordinate_rect(handle=hwnd, img=find_team.create_team) is not None:
@@ -919,7 +924,7 @@ class TransportTaskFunc(TruckCar):
                     if is_break:
                         # 强行终止
                         break
-                    res_center_car = self.find_car_center_pos_in_display(hwnd)
+                    res_center_car = self.find_car_in_center_display_v3(hwnd=hwnd, display_area=0)
                     if res_center_car is not None:
                         # 在中间
                         # print("镖车在屏幕中间位置")
@@ -952,7 +957,7 @@ class TransportTaskFunc(TruckCar):
                         """
                         SetGhostBoards().click_press_and_release_by_key_code_hold_time(39, 0.4)
             WindowsHandle().activate_windows(hwnd)
-            SetGhostBoards().click_press_and_release_by_key_code_hold_time(37, 0.5)
+            SetGhostBoards().click_press_and_release_by_key_code_hold_time(37, 0.4)
             time.sleep(0.5)
             # print("镖车不在在屏幕上，转个45度")
         return None

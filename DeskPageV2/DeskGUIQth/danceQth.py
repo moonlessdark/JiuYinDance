@@ -168,7 +168,6 @@ class DanceThByFindPic(QThread):
         :return:
         """
         self.working = False
-        self.sin_out.emit("窗口停止检测")
 
     def start_execute_init(self, windows_handle_list: list, dance_type: str, key_board_mouse_driver_type: str,
                            debug: bool):
@@ -195,6 +194,7 @@ class DanceThByFindPic(QThread):
         find_button_count: int = 0  # 本轮发现几个按钮了
         while self.working:
             if self.working is False:
+                self.sin_out.emit("窗口停止检测")
                 break
             for windows_this_handle in self.windows_handle_list:
                 wait_num_print: int = wait_num_print + 1 if wait_num_print < 6 else 0
@@ -319,7 +319,6 @@ class ScreenGameQth(QThread):
         """
         self.working = False
         self.windows_handle_list = []
-        self.sin_out.emit("窗口停止截图")
 
     def get_param(self, windows_handle_list: list, pic_save_path: str):
         """
@@ -343,6 +342,7 @@ class ScreenGameQth(QThread):
         while self.working:
             if self.working is False:
                 self.mutex.unlock()  # 解锁
+                self.sin_out.emit("窗口停止截图")
                 return None
             for handle in range(len(self.windows_handle_list)):
                 self.status_bar.emit("窗口截图中...")
