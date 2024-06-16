@@ -2,7 +2,7 @@
 # <div align='center'>九阴真经OL摸鱼小助手</div> 
 
 ![Image text](https://github.com/moonlessdark/JiuYinDance/blob/master/DeskPageV2/Resources/cover.png)
-![Image text](https://github.com/moonlessdark/JiuYinDance/blob/master/DeskPageV2/Resources/cover2.png)
+![Image text](https://github.com/moonlessdark/JiuYinDance/blob/master/DeskPageV2/Resources/cover2.PNG)
 
 ## 前言:  
 本项目是用于学习opencv与PySide6的实操作品，仅供学习。免费作品,请勿用于商业。  
