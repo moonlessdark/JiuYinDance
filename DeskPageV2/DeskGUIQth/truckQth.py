@@ -85,87 +85,161 @@ class TruckCarTaskQth(QThread):
         is_car_in = False
 
         self.mutex.lock()  # 先加锁
-        self.sin_out.emit(f"5秒后开始启动押镖...")
+        self.sin_out.emit(f"线程:5秒后开始启动押镖...")
         self.sin_out.emit(f"本轮押镖次数为: {self.truck_count} 次")
         self.sin_status_bar_out.emit(f"已经押镖了 {0} 次", 0)
         time.sleep(5)
         for count_i in range(self.truck_count):
+
             self.sin_out.emit(f"开始执行第 {count_i + 1} 次押镖")
-            if self.TruckCarTaskQth_working is False:
-                # 结束了
-                self.quit()
-                self.wait()  # 等待线程结束
-                self.mutex.unlock()  # 解锁
-                self.sin_work_status.emit(False)
-                self.sin_out.emit("线程:已停止接取/检测任务")
-                return None
+            # 0: 初始化  1: 完成组队  2: 已经找到接镖NPC,正在前往  3: 已经接取押镖任务  4: 已经驾驶镖车行驶  5: 已经打完怪 6: 已经再次上车
+            __task_status: int = 0
 
-            if map_name == "":
-                __city_name: str = self.__team.get_map_and_person(self.windows_handle)
-                map_name = __city_name
+            mutex.acquire()
+            is_not_in_car_sum = 0
+            mutex.release()
 
-            if map_name in ["苏州", "成都"]:
-                # 如果是成都和苏州，就不需要走了，直接上车就行了
-                is_need_walk = False
-            # print(f"当前地图是: {map_name}, is_need_walk:{is_need_walk}")
-
-            self.__get_task.reply_person_perspective(self.windows_handle)
-
-            # 创建队伍
-            self.__team.create_team(self.windows_handle)
-
-            # 检测是否使用了御风
-            self.__use_goods.use_yu_feng_shen_shui(self.windows_handle)
-
-            # 查询地图和NPC
-            self.__find_npc.find_truck_task_npc(self.windows_handle)
-
-            # 接取任务
-            self.__get_task.receive_task(self.windows_handle)
-
-            person_viewpoint = 1
-
-            pos = coordinate_change_from_windows(self.windows_handle, (100, 100))
-            SetGhostMouse().move_mouse_to(pos[0], pos[1])
-
-            self.next_step.emit(2)  # 等待上车
+            self.__get_task.reply_person_perspective(self.windows_handle)  # 初始化视角
 
             while 1:
 
                 if self.TruckCarTaskQth_working is False:
+                    self.next_step.emit(0)
                     self.quit()
                     self.wait()  # 等待线程结束
                     self.mutex.unlock()  # 解锁
                     self.sin_work_status.emit(False)
-                    self.sin_out.emit("线程:已停止接取/检测任务")
+                    self.sin_out.emit("线程:已停止押镖...")
                     return None
 
-                if is_fight_npc_end is True and is_car_in is True:
-                    # 如果已经打了怪并且在车旁，那么就可以把处了主线程之外的其他线程都停止了
-                    self.next_step.emit(0)  # 全部结束
+                if map_name == "":
+                    __city_name: str = self.__team.get_map_and_person(self.windows_handle)
+                    map_name = __city_name
 
-                self.__get_task.break_other_truck_car(self.windows_handle)  # 不小心点到劫镖了，就退出一下
+                if map_name in ["苏州", "成都"]:
+                    # 如果是成都和苏州，就不需要走了，直接上车就行了
+                    is_need_walk = False
+                # print(f"当前地图是: {map_name}, is_need_walk:{is_need_walk}")
 
-                # print(f"当前已经“{is_not_in_car_sum}”次没有成功上车")
+                if __task_status == 0:
 
-                if is_not_in_car_sum > 10:
-                    self.next_step.emit(0)  # 全部结束
-                    self.sin_out.emit(f"尝试 {is_not_in_car_sum} 次没有成功上车，队伍解散重组")
-                    self.__team.close_team(self.windows_handle)
+                    # 创建队伍
+                    if self.__team.create_team(self.windows_handle) is False:
+                        continue
+                    # 检测是否使用了御风
+                    self.sin_out.emit("步骤一:创建队伍...")
 
-                if self.__transport_task.check_task_status(self.windows_handle) is False:
+                    self.__use_goods.use_yu_feng_shen_shui(self.windows_handle)
+                    __task_status = 1
+                    self.sin_out.emit("步骤一:检测是否使用御风神水...")
 
-                    if self.__get_task.break_npc_talk(self.windows_handle):  # 检测是否误触了NPC对话
-                        self.sin_out("不小心点到路人NPC对话了")
-                        time.sleep(2)
-                        break
+                elif __task_status == 1:
 
-                    if self.__transport_task.check_task_end(self.windows_handle):
-                        self.sin_out.emit(f"本次押镖(第{count_i + 1}轮已经完成)")
+                    # 队伍已经创建，开始寻找接镖NPC
+                    if self.__find_npc.find_truck_task_npc(self.windows_handle) is False:
+                        continue
+                    __task_status = 2
+                    self.sin_out.emit("步骤二:寻找押镖NPC,寻路中...")
+
+                elif __task_status == 2:
+
+                    # 正在跑路中，等待进入接取任务界面
+                    if self.__get_task.receive_task(self.windows_handle) is False:
+                        continue
+                    __task_status = 3
+                    self.next_step.emit(1)  # 等待劫镖NPC出现
+                    self.sin_out.emit("步骤三:已接镖,等待劫镖NPC...")
+
+                elif __task_status == 3:
+
+                    # 已经接取了任务，寻找一下镖车,驾车上路
+                    if is_fight_npc_visible is True:
+                        # 出怪了，这里等一下啊,等打完怪再说
+                        time.sleep(0.5)
+                        print("出怪了，continue")
+                        continue
+
+                    if is_not_in_car_sum == 10:
+                        # 如果连续10次没有成功上车，调整一下视角
+                        self.__get_task.reply_person_perspective(self.windows_handle)
+                    elif is_not_in_car_sum == 20:
+                        # 20次没有上车成功，再调整一下视角
+                        self.__get_task.reply_person_perspective_up(self.windows_handle)
+                    elif is_not_in_car_sum == 30:
+                        # 没救了，放弃了，退组重新接镖吧
+                        if self.__team.close_team(self.windows_handle) is False:
+                            continue
+                        self.next_step.emit(0)  # 全部结束
+                        self.sin_out.emit(f"尝试 {is_not_in_car_sum + 1} 次没有成功上车，队伍解散重组")
+                        __task_status = 0
+
+                    # 已经接取了任务，寻找一下镖车,驾车上路
+                    if self.__transport_task.driver_truck_car(self.windows_handle, car_area_type=0, map_name=map_name) is False:
+                        # 失败次数+1
+                        mutex.acquire()
+                        is_not_in_car_sum += 1
+                        mutex.release()
+                        continue
+                    self.sin_out.emit("步骤四:驾驶镖车,运输中...")
+                    __task_status = 4
+                    self.__get_task.reply_person_perspective_up(self.windows_handle)
+
+                    mutex.acquire()
+                    is_not_in_car_sum = 0
+                    mutex.release()
+
+                elif __task_status == 4:
+                    # 首次上车成功，开始等怪出现
+                    if is_fight_npc_end is True:
+                        __task_status = 5
+                        self.sin_out.emit("步骤五:打怪结束...")
+
+                elif __task_status == 5:
+                    # 首次上车成功，开始等怪出现
+                    if is_fight_npc_end is False:
+                        time.sleep(0.5)
+                        continue
+
+                    if is_not_in_car_sum == 10:
+                        # 如果连续10次没有成功上车，调整一下视角
+                        self.__get_task.reply_person_perspective(self.windows_handle)
+                    elif is_not_in_car_sum == 20:
+                        # 20次没有上车成功，再调整一下视角
+                        self.__get_task.reply_person_perspective_up(self.windows_handle)
+                    elif is_not_in_car_sum == 30:
+                        # 没救了，放弃了，退组重新接镖吧
+                        if self.__team.close_team(self.windows_handle) is False:
+                            continue
+                        self.next_step.emit(0)  # 全部结束
+                        self.sin_out.emit(f"尝试 {is_not_in_car_sum + 1} 次没有成功上车，队伍解散重组,5秒后重新接镖")
+                        __task_status = 0
+                        time.sleep(5)
+
+                    # 打完怪了，开始继续找镖车
+                    if self.__transport_task.driver_truck_car_v2(self.windows_handle, car_area_type=1) is False:
+
+                        self.sin_out.emit(f"上车失败(次数:{is_not_in_car_sum + 1}),往前走1步")
+                        SetGhostBoards().click_press_and_release_by_key_name_hold_time("w", 0.1)  # 往前走一步
+
+                        # 失败次数+1
+                        mutex.acquire()
+                        is_not_in_car_sum += 1
+                        mutex.release()
+                        continue
+                    __task_status = 6
+                    self.sin_out.emit("步骤六:重新驾车,等待结束...")
+
+                elif __task_status == 6:
+                    # 打怪结束，上车成功，等待任务结束
+                    if self.__transport_task.check_task_status(self.windows_handle) is True:
+                        time.sleep(0.5)
+                        continue
                     else:
-                        self.sin_out.emit("押镖未完成，超时或者镖车被毁")
-                    self.next_step.emit(4)
-                    self.next_step.emit(6)
+                        if self.__transport_task.check_task_end(self.windows_handle):
+                            self.sin_out.emit(f"本次押镖(第{count_i + 1}轮已经完成)")
+                        else:
+                            self.sin_out.emit("押镖未完成，超时或者镖车被毁")
+
                     mutex.acquire()
                     # 参数初始化我
                     is_first_find_car = True  # 是否是首次查找镖车
@@ -178,9 +252,69 @@ class TruckCarTaskQth(QThread):
                     is_car_in = False
                     map_name = ""
                     mutex.release()
-                    self.sin_status_bar_out.emit(f"已经押镖了 {count_i+1} 次", count_i+1)
-
+                    self.sin_status_bar_out.emit(f"已经押镖了 {count_i + 1} 次", count_i + 1)
                     break
+
+            #
+            #
+            #
+            #
+            # person_viewpoint = 1
+            #
+            # pos = coordinate_change_from_windows(self.windows_handle, (100, 100))
+            # SetGhostMouse().move_mouse_to(pos[0], pos[1])
+            #
+            # self.next_step.emit(2)  # 等待上车
+            #
+            # while 1:
+            #
+            #     if self.TruckCarTaskQth_working is False:
+            #         self.quit()
+            #         self.wait()  # 等待线程结束
+            #         self.mutex.unlock()  # 解锁
+            #         self.sin_work_status.emit(False)
+            #         self.sin_out.emit("线程:已停止接取/检测任务")
+            #         return None
+            #
+            #     if is_fight_npc_end is True and is_car_in is True:
+            #         # 如果已经打了怪并且在车旁，那么就可以把处了主线程之外的其他线程都停止了
+            #         self.next_step.emit(0)  # 全部结束
+            #
+            #     self.__get_task.break_other_truck_car(self.windows_handle)  # 不小心点到劫镖了，就退出一下
+            #
+            #     if is_not_in_car_sum > 10:
+            #         self.next_step.emit(0)  # 全部结束
+            #         self.sin_out.emit(f"尝试 {is_not_in_car_sum} 次没有成功上车，队伍解散重组")
+            #         self.__team.close_team(self.windows_handle)
+            #
+            #     if self.__transport_task.check_task_status(self.windows_handle) is False:
+            #
+            #         if self.__get_task.break_npc_talk(self.windows_handle):  # 检测是否误触了NPC对话
+            #             self.sin_out("不小心点到路人NPC对话了")
+            #             time.sleep(2)
+            #             break
+            #
+            #         if self.__transport_task.check_task_end(self.windows_handle):
+            #             self.sin_out.emit(f"本次押镖(第{count_i + 1}轮已经完成)")
+            #         else:
+            #             self.sin_out.emit("押镖未完成，超时或者镖车被毁")
+            #         self.next_step.emit(4)
+            #         self.next_step.emit(6)
+            #         mutex.acquire()
+            #         # 参数初始化我
+            #         is_first_find_car = True  # 是否是首次查找镖车
+            #         is_not_in_car_sum = 0  # 已经连续多少次没有找到镖车
+            #         is_stop_find_car = False  # 是否停止寻找镖车
+            #         is_need_walk = True  # 是否需要走2步前往镖车
+            #         is_fight_npc_end = False  # 是否已经和NPC战斗，如有没有战斗，就直接上车。 如果已经战斗，那么就需要查询点击镖车再上车
+            #         is_fight_npc_visible = False  # 是否出现NPC
+            #         person_viewpoint = 0  # 0，默认，无， 1：平视， 2：俯视
+            #         is_car_in = False
+            #         map_name = ""
+            #         mutex.release()
+            #         self.sin_status_bar_out.emit(f"已经押镖了 {count_i+1} 次", count_i+1)
+            #         break
+
         self.mutex.unlock()  # 解锁
         self.sin_work_status.emit(False)
         self.next_step.emit(0)  # 全部结束
@@ -446,8 +580,8 @@ class TruckTaskFightMonsterQth(QThread):
                     is_fight_npc_visible = False
                     mutex.release()
                     # 修改全局变量，战斗结束，继续寻找车辆
-                    self.next_step.emit(2)  # 打怪结束，继续上车跑路
-                    self.next_step.emit(3)  # 打怪结束，继续保持车辆在屏幕上
+                    # self.next_step.emit(2)  # 打怪结束，继续上车跑路
+                    # self.next_step.emit(3)  # 打怪结束，继续保持车辆在屏幕上
 
 
 class FollowTheTrailOfTruckQth(QThread):

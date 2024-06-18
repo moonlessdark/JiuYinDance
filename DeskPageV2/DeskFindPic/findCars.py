@@ -104,6 +104,39 @@ class TruckCar:
             self._receive_task_road = self._config.truck_task()
         return self._receive_task_road
 
+    def break_other_truck_car(self, hwnd: int):
+        """
+        退出不小心点到别人的镖车触发劫镖
+        """
+        __find_task_car: TruckCarPic = self._get_pic_truck_car()
+        __break_car_talk = self.windows.find_windows_coordinate_rect(handle=hwnd, img=__find_task_car.fight_other_truck_car)
+        if __break_car_talk is None:
+            return False
+        WindowsHandle().activate_windows(hwnd)
+        time.sleep(0.1)
+        SetGhostBoards().click_press_and_release_by_code(27)
+        time.sleep(0.2)
+        return True
+
+    def break_npc_talk(self, hwnd: int):
+        """
+        退出和NPC对话的窗口
+        """
+        __find_task: TruckCarReceiveTask = self._get_pic_receive_task()
+        __break_npc_talk = self.windows.find_windows_coordinate_rect(handle=hwnd, img=__find_task.break_npc_talk)
+        __receive_task_talk = self.windows.find_windows_coordinate_rect(handle=hwnd, img=__find_task.receive_task_talk)
+        if __break_npc_talk is None:
+            return False
+        elif __receive_task_talk is not None:
+            # 如果有接任务的按钮，说明不是点到路上到处走的NPC了
+            return True
+        WindowsHandle().activate_windows(hwnd)
+        time.sleep(0.1)
+        SetGhostMouse().move_mouse_to(__break_npc_talk[0], __break_npc_talk[1])
+        time.sleep(0.5)
+        SetGhostMouse().click_mouse_left_button()
+        return True
+
     @staticmethod
     def reply_person_perspective(hwnd: int):
         """
@@ -210,11 +243,10 @@ class TruckCar:
             2、打怪失败
             3、被四害干扰了
             """
-            # print("未找到押镖状态")
             return False
         return True
 
-    def _check_task_end(self, hwnd: int) -> bool:
+    def check_task_end(self, hwnd: int) -> bool:
         """
         检测押镖是否结束
         """
@@ -316,7 +348,7 @@ class TruckCar:
         if _v3_res is None:
             return None
         if display_area == 0:
-            _v3_new_pic = image.pic_content[int(image.pic_height * 0.1):int(image.pic_height * 0.6), int(image.pic_width * 0.4):int(image.pic_width * 0.6)]
+            _v3_new_pic = image.pic_content[int(image.pic_height * 0.1):int(image.pic_height * 0.6), int(image.pic_width * 0.3):int(image.pic_width * 0.7)]
         else:
             _v3_new_pic = image.pic_content[int(image.pic_height * 0.1):int(image.pic_height * 0.6), int(image.pic_width * 0.3):int(image.pic_width * 0.7)]
 
@@ -457,46 +489,41 @@ class TeamFunc(TruckCar):
     def __init__(self):
         super().__init__()
 
-    def create_team(self, hwnd, work_status: bool = True):
+    def create_team(self, hwnd: int) -> bool:
         """
         创建队伍
         """
         find_team: Team = self._get_pic_team()
         flag_status = find_team.flag_team_status
-        while 1:
 
-            if work_status is False:
-                """
-                停止任务
-                """
-                return False
+        __flag_status_rec = self.windows.find_windows_coordinate_rect(hwnd, img=self._load_pic(flag_status))
+        if __flag_status_rec is not None:
+            """
+            如果角色头像左侧有组队的标志
+            """
+            return True
 
-            rec = self.windows.find_windows_coordinate_rect(hwnd, img=self._load_pic(flag_status))
-            if rec is None:
-                """
-                说明没有队伍，需要创建一下
-                """
-                # print("未检测到队伍，进行创建")
-                WindowsHandle().activate_windows(hwnd)
-                time.sleep(0.2)
-                SetGhostBoards().click_press_and_release_by_key_name("o")
-                time.sleep(1)
+        WindowsHandle().activate_windows(hwnd)
+        time.sleep(0.2)
+        SetGhostBoards().click_press_and_release_by_key_name("o")
+        time.sleep(1)
 
-                if self.windows.find_windows_coordinate_rect(handle=hwnd, img=find_team.leave_team) is not None:
-                    """
-                    如果有离开的按钮,说明当前已经是组队状态
-                    """
-                    SetGhostBoards().click_press_and_release_by_key_name("o")
-                    return True
-                rec_create = self.windows.find_windows_coordinate_rect(handle=hwnd, img=find_team.create_team)
-                if rec_create is not None:
-                    SetGhostMouse().move_mouse_to(rec_create[0], rec_create[1])
-                    time.sleep(1)
-                    SetGhostMouse().click_mouse_left_button()
-                    time.sleep(1)
-                    SetGhostBoards().click_press_and_release_by_key_name("o")
-            else:
-                return True
+        if self.windows.find_windows_coordinate_rect(handle=hwnd, img=find_team.leave_team) is not None:
+            """
+            如果有离开的按钮,说明当前已经是组队状态
+            """
+            SetGhostBoards().click_press_and_release_by_key_name("o")
+            return True
+
+        rec_create = self.windows.find_windows_coordinate_rect(handle=hwnd, img=find_team.create_team)
+        if rec_create is not None:
+            SetGhostMouse().move_mouse_to(rec_create[0], rec_create[1])
+            time.sleep(1)
+            SetGhostMouse().click_mouse_left_button()
+            time.sleep(1)
+            SetGhostBoards().click_press_and_release_by_key_name("o")
+            return True
+        return False
 
     def add_team_member(self):
         """
@@ -714,34 +741,6 @@ class ReceiveTruckTask(TruckCar):
     def __init__(self):
         super().__init__()
 
-    def break_other_truck_car(self, hwnd: int):
-        """
-        退出不小心点到别人的镖车触发劫镖
-        """
-        __find_task_car: TruckCarPic = self._get_pic_truck_car()
-        __break_car_talk = self.windows.find_windows_coordinate_rect(handle=hwnd, img=__find_task_car.fight_other_truck_car)
-        if __break_car_talk is None:
-            return False
-        WindowsHandle().activate_windows(hwnd)
-        SetGhostBoards().click_press_and_release_by_code(27)
-        time.sleep(0.5)
-        return True
-
-    def break_npc_talk(self, hwnd: int):
-        """
-        退出和NPC对话的窗口
-        """
-        __find_task: TruckCarReceiveTask = self._get_pic_receive_task()
-        __break_npc_talk = self.windows.find_windows_coordinate_rect(handle=hwnd, img=__find_task.break_npc_talk)
-        __receive_task_talk = self.windows.find_windows_coordinate_rect(handle=hwnd, img=__find_task.receive_task_talk)
-        if __break_npc_talk is None:
-            return False
-        WindowsHandle().activate_windows(hwnd)
-        SetGhostMouse().move_mouse_to(__break_npc_talk[0], __break_npc_talk[1])
-        time.sleep(1)
-        SetGhostMouse().click_mouse_left_button()
-        return True
-
     def receive_task(self, hwnd: int):
         """
         接取任务,
@@ -759,10 +758,9 @@ class ReceiveTruckTask(TruckCar):
                 """
                 已经点开了NPC
                 """
-                # print(f"ReceiveTruckTask: 已经找到 接取任务的NPC 图标({truck_npc_receive_task_talk[0]},{truck_npc_receive_task_talk[1]})")
                 WindowsHandle().activate_windows(hwnd)
                 SetGhostMouse().move_mouse_to(truck_npc_receive_task_talk[0], truck_npc_receive_task_talk[1])
-                time.sleep(1)
+                time.sleep(0.2)
                 SetGhostMouse().click_mouse_left_button()
                 break
         while 1:
@@ -789,10 +787,8 @@ class ReceiveTruckTask(TruckCar):
                 """
                 选择押镖目的地
                 """
-                # print(f"ReceiveTruckTask: 已经找到 目的地 图标({truck_npc_receive_task_address[0]},{truck_npc_receive_task_address[1]})")
-
                 SetGhostMouse().move_mouse_to(truck_npc_receive_task_address[0], truck_npc_receive_task_address[1])
-                time.sleep(1)
+                time.sleep(0.2)
                 SetGhostMouse().click_mouse_left_button()
                 break
         while 1:
@@ -804,10 +800,8 @@ class ReceiveTruckTask(TruckCar):
                 """
                 选择镖车的车型
                 """
-                # print(f"ReceiveTruckTask: 已经找到 镖车车型 图标({truck_car_type[0]},{truck_car_type[1]})")
-
                 SetGhostMouse().move_mouse_to(truck_car_type[0], truck_car_type[1])
-                time.sleep(1)
+                time.sleep(0.2)
                 SetGhostMouse().click_mouse_left_button()
                 break
         while 1:
@@ -820,10 +814,8 @@ class ReceiveTruckTask(TruckCar):
                 """
                 接镖
                 """
-                # print(f"ReceiveTruckTask: 已经找到 接镖 图标({truck_receive_task[0]},{truck_receive_task[1]})")
-
                 SetGhostMouse().move_mouse_to(truck_receive_task[0], truck_receive_task[1])
-                time.sleep(1)
+                time.sleep(0.2)
                 SetGhostMouse().click_mouse_left_button()
                 break
         while 1:
@@ -836,12 +828,14 @@ class ReceiveTruckTask(TruckCar):
                 """
                 确认接镖
                 """
-                # print(f"ReceiveTruckTask: 已经找到 确认接镖 图标({truck_receive_task_confirm[0]},{truck_receive_task_confirm[1]})")
-
                 SetGhostMouse().move_mouse_to(truck_receive_task_confirm[0], truck_receive_task_confirm[1])
-                time.sleep(1)
+                time.sleep(0.2)
                 SetGhostMouse().click_mouse_left_button()
                 break
+        __find_task: TruckCarReceiveTask = self._get_pic_receive_task()
+        __break_npc_talk = self.windows.find_windows_coordinate_rect(handle=hwnd, img=__find_task.break_npc_talk)
+        if __break_npc_talk is not None:
+            SetGhostBoards().click_press_and_release_by_code(27)
         return True
 
 
@@ -863,9 +857,10 @@ class TransportTaskFunc(TruckCar):
             # print(f"TransportTaskFunc: 找到了 镖车(驾车) 的坐标({transport_pos[0]},{transport_pos[1]})")
             SetGhostMouse().move_mouse_to(transport_pos[0], transport_pos[1])
             time.sleep(0.1)
-            SetGhostMouse().click_mouse_left_button()
 
+            SetGhostMouse().click_mouse_left_button()
             time.sleep(0.5)
+
             find_pic = self.windows.capture(hwnd)
             find_pics = find_pic.pic_content[int(find_pic.pic_height * 0.1):int(find_pic.pic_height * 0.5),
                         int(find_pic.pic_width * 0.3):int(find_pic.pic_width * 0.7)]
@@ -962,6 +957,54 @@ class TransportTaskFunc(TruckCar):
             # print("镖车不在在屏幕上，转个45度")
         return None
 
+    def find_truck_car_center_pos_v2(self, hwnd: int, display_area: int) -> tuple or None:
+        """
+        :param hwnd:
+        :param display_area: 0 接镖后的查询，1：打怪后的查询
+        """
+        res_car = self.find_car_pos_in_display(hwnd)
+        if res_car is None:
+            # 没有找到镖车，先顺时针旋转45度，等待下次再进来
+            WindowsHandle().activate_windows(hwnd)
+            time.sleep(0.1)
+            SetGhostBoards().click_press_and_release_by_key_code_hold_time(37, 0.4)
+            time.sleep(0.5)
+            return None
+        res_center_car = self.find_car_in_center_display_v3(hwnd=hwnd, display_area=display_area)
+        if res_center_car is None:
+            # 说明不在符合条件的范围内，需要旋转一下
+
+            __res_car = self.find_car_pos_in_display(hwnd)
+            if __res_car is None:
+                # 额外判断一下，一般不会出现
+                # 居然没有镖车了？神奇，再转一下
+                SetGhostBoards().click_press_and_release_by_key_code_hold_time(37, 0.1)
+                return None
+
+            cap = self.windows.capture(hwnd)
+            __car_quadrant: int = self.check_target_pos_direction(cap, target_pos=__res_car)
+            if __car_quadrant == 1:
+                """a
+                如果在第一象限，但是不符合规则；那么就向 左侧 转一下
+                """
+                SetGhostBoards().click_press_and_release_by_key_code_hold_time(37, 0.1)
+            elif __car_quadrant == 2:
+                """
+                如果在第二象限，但是不符合规则；那么就向 右侧 转一下
+                """
+                SetGhostBoards().click_press_and_release_by_key_code_hold_time(39, 0.1)
+            elif __car_quadrant == 3:
+                """
+                如果在第三象限，就转一个大的，转到第一象限去
+                """
+                SetGhostBoards().click_press_and_release_by_key_code_hold_time(37, 0.4)
+            elif __car_quadrant == 4:
+                """
+                如果在第四象限，就转一个大的，转到第二象限去
+                """
+                SetGhostBoards().click_press_and_release_by_key_code_hold_time(39, 0.4)
+        return res_center_car
+
     def find_driver_truck_type(self, hwnd: int):
         """
         查询 驾车 按钮有没有出现
@@ -974,23 +1017,51 @@ class TransportTaskFunc(TruckCar):
         """
         return self._check_task_status(hwnd)
 
-    def check_task_end(self, hwnd: int) -> bool:
+    """
+    寻找镖车，并上车
+    """
+    def driver_truck_car(self, hwnd: int, car_area_type: int, map_name: str) -> bool:
         """
-        检测押镖是否结束
+        寻找镖车，并上车
+        :param hwnd: 句柄
+        :param car_area_type: 查找车在屏幕上的区域范围，0是接镖后的驾车，1是打怪后的上车
+        :param map_name: 地图名称，用于判断要不要走2步
         """
-        if self._check_task_end(hwnd):
-            return True
-        return False
-
-    def check_person_move_status(self, hwnd: int, check_wait_time: float):
-        """
-        检测指定时间的前后，地图坐标是否有更新
-        """
-        pos, _, _ = self.ocr.get_person_map(self.windows.capture(hwnd).pic_content)
-        time.sleep(check_wait_time)
-        if self._check_person_move_status(hwnd, pos) is False:
+        __res_center_pos = self.find_truck_car_center_pos_v2(hwnd, car_area_type)
+        if __res_center_pos is None:
+            return False
+        if map_name in ["金陵", "洛阳", "燕京"]:
+            if map_name == "金陵":
+                SetGhostBoards().click_press_and_release_by_key_name_hold_time("w", 2.5)  # 金陵太远了
+            else:
+                SetGhostBoards().click_press_and_release_by_key_name_hold_time("w", 2)  # 往前走一步
+        if self.transport_truck(hwnd) is False:
             return False
         return True
+
+    def driver_truck_car_v2(self, hwnd: int, car_area_type: int) -> bool:
+        __res_center_pos = self.find_truck_car_center_pos_v2(hwnd, car_area_type)
+        if __res_center_pos is None:
+            return False
+        SetGhostMouse().move_mouse_to(__res_center_pos[0], __res_center_pos[1])  # 鼠标移动到初始化位置
+        time.sleep(0.5)
+
+        for i in range(5):
+            pos = SetGhostMouse().get_mouse_x_y()
+            #  先下移50个像素点击一次
+            SetGhostMouse().move_mouse_to(pos[0], pos[1] + 50)
+            time.sleep(0.2)
+            SetGhostMouse().click_mouse_left_button()
+            time.sleep(0.5)
+
+            self.break_other_truck_car(hwnd)  # 不小心点到劫镖了，就退出一下
+            self.break_npc_talk(hwnd)
+
+            if self.transport_truck(hwnd) is False:
+                # 没有没有找到车辆
+                continue
+            return True
+        return False
 
 
 class UserGoods(TruckCar):
@@ -1064,3 +1135,5 @@ class UserGoods(TruckCar):
                     return True
         SetGhostBoards().click_press_and_release_by_key_code_hold_time(66, 0.3)
         return False
+
+
