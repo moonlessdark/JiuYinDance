@@ -642,11 +642,14 @@ class ReceiveTruckTask(TruckCar):
     def __init__(self):
         super().__init__()
 
-    def receive_task(self, hwnd: int) -> bool:
+    def receive_task(self, hwnd: int, map_name: str) -> bool:
         """
         接取任务,
         暂时只实现了成都和燕京
         """
+
+        self._area_map = map_name
+
         find_task: TruckCarReceiveTask = self._get_pic_receive_task()
 
         time.sleep(1)
@@ -835,14 +838,16 @@ class TransportTaskFunc(TruckCar):
         :param car_area_type: 查找车在屏幕上的区域范围，0是接镖后的驾车，1是打怪后的上车
         :param map_name: 地图名称，用于判断要不要走2步
         """
-        __res_center_pos = self.find_truck_car_center_pos_v2(hwnd, car_area_type)
-        if __res_center_pos is None:
-            return False
-        if map_name in ["金陵", "洛阳", "燕京"]:
-            if map_name == "金陵":
-                SetGhostBoards().click_press_and_release_by_key_name_hold_time("w", 2.5)  # 金陵太远了
-            else:
-                SetGhostBoards().click_press_and_release_by_key_name_hold_time("w", 2)  # 往前走一步
+
+        if map_name not in ["成都", "苏州"]:
+            __res_center_pos = self.find_truck_car_center_pos_v2(hwnd, car_area_type)
+            if __res_center_pos is None:
+                return False
+            if map_name in ["金陵", "洛阳", "燕京"]:
+                if map_name == "金陵":
+                    SetGhostBoards().click_press_and_release_by_key_name_hold_time("w", 2.5)  # 金陵太远了
+                else:
+                    SetGhostBoards().click_press_and_release_by_key_name_hold_time("w", 2)  # 往前走一步
         if self.transport_truck(hwnd) is False:
             return False
         return True

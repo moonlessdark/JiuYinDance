@@ -133,7 +133,7 @@ class TruckCarTaskQth(QThread):
                 elif __task_status == 2:
 
                     # 正在跑路中，等待进入接取任务界面
-                    if self.__get_task.receive_task(self.windows_handle) is False:
+                    if self.__get_task.receive_task(self.windows_handle, map_name) is False:
                         continue
                     __task_status = 3
                     self.next_step.emit(1)  # 等待劫镖NPC出现
