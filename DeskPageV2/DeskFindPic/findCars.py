@@ -167,23 +167,6 @@ class TruckCar:
         time.sleep(0.5)
 
     @staticmethod
-    def _check_target_pos_is_center(img: PicCapture, target_pos: tuple) -> bool:
-        """
-        检查传入的坐标是否是在屏幕中间的区域
-        """
-        __img = img
-        __w, __h = __img.pic_width, __img.pic_height
-
-        if int(__w * 0.4) < target_pos[0] < int(__w * 0.60) and target_pos[1] < int(__h * 0.5):
-            """
-            如果目标在屏幕的上半区域
-            """
-            # print("镖车处于屏幕的上半区域，符合要求")
-            return True
-        # "镖车所处的坐标不符合要求")
-        return False
-
-    @staticmethod
     def check_target_pos_direction(img: PicCapture, target_pos: tuple) -> int:
         """
         检查传入的坐标是否是在屏幕中间的区域
@@ -194,7 +177,7 @@ class TruckCar:
 
         center_x = int(__w * 0.5)  # 屏幕正中间
         center_y = int(__h * 0.5)  # 屏幕正中间
-        # print(f"图片的宽高 {__w}_{__h}, 中心坐标是 ({center_x},{center_y})")
+        # print(f"图片的宽高 {__w}_{__h}, 中心坐标是 ({center_x},{center_y}), 目标坐标：{target_pos[0]}_{target_pos[1]}")
 
         if target_pos[0] < center_x:
             if target_pos[1] < center_y:
@@ -256,32 +239,6 @@ class TruckCar:
             return True
         return False
 
-    def _check_person_move_status(self, hwnd: int, old_pos: int):
-        """
-        游戏人物是否在移动
-        :param old_pos: 旧地图坐标
-        """
-        pos, _, _ = self.ocr.get_person_map(self.windows.capture(hwnd).pic_content)
-        if old_pos == pos:
-            return False
-        return True
-
-    def __find_car_in_display(self, hwnd: int, image: np.ndarray = None):
-        """
-        查询当前页面是否存在镖车
-        """
-        if image is not None:
-            __content = image
-        else:
-            __img_car = self.windows.capture(hwnd)
-            __h, __w, __content = __img_car.pic_height, __img_car.pic_width, __img_car.pic_content
-        __cos_text = self.ocr.find_truck_car_ocr(__content, "的镖车")
-        if __cos_text is not None:
-            driver_res = coordinate_change_from_windows(hwnd, __cos_text)
-            # print(f"DriverTruckCarFuc: 发现了 运镖(驾车) 文字({driver_res[0]},{driver_res[1]})")
-            return driver_res
-        return None
-
     def _find_driver_truck_type(self, hwnd: int):
         """
         检查 运镖(驾车) 按钮。
@@ -296,44 +253,7 @@ class TruckCar:
             return cos
         return None
 
-    def find_car_center_pos_in_display(self, hwnd: int):
-        """
-        查询小车是不是在屏幕中间
-        """
-        __cap_display = self.windows.capture(hwnd)
-        rec = self.__find_car_in_display(hwnd=hwnd, image=__cap_display.pic_content)
-        if rec is not None:
-            """
-            找到车了，把视角转到这个车aw
-            """
-            if self._check_target_pos_is_center(__cap_display, rec):
-                # print(f"转OK了, 当前坐标是 ({rec[0], rec[1]})")
-                return coordinate_change_from_windows(hwnd, rec)
-            # print("还没有转到符合条件的地方")
-        return None
-
-    def find_car_center_pos_in_display_v2(self, hwnd: int):
-        """
-        查询小车是不是在屏幕中间
-        """
-        time.sleep(0.5)
-        __im = self.windows.capture(hwnd)
-        _rec = self.ocr.find_truck_car_ocr(__im.pic_content, "的镖车")
-
-        if _rec is not None:
-            """
-            找到车了，把视角转到这个车
-            """
-            __new_pic = __im.pic_content[int(__im.pic_height * 0.1):int(__im.pic_height * 0.6), int(__im.pic_width * 0.3):int(__im.pic_width * 0.7)]
-            __rec = self.ocr.find_truck_car_ocr(__new_pic, "的镖车")
-
-            if __rec is not None:
-                # print("镖车大概在屏幕中间了V2版本")
-                return coordinate_change_from_windows(hwnd, _rec)
-                # print("还没有转到符合条件的地方")
-        return None
-
-    def find_car_in_center_display_v3(self, hwnd: int = None, image: PicCapture = None, display_area: int = 0):
+    def find_car_in_center_display_v3(self, hwnd: int = None, image: PicCapture = None, display_area: int = 0) -> bool:
         """
         :param hwnd: 句柄
         :param image: 图片
@@ -344,39 +264,20 @@ class TruckCar:
         else:
             image = self.windows.capture(hwnd)
             __h, __w, __content = image.pic_height, image.pic_width, image.pic_content
-        _v3_res = self.__find_car_in_display(hwnd=hwnd, image=__content)
-        if _v3_res is None:
-            return None
         if display_area == 0:
-            _v3_new_pic = image.pic_content[int(image.pic_height * 0.1):int(image.pic_height * 0.6), int(image.pic_width * 0.3):int(image.pic_width * 0.7)]
+            _v3_new_pic = image.pic_content[1:int(image.pic_height * 0.6), int(image.pic_width * 0.4):int(image.pic_width * 0.6)]
         else:
-            _v3_new_pic = image.pic_content[int(image.pic_height * 0.1):int(image.pic_height * 0.6), int(image.pic_width * 0.3):int(image.pic_width * 0.7)]
+            _v3_new_pic = image.pic_content[1:int(image.pic_height * 0.6), int(image.pic_width * 0.3):int(image.pic_width * 0.7)]
 
         __rec = self.ocr.find_truck_car_ocr(_v3_new_pic, "的镖车")
-        if __rec is not None:
-            # print("镖车大概在屏幕中间了V3版本")
-            __images = self.windows.capture(hwnd)
-            __rec = self.ocr.find_truck_car_ocr(__images.pic_content, "的镖车")
-            if __rec is None:
-                return None
-            return coordinate_change_from_windows(hwnd, __rec)
-        return None
+        if __rec is None:
+            return False
+        return True
 
-    def find_car_pos_in_display(self, hwnd: int):
-        """
-        查询小车在哪
-        """
-        self.get_map_and_person(hwnd)
-        im = self.windows.capture(hwnd)
-        rec = self.ocr.find_truck_car_ocr(im.pic_content, "的镖车")
-
+    def find_car_pos_in_display_v2(self, hwnd: int, pic_content: np.ndarray) -> tuple or None:
+        rec = self.ocr.find_truck_car_ocr(pic_content, "的镖车")
         if rec is not None:
-            """
-            找到车了，把视角转到这个车
-            """
-            # print("屏幕出现镖车了")
-            return coordinate_change_from_windows(hwnd, rec)
-        # print("还没有转到符合条件的地方")
+            return rec
         return None
 
 
@@ -832,6 +733,7 @@ class ReceiveTruckTask(TruckCar):
                 time.sleep(0.2)
                 SetGhostMouse().click_mouse_left_button()
                 break
+        time.sleep(0.5)
         __find_task: TruckCarReceiveTask = self._get_pic_receive_task()
         __break_npc_talk = self.windows.find_windows_coordinate_rect(handle=hwnd, img=__find_task.break_npc_talk)
         if __break_npc_talk is not None:
@@ -871,118 +773,30 @@ class TransportTaskFunc(TruckCar):
                 # print("TransportTaskFunc: 出现“距离NPC太远”的提示")
                 return False
             # 鼠标离镖车远一点
-            pos = coordinate_change_from_windows(hwnd, (100, 100))
+            pos = coordinate_change_from_windows(hwnd, (1, 1))
             SetGhostMouse().move_mouse_to(pos[0], pos[1])
             return True
         # print(f"TransportTaskFunc: 未找到镖车的 “驾车” 按钮")
         return False
-
-    def find_truck_car_in_display(self, hwnd: int) -> bool:
-        """
-        查找镖车释放在屏幕中
-        """
-        # 看看镖车在不在
-        res_car = self.find_car_pos_in_display(hwnd)
-        if res_car is not None:
-            return True
-        return False
-
-    def find_car_pos_in_display_quadrant(self, hwnd: int) -> int:
-        """
-        查找镖车在第几象限
-        :return 0 表示没找到镖车，1-4表示1-4象限
-        """
-        __res_car = self.find_car_pos_in_display(hwnd)
-        if __res_car is None:
-            return 0
-        cap = self.windows.capture(hwnd)
-        __car_quadrant: int = self.check_target_pos_direction(cap, target_pos=__res_car)
-        return __car_quadrant
-
-    def find_truck_car_center_pos(self, hwnd: int, find_count: int = 10, is_break: bool = False) -> tuple or None:
-        """
-        保持镖车在屏幕中间
-        """
-        for i in range(find_count):
-            time.sleep(1)
-
-            if is_break:
-                # 强行终止
-                break
-
-            # 看看镖车在不在
-            res_car = self.find_car_pos_in_display(hwnd)
-            if res_car is not None:
-                # 如果镖车在，那么就看看在不在中间
-                while 1:
-
-                    if is_break:
-                        # 强行终止
-                        break
-                    res_center_car = self.find_car_in_center_display_v3(hwnd=hwnd, display_area=0)
-                    if res_center_car is not None:
-                        # 在中间
-                        # print("镖车在屏幕中间位置")
-                        return res_center_car
-                    # print("镖车在屏幕上，但是不在中间位置")
-                    __res_car = self.find_car_pos_in_display(hwnd)
-                    if __res_car is None:
-                        return None
-                    cap = self.windows.capture(hwnd)
-                    __car_quadrant: int = self.check_target_pos_direction(cap, target_pos=__res_car)
-                    # print(f"镖车在屏幕的第 {__car_quadrant} 象限")
-                    if __car_quadrant == 1:
-                        """a
-                        如果在第一象限，但是不符合规则；那么就向 左侧 转一下
-                        """
-                        SetGhostBoards().click_press_and_release_by_key_code_hold_time(37, 0.1)
-                    elif __car_quadrant == 2:
-                        """
-                        如果在第二象限，但是不符合规则；那么就向 右侧 转一下
-                        """
-                        SetGhostBoards().click_press_and_release_by_key_code_hold_time(39, 0.1)
-                    elif __car_quadrant == 3:
-                        """
-                        如果在第三象限，就转一个大的，转到第一象限去
-                        """
-                        SetGhostBoards().click_press_and_release_by_key_code_hold_time(37, 0.4)
-                    elif __car_quadrant == 4:
-                        """
-                        如果在第四象限，就转一个大的，转到第二象限去
-                        """
-                        SetGhostBoards().click_press_and_release_by_key_code_hold_time(39, 0.4)
-            WindowsHandle().activate_windows(hwnd)
-            SetGhostBoards().click_press_and_release_by_key_code_hold_time(37, 0.4)
-            time.sleep(0.5)
-            # print("镖车不在在屏幕上，转个45度")
-        return None
 
     def find_truck_car_center_pos_v2(self, hwnd: int, display_area: int) -> tuple or None:
         """
         :param hwnd:
         :param display_area: 0 接镖后的查询，1：打怪后的查询
         """
-        res_car = self.find_car_pos_in_display(hwnd)
+        time.sleep(0.5)
+        __cap = self.windows.capture(hwnd)
+        res_car = self.find_car_pos_in_display_v2(hwnd, __cap.pic_content)  # 拿出坐标
         if res_car is None:
             # 没有找到镖车，先顺时针旋转45度，等待下次再进来
             WindowsHandle().activate_windows(hwnd)
             time.sleep(0.1)
             SetGhostBoards().click_press_and_release_by_key_code_hold_time(37, 0.4)
-            time.sleep(0.5)
             return None
-        res_center_car = self.find_car_in_center_display_v3(hwnd=hwnd, display_area=display_area)
-        if res_center_car is None:
-            # 说明不在符合条件的范围内，需要旋转一下
-
-            __res_car = self.find_car_pos_in_display(hwnd)
-            if __res_car is None:
-                # 额外判断一下，一般不会出现
-                # 居然没有镖车了？神奇，再转一下
-                SetGhostBoards().click_press_and_release_by_key_code_hold_time(37, 0.1)
-                return None
-
-            cap = self.windows.capture(hwnd)
-            __car_quadrant: int = self.check_target_pos_direction(cap, target_pos=__res_car)
+        res_center_car_bool: bool = self.find_car_in_center_display_v3(image=__cap, display_area=display_area)  # 检测图片是否在中间
+        if res_center_car_bool is False:
+            # cap = self.windows.capture(hwnd)
+            __car_quadrant: int = self.check_target_pos_direction(__cap, target_pos=res_car)
             if __car_quadrant == 1:
                 """a
                 如果在第一象限，但是不符合规则；那么就向 左侧 转一下
@@ -1003,13 +817,8 @@ class TransportTaskFunc(TruckCar):
                 如果在第四象限，就转一个大的，转到第二象限去
                 """
                 SetGhostBoards().click_press_and_release_by_key_code_hold_time(39, 0.4)
-        return res_center_car
-
-    def find_driver_truck_type(self, hwnd: int):
-        """
-        查询 驾车 按钮有没有出现
-        """
-        return self._find_driver_truck_type(hwnd)
+            return None
+        return coordinate_change_from_windows(hwnd, res_car)
 
     def check_task_status(self, hwnd: int) -> bool:
         """

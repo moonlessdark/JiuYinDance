@@ -9,8 +9,7 @@ from PySide6.QtWidgets import QMessageBox
 from DeskPageV2.DeskGUIQth.UIQth import QProgressBarQth
 from DeskPageV2.DeskGUIQth.danceQth import (DanceThByFindPic, ScreenGameQth)
 from DeskPageV2.DeskGUIQth.keyAutoQth import AutoPressKeyQth
-from DeskPageV2.DeskGUIQth.truckQth import (TruckCarTaskQth, TruckTaskFightMonsterQth, TruckTaskFindCarQth,
-                                            FollowTheTrailOfTruckQth)
+from DeskPageV2.DeskGUIQth.truckQth import (TruckCarTaskQth, TruckTaskFightMonsterQth)
 from DeskPageV2.DeskGUIQth.marketQth import MarKetQth
 from DeskPageV2.DeskPageGUI.MainPage import MainGui
 from DeskPageV2.DeskTools.DmSoft.get_dm_driver import getDM, getWindows, getKeyBoardMouse
@@ -44,8 +43,6 @@ class Dance(MainGui):
         # 押镖
         self.th_truck_task = TruckCarTaskQth()  # 运镖
         self.th_truck_fight_monster = TruckTaskFightMonsterQth()  # 打怪
-        self.th_truck_find_car = TruckTaskFindCarQth()  # 找NPC
-        self.th_follow_truck = FollowTheTrailOfTruckQth()  # 查找镖车
 
         # # 键盘驱动对象
         self.dm_window = getWindows()
@@ -91,15 +88,8 @@ class Dance(MainGui):
         self.th_truck_task.sin_work_status.connect(self._th_execute_stop)
         self.th_truck_task.sin_status_bar_out.connect(self.print_status_track_bar)
 
-        self.th_truck_find_car.sin_out.connect(self.print_logs)
-        self.th_truck_find_car.next_step.connect(self.truck_task_func_switch)
-        self.th_truck_find_car.sin_work_status.connect(self._th_execute_stop)
-
         self.th_truck_fight_monster.sin_out.connect(self.print_logs)
         self.th_truck_fight_monster.next_step.connect(self.truck_task_func_switch)
-
-        self.th_follow_truck.sin_out.connect(self.print_logs)
-        self.th_follow_truck.next_step.connect(self.truck_task_func_switch)
 
         self.text_browser_print_log.textChanged.connect(lambda: self.text_browser_print_log.moveCursor(QTextCursor.End))
 
@@ -635,29 +625,22 @@ class Dance(MainGui):
                 self.th_truck_fight_monster.start()
         elif step == 2:
             # self.print_logs("开启线程:查找镖车...")
-            if self.th_truck_find_car.isRunning() is False:
-                self.th_truck_find_car.get_param(windows_handle, True)
-                self.th_truck_find_car.start()
+            pass
         elif step == 3:
             # self.print_logs("开启线程:保持镖车在屏幕中心...")
-            if self.th_follow_truck.isRunning() is False:
-
-                self.th_follow_truck.get_param(windows_handle, True)
-                self.th_follow_truck.start()
+            pass
         elif step == 4:
             # self.print_logs("关闭线程:保持镖车在屏幕中心...")
-            self.th_truck_find_car.get_param(windows_handle, False)
+            pass
         elif step == 5:
             # self.print_logs("关闭线程:查找镖车...")
-            self.th_follow_truck.get_param(windows_handle, False)  # 停止跟踪车辆
+            pass
         elif step == 0:
             """
             如果是其他值，一般是 0，就表示结束
             """
             # self.print_logs("本次押镖结束,即将关闭所有线程")
-            self.th_follow_truck.get_param(windows_handle, False)  # 停止跟踪车辆
             self.th_truck_fight_monster.get_param(windows_handle, False)  # 停止打怪
-            self.th_truck_find_car.get_param(windows_handle, False)  # 停止找车
 
     def get_screen_market_goods_list(self):
         """
