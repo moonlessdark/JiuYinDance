@@ -642,28 +642,27 @@ class ReceiveTruckTask(TruckCar):
     def __init__(self):
         super().__init__()
 
-    def receive_task(self, hwnd: int):
+    def receive_task(self, hwnd: int) -> bool:
         """
         接取任务,
         暂时只实现了成都和燕京
         """
         find_task: TruckCarReceiveTask = self._get_pic_receive_task()
-        self.get_map_and_person(hwnd)
-        while 1:
-            time.sleep(1)
-            truck_npc_receive_task_talk = self.windows.find_windows_coordinate_rect(handle=hwnd,
-                                                                                    img=find_task.receive_task_talk)
-            if truck_npc_receive_task_talk is None:
-                continue
-            else:
-                """
-                已经点开了NPC
-                """
-                WindowsHandle().activate_windows(hwnd)
-                SetGhostMouse().move_mouse_to(truck_npc_receive_task_talk[0], truck_npc_receive_task_talk[1])
-                time.sleep(0.2)
-                SetGhostMouse().click_mouse_left_button()
-                break
+
+        time.sleep(1)
+        truck_npc_receive_task_talk = self.windows.find_windows_coordinate_rect(handle=hwnd,
+                                                                                img=find_task.receive_task_talk)
+        if truck_npc_receive_task_talk is None:
+            return False
+        else:
+            """
+            已经点开了NPC
+            """
+            WindowsHandle().activate_windows(hwnd)
+            SetGhostMouse().move_mouse_to(truck_npc_receive_task_talk[0], truck_npc_receive_task_talk[1])
+            time.sleep(0.2)
+            SetGhostMouse().click_mouse_left_button()
+
         while 1:
             time.sleep(1)
 
