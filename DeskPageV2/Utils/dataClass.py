@@ -67,6 +67,7 @@ class Goods:
     run_goods: str = dataclasses.field(default_factory=str)
     run_goods_ready: str = dataclasses.field(default_factory=str)
     run_goods_buff: str = dataclasses.field(default_factory=str)
+    null_blood: str = dataclasses.field(default_factory=str)
 
 
 @dataclasses.dataclass
@@ -148,6 +149,7 @@ class FindTruckCarTaskNPC:
     qin_xiu: str = dataclasses.field(default_factory=str)  # 勤修图标
     qin_xiu_activity_list: str = dataclasses.field(default_factory=str)  # 活动列表
     qin_xiu_truck_car_task: str = dataclasses.field(default_factory=str)  # 日常运镖
+    bang_hui: str = dataclasses.field(default_factory=str)  # 按N之后的帮会
 
     # 成都NPC
     task_point_chengdu: str = dataclasses.field(default_factory=str)
@@ -173,6 +175,14 @@ class Config:
     area_dance_threshold: float = dataclasses.field(default_factory=float)
     is_debug: bool = dataclasses.field(default_factory=bool)
     truck_car_sum: int = dataclasses.field(default_factory=int)
+
+
+@dataclasses.dataclass
+class MapPic:
+    pox_x: str = dataclasses.field(default_factory=str)
+    pox_y: str = dataclasses.field(default_factory=str)
+    search_pos: str = dataclasses.field(default_factory=str)
+    result_point: str = dataclasses.field(default_factory=str)
 
 
 @dataclasses.dataclass

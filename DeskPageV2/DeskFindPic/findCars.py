@@ -11,7 +11,7 @@ from DeskPageV2.DeskTools.WindowsSoft.WindowsCapture import WindowsCapture
 from DeskPageV2.DeskTools.WindowsSoft.WindowsHandle import WindowsHandle
 from DeskPageV2.DeskTools.WindowsSoft.findOcr import FindPicOCR
 from DeskPageV2.DeskTools.WindowsSoft.get_windows import PicCapture, find_area
-from DeskPageV2.Utils.dataClass import FindTruckCarTaskNPC, Team, TruckCarPic, TruckCarReceiveTask, Goods
+from DeskPageV2.Utils.dataClass import FindTruckCarTaskNPC, Team, TruckCarPic, TruckCarReceiveTask, Goods, MapPic
 from DeskPageV2.Utils.load_res import GetConfig
 from DeskPageV2.DeskFindPic.findSkill import SkillGroup
 
@@ -37,6 +37,7 @@ class TruckCar:
         self._receive_task = None  # 接取押镖任务
         self._receive_task_road = None  # 运镖路上...
         self._find_tag_goods = None  # 物品背包
+        self._map_pic = None  # 地图
 
         self.windows = WindowsCapture()
         self.ocr = FindPicOCR()
@@ -71,6 +72,11 @@ class TruckCar:
         if self._find_task_npc is None:
             self._find_task_npc = self._config.find_track_car_task()
         return self._find_task_npc
+
+    def _get_map(self) -> MapPic:
+        if self._map_pic is None:
+            self._map_pic = self._config.map_pic()
+        return self._map_pic
 
     def _get_pic_team(self) -> Team():
         """
@@ -482,80 +488,22 @@ class FindTaskNPCFunc(TruckCar):
         WindowsHandle().activate_windows(hwnd)
         find_npc: FindTruckCarTaskNPC = self._get_pic_find_task_npc()
         self.get_map_and_person(hwnd)
+
+        time.sleep(0.2)
+        SetGhostBoards().click_press_and_release_by_key_name("N")
+
+        time.sleep(0.5)
+        qin_xiu_rec = self.windows.find_windows_coordinate_rect(handle=hwnd, img=find_npc.bang_hui)
+        if qin_xiu_rec is None:
+            return False
+
+        SetGhostMouse().move_mouse_to(qin_xiu_rec[0], qin_xiu_rec[1])
+        time.sleep(0.5)
+        SetGhostMouse().click_mouse_left_button()
+
         while 1:
 
-            if work_status is False:
-                """
-                停止任务
-                """
-                return False
-
-            time.sleep(1)
-            qin_xiu_rec = self.windows.find_windows_coordinate_rect(handle=hwnd, img=find_npc.qin_xiu)
-            if qin_xiu_rec is None:
-                continue
-            else:
-                """
-                找到了勤修图标
-                """
-                # print(f"FindTaskNpc: 找到 勤修 图标({qin_xiu_rec[0]},{qin_xiu_rec[1]})")
-                SetGhostMouse().move_mouse_to(qin_xiu_rec[0], qin_xiu_rec[1])
-                time.sleep(1)
-                SetGhostMouse().click_mouse_left_button()
-                break
-        while 1:
-
-            if work_status is False:
-                """
-                停止任务
-                """
-                return False
-
-            time.sleep(1)
-            qin_xiu_activity_list = self.windows.find_windows_coordinate_rect(handle=hwnd,
-                                                                              img=find_npc.qin_xiu_activity_list)
-            if qin_xiu_activity_list is None:
-                continue
-            else:
-                """
-                找到活动列表
-                """
-                # print(f"FindTaskNpc: 找到 活动列表 图标({qin_xiu_activity_list[0]},{qin_xiu_activity_list[1]})")
-                SetGhostMouse().move_mouse_to(qin_xiu_activity_list[0], qin_xiu_activity_list[1])
-                time.sleep(1)
-                SetGhostMouse().click_mouse_left_button()
-                break
-        while 1:
-
-            if work_status is False:
-                """
-                停止任务
-                """
-                return False
-
-            time.sleep(1)
-            qin_xiu_truck_task = self.windows.find_windows_coordinate_rect(handle=hwnd,
-                                                                           img=find_npc.qin_xiu_truck_car_task)
-            if qin_xiu_truck_task is None:
-                continue
-            else:
-                """
-                找到了每日运镖图标
-                """
-                # print(f"FindTaskNpc: 找到 每日运镖 图标({qin_xiu_truck_task[0]},{qin_xiu_truck_task[1]})")
-                SetGhostMouse().move_mouse_to(qin_xiu_truck_task[0], qin_xiu_truck_task[1])
-                time.sleep(1)
-                SetGhostMouse().click_mouse_left_button()
-                break
-        while 1:
-
-            if work_status is False:
-                """
-                停止任务
-                """
-                return False
-
-            time.sleep(1)
+            time.sleep(0.5)
 
             if self._area_map == "成都":
                 __image_city: str = find_npc.task_point_chengdu
@@ -584,7 +532,6 @@ class FindTaskNPCFunc(TruckCar):
 
                 if self._area_map == "成都":
                     break
-
                 # print(f"FindTaskNpc: 找到 {self._area_map} 图标({qin_xiu_truck_point[0]},{qin_xiu_truck_point[1]})")
                 SetGhostMouse().move_mouse_to(qin_xiu_truck_point[0], qin_xiu_truck_point[1])
                 time.sleep(1)
@@ -593,13 +540,7 @@ class FindTaskNPCFunc(TruckCar):
 
         while 1:
 
-            if work_status is False:
-                """
-                停止任务
-                """
-                return False
-
-            time.sleep(1)
+            time.sleep(0.5)
 
             if self._area_map == "成都":
                 __image_city_npc: str = find_npc.task_point_chengdu_npc
@@ -627,7 +568,7 @@ class FindTaskNPCFunc(TruckCar):
                 """
                 # print(f"FindTaskNpc: 找到 {self._area_map} 的NPC图标({qin_xiu_truck_point_npc[0]},{qin_xiu_truck_point_npc[1]})")
                 SetGhostMouse().move_mouse_to(qin_xiu_truck_point_npc[0], qin_xiu_truck_point_npc[1])
-                time.sleep(1)
+                time.sleep(0.5)
                 SetGhostMouse().click_mouse_left_button()
                 SetGhostBoards().click_press_and_release_by_code(27)
                 break
@@ -831,28 +772,26 @@ class TransportTaskFunc(TruckCar):
     """
     寻找镖车，并上车
     """
-    def driver_truck_car(self, hwnd: int, car_area_type: int, map_name: str) -> bool:
+    def driver_truck_car(self, hwnd: int, map_name: str) -> bool:
         """
         寻找镖车，并上车
         :param hwnd: 句柄
-        :param car_area_type: 查找车在屏幕上的区域范围，0是接镖后的驾车，1是打怪后的上车
         :param map_name: 地图名称，用于判断要不要走2步
         """
-
-        if map_name not in ["成都", "苏州"]:
-            __res_center_pos = self.find_truck_car_center_pos_v2(hwnd, car_area_type)
-            if __res_center_pos is None:
+        if map_name in ["金陵", "洛阳", "燕京"]:
+            if self.driver_truck_car_v3(hwnd, map_name) is False:
                 return False
-            if map_name in ["金陵", "洛阳", "燕京"]:
-                if map_name == "金陵":
-                    SetGhostBoards().click_press_and_release_by_key_name_hold_time("w", 2.5)  # 金陵太远了
-                else:
-                    SetGhostBoards().click_press_and_release_by_key_name_hold_time("w", 2)  # 往前走一步
         if self.transport_truck(hwnd) is False:
             return False
         return True
 
     def driver_truck_car_v2(self, hwnd: int, car_area_type: int) -> bool:
+
+        time.sleep(2)
+        if self.transport_truck(hwnd) is True:
+            # 找到车了
+            return True
+
         __res_center_pos = self.find_truck_car_center_pos_v2(hwnd, car_area_type)
         if __res_center_pos is None:
             return False
@@ -873,6 +812,131 @@ class TransportTaskFunc(TruckCar):
             if self.transport_truck(hwnd) is False:
                 # 没有没有找到车辆
                 continue
+            return True
+        return False
+
+    def driver_truck_car_v3(self, hwnd: int, map_name: str) -> bool:
+        """
+        不找车，直接在地图输入坐标前往
+        """
+
+        if self.windows.find_windows_coordinate_rect(hwnd, img=self._load_pic(self._get_pic_truck_car().task_star_mode)) is None:
+            return False
+
+        __map = self._get_map()
+
+        SetGhostBoards().click_press_and_release_by_key_name("M")
+        time.sleep(0.5)
+        __rec_pos_x = self.windows.find_windows_coordinate_rect(hwnd, img=self._load_pic(__map.pox_x))
+        if __rec_pos_x is None:
+            return False
+        SetGhostMouse().move_mouse_to(__rec_pos_x[0] + 50, __rec_pos_x[1])
+        time.sleep(0.2)
+        SetGhostMouse().click_mouse_left_button()
+        time.sleep(0.5)
+        SetGhostBoards().click_press_and_release_by_key_code_hold_time(8, 0.5)
+        time.sleep(0.1)
+
+        if map_name == "燕京":
+            SetGhostBoards().click_press_and_release_by_key_name("5")
+            time.sleep(0.1)
+            SetGhostBoards().click_press_and_release_by_key_name("9")
+            time.sleep(0.1)
+            SetGhostBoards().click_press_and_release_by_key_name("2")
+        elif map_name == "洛阳":
+            SetGhostBoards().click_press_and_release_by_key_name("9")
+            time.sleep(0.1)
+            SetGhostBoards().click_press_and_release_by_key_name("2")
+            time.sleep(0.1)
+            SetGhostBoards().click_press_and_release_by_key_name("5")
+        elif map_name == "金陵":
+            SetGhostBoards().click_press_and_release_by_key_name("1")
+            time.sleep(0.1)
+            SetGhostBoards().click_press_and_release_by_key_name("4")
+            time.sleep(0.1)
+            SetGhostBoards().click_press_and_release_by_key_name("2")
+            time.sleep(0.1)
+            SetGhostBoards().click_press_and_release_by_key_name("5")
+
+        __rec_pos_y = self.windows.find_windows_coordinate_rect(hwnd, img=self._load_pic(__map.pox_y))
+        if __rec_pos_y is None:
+            return False
+        SetGhostMouse().move_mouse_to(__rec_pos_y[0] + 50, __rec_pos_y[1])
+        time.sleep(0.2)
+        SetGhostMouse().click_mouse_left_button()
+        time.sleep(0.1)
+        SetGhostBoards().click_press_and_release_by_key_code_hold_time(8, 0.5)
+        time.sleep(0.1)
+
+        if map_name == "燕京":
+            SetGhostBoards().click_press_and_release_by_key_name("2")
+            time.sleep(0.1)
+            SetGhostBoards().click_press_and_release_by_key_name("0")
+            time.sleep(0.1)
+            SetGhostBoards().click_press_and_release_by_key_name("8")
+        elif map_name == "洛阳":
+            SetGhostBoards().click_press_and_release_by_key_name("7")
+            time.sleep(0.1)
+            SetGhostBoards().click_press_and_release_by_key_name("9")
+            time.sleep(0.1)
+            SetGhostBoards().click_press_and_release_by_key_name("9")
+        elif map_name == "金陵":
+            SetGhostBoards().click_press_and_release_by_key_name("7")
+            time.sleep(0.1)
+            SetGhostBoards().click_press_and_release_by_key_name("3")
+            time.sleep(0.1)
+            SetGhostBoards().click_press_and_release_by_key_name("0n")
+
+        while 1:
+
+            __rec_pos_search = self.windows.find_windows_coordinate_rect(hwnd, img=self._load_pic(__map.search_pos))
+            if __rec_pos_search is None:
+                time.sleep(1)
+                continue
+            SetGhostMouse().move_mouse_to(__rec_pos_search[0], __rec_pos_search[1])
+            SetGhostMouse().click_mouse_left_button()
+            time.sleep(1)
+            break
+
+        while 1:
+            __rec_pos_point = self.windows.find_windows_coordinate_rect(hwnd, img=self._load_pic(__map.result_point))
+            if __rec_pos_point is None:
+                time.sleep(1)
+                continue
+            SetGhostMouse().move_mouse_to(__rec_pos_point[0], __rec_pos_point[1])
+            SetGhostMouse().click_mouse_left_button()
+            time.sleep(1)
+            break
+
+        pos = coordinate_change_from_windows(hwnd, (1, 1))
+        SetGhostMouse().move_mouse_to(pos[0], pos[1])
+
+        SetGhostBoards().click_press_and_release_by_key_name("M")
+        time.sleep(0.5)
+
+        return True
+
+    def click_truck_car_in_display_center(self, hwnd: int):
+        """
+        点一下屏幕中间，让押镖的按钮出现
+        """
+
+        __cap_pic = self.windows.capture(hwnd)
+        __w, __h = __cap_pic.pic_width, __cap_pic.pic_height
+
+        __center_x = int(__w * 0.5)  # 屏幕正中间
+        __center_y = int(__h * 0.5)  # 屏幕正中间
+
+        pos = coordinate_change_from_windows(hwnd, (__center_x, __center_y))
+        SetGhostMouse().move_mouse_to(pos[0], pos[1])
+        time.sleep(0.5)
+        SetGhostMouse().click_mouse_left_button()
+        time.sleep(0.5)
+
+        pos = coordinate_change_from_windows(hwnd, (1, 1))
+        SetGhostMouse().move_mouse_to(pos[0], pos[1])
+
+        if self.windows.find_windows_coordinate_rect(hwnd, img=self._load_pic(self._get_pic_truck_car().task_star_mode)) is not None:
             return True
         return False
 
@@ -909,6 +973,19 @@ class UserGoods(TruckCar):
             return True
         return False
 
+    def check_person_blood_is_null(self, hwnd) -> bool:
+        """
+        检测是否半血
+        """
+        __bag: Goods = self._get_bag_goods()
+        pic = self.windows.capture(hwnd)
+        # 高度1-300像素，宽度 画面右侧，查看所有状态栏
+        pic_content = pic.pic_content[1:int(pic.pic_height * 0.2), 1:int(pic.pic_width * 0.4)]
+        __blood = find_area(smaller_pic=self._load_pic(__bag.null_blood), bigger_img=pic_content)
+        if __blood[-1] > 0.5:
+            return True
+        return False
+
     def use_yu_feng_shen_shui(self, hwnd):
         """
         使用御风神水
@@ -934,7 +1011,6 @@ class UserGoods(TruckCar):
             """
             如果找到了御风神水
             """
-            time.sleep(1)
             SetGhostMouse().move_mouse_to(__rec_yf_goods[0], __rec_yf_goods[1])
             time.sleep(1)
             SetGhostMouse().click_mouse_right_button()

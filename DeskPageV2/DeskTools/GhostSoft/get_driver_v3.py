@@ -205,7 +205,6 @@ class SetGhostBoards(SetGhostDriver):
         result_int: int = self.ghost_driver.releaseallkey()
         return True if result_int > 0 else False
 
-
     def click_all_press_and_release_by_key_name(self, key_str_list: list) -> bool:
         """
         按下多个组合键，并释放
@@ -239,6 +238,14 @@ class SetGhostBoards(SetGhostDriver):
         :return:
         """
         result_int: int = self.ghost_driver.setpresskeydelay(min_delay, max_delay)
+        return True if result_int > 0 else False
+
+    def input_string(self, long_string: str):
+        """
+        输入字符串，支持中文、日文、韩文、英文、数字、符号等字符的混合输入，不需要输入法支持。
+        可通过setcasesensitive设置不受键盘大小写状态限制，输入速度可通过setinputstringintervaltime随机设置
+        """
+        result_int: int = self.ghost_driver.inputstring(long_string)
         return True if result_int > 0 else False
 
 

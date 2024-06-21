@@ -13,7 +13,7 @@ from DeskPageV2.DeskTools.WindowsSoft.get_windows import GetHandleList
 is_not_in_car_sum: int = 0  # 打怪后，是否连续多次状态还没有更新到上车
 is_fight_npc_end: bool = False  # 是否已经和NPC战斗，如有没有战斗，就直接上车。 如果已经战斗，那么就需要查询点击镖车再上车
 is_fight_npc_visible: bool = False  # 是否出现NPC
-map_name: str = ""
+is_can_go_car: bool = False  # 打怪是否可以直接上车
 
 
 # 给全局变量加把锁
@@ -68,7 +68,7 @@ class TruckCarTaskQth(QThread):
 
     def run(self):
         # 声明一下全局变量
-        global is_fight_npc_end, is_fight_npc_visible, is_not_in_car_sum, map_name
+        global is_fight_npc_end, is_fight_npc_visible, is_not_in_car_sum, is_can_go_car
 
         # 修改全局变量，已经发现怪了，停止寻找车辆
         is_fight_npc_end = False
@@ -78,6 +78,7 @@ class TruckCarTaskQth(QThread):
         self.sin_out.emit(f"线程:5秒后开始启动押镖...")
         self.sin_out.emit(f"本轮押镖次数为: {self.truck_count} 次")
         self.sin_status_bar_out.emit(f"已经押镖了 {0} 次", 0)
+
         time.sleep(5)
         for count_i in range(self.truck_count):
 
@@ -88,6 +89,8 @@ class TruckCarTaskQth(QThread):
             mutex.acquire()
             is_not_in_car_sum = 0
             mutex.release()
+
+            map_name: str = ""
 
             while 1:
 
@@ -101,8 +104,7 @@ class TruckCarTaskQth(QThread):
                     return None
 
                 if map_name == "":
-                    __city_name: str = self.__team.get_map_and_person(self.windows_handle)
-                    map_name = __city_name
+                    map_name: str = self.__team.get_map_and_person(self.windows_handle)
 
                 if __task_status == 0:
 
@@ -114,8 +116,8 @@ class TruckCarTaskQth(QThread):
 
                     self.sin_out.emit("步骤一:已创建队伍...")
 
-                    self.__get_task.reply_person_perspective(self.windows_handle)  # 初始化视角
-                    self.sin_out.emit("步骤一:初始化视角...")
+                    # self.__get_task.reply_person_perspective(self.windows_handle)  # 初始化视角
+                    # self.sin_out.emit("步骤一:初始化视角...")
 
                     # 检测是否使用了御风
                     self.__use_goods.use_yu_feng_shen_shui(self.windows_handle)
@@ -136,7 +138,6 @@ class TruckCarTaskQth(QThread):
                     if self.__get_task.receive_task(self.windows_handle, map_name) is False:
                         continue
                     __task_status = 3
-                    self.next_step.emit(1)  # 等待劫镖NPC出现
                     self.sin_out.emit("步骤三:已接镖,开始上车驾驶...")
                     time.sleep(1)
 
@@ -145,8 +146,7 @@ class TruckCarTaskQth(QThread):
                     # 已经接取了任务，寻找一下镖车,驾车上路
                     if is_fight_npc_visible is True:
                         # 出怪了，这里等一下啊,等打完怪再说
-                        time.sleep(0.5)
-                        print("出怪了，continue")
+                        time.sleep(1)
                         continue
 
                     if is_not_in_car_sum == 10:
@@ -165,7 +165,7 @@ class TruckCarTaskQth(QThread):
                         continue
 
                     # 已经接取了任务，寻找一下镖车,驾车上路
-                    if self.__transport_task.driver_truck_car(self.windows_handle, car_area_type=0, map_name=map_name) is False:
+                    if self.__transport_task.driver_truck_car(self.windows_handle, map_name=map_name) is False:
                         # 失败次数+1
                         mutex.acquire()
                         is_not_in_car_sum += 1
@@ -173,6 +173,8 @@ class TruckCarTaskQth(QThread):
                         continue
 
                     self.sin_out.emit("步骤四:驾驶镖车,运输中...")
+
+                    self.next_step.emit(1)  # 等待劫镖NPC出现
 
                     __task_status = 4
 
@@ -189,11 +191,7 @@ class TruckCarTaskQth(QThread):
                         self.sin_out.emit("步骤五:打怪结束...")
 
                 elif __task_status == 5:
-                    # 首次上车成功，开始等怪出现
-                    if is_fight_npc_end is False:
-                        time.sleep(0.5)
-                        continue
-
+                    # 打完怪,再次上车
                     if is_not_in_car_sum == 10:
                         # 如果连续10次没有成功上车，调整一下视角
                         self.__get_task.reply_person_perspective(self.windows_handle)
@@ -210,18 +208,27 @@ class TruckCarTaskQth(QThread):
                         time.sleep(5)
                         continue
 
+                    if is_can_go_car:
+                        if self.__transport_task.transport_truck(self.windows_handle) is False:
+                            # 失败次数+1
+                            mutex.acquire()
+                            is_not_in_car_sum += 1
+                            mutex.release()
+                            continue
+
                     # 打完怪了，开始继续找镖车
-                    if self.__transport_task.driver_truck_car_v2(self.windows_handle, car_area_type=1) is False:
+                    else:
+                        if self.__transport_task.driver_truck_car_v2(self.windows_handle, car_area_type=1) is False:
 
-                        self.sin_out.emit(f"上车失败(次数:{is_not_in_car_sum + 1}),往前走1步")
-                        SetGhostBoards().click_press_and_release_by_key_name_hold_time("w", 0.1)  # 往前走一步
+                            self.sin_out.emit(f"上车失败(次数:{is_not_in_car_sum + 1}),往前走1步")
+                            SetGhostBoards().click_press_and_release_by_key_name_hold_time("w", 0.1)  # 往前走一步
 
-                        # 失败次数+1
-                        mutex.acquire()
-                        is_not_in_car_sum += 1
-                        mutex.release()
-                        time.sleep(0.5)
-                        continue
+                            # 失败次数+1
+                            mutex.acquire()
+                            is_not_in_car_sum += 1
+                            mutex.release()
+                            time.sleep(0.5)
+                            continue
                     __task_status = 6
                     self.sin_out.emit("步骤六:重新驾车,等待结束...")
 
@@ -241,7 +248,7 @@ class TruckCarTaskQth(QThread):
                     is_not_in_car_sum = 0  # 已经连续多少次没有找到镖车
                     is_fight_npc_end = False  # 是否已经和NPC战斗，如有没有战斗，就直接上车。 如果已经战斗，那么就需要查询点击镖车再上车
                     is_fight_npc_visible = False  # 是否出现NPC
-
+                    is_can_go_car = False
                     map_name = ""
                     mutex.release()
                     self.sin_status_bar_out.emit(f"已经押镖了 {count_i + 1} 次", count_i + 1)
@@ -459,6 +466,7 @@ class TruckTaskFightMonsterQth(QThread):
 
         self.mutex = QMutex()
         self.windows_handle = 0
+        self.__transport_task = TransportTaskFunc()  # 开始运镖
 
         self.__fight_monster = FightMonster()
 
@@ -487,16 +495,13 @@ class TruckTaskFightMonsterQth(QThread):
                 return None
             if self.__fight_monster.check_fight_status(self.windows_handle):
                 # 声明一下全局变量
-                global is_fight_npc_end, is_fight_npc_visible
+                global is_fight_npc_end, is_fight_npc_visible, is_can_go_car
                 # 修改全局变量，已经发现怪了，停止寻找车辆
                 mutex.acquire()
                 is_fight_npc_end = False
                 is_fight_npc_visible = True
                 mutex.release()
                 self.sin_out.emit("劫镖NPC出现...")
-
-                # self.next_step.emit(4)  # 打怪中，暂时查找车辆
-                # self.next_step.emit(5)  # 打怪中，暂时查找车辆
 
                 # 开始战斗
                 if self.__fight_monster.fight_monster(self.windows_handle) is True:
@@ -505,10 +510,13 @@ class TruckTaskFightMonsterQth(QThread):
                     self.sin_out.emit("劫镖NPC已消失(击杀)...")
                     # 修改一下全局变量，已经和NPC战斗过了
                     mutex.acquire()
-                    is_stop_find_car = False
                     is_fight_npc_end = True
                     is_fight_npc_visible = False
                     mutex.release()
                     # 修改全局变量，战斗结束，继续寻找车辆
-                    # self.next_step.emit(2)  # 打怪结束，继续上车跑路
-                    # self.next_step.emit(3)  # 打怪结束，继续保持车辆在屏幕上
+                    if self.__transport_task.click_truck_car_in_display_center(self.windows_handle) is True:
+                        mutex.acquire()
+                        is_can_go_car = True
+                        mutex.release()
+                        self.sin_out.emit("可直接上车")
+                        time.sleep(1)

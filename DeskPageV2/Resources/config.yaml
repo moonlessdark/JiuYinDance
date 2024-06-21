@@ -44,6 +44,7 @@ TruckCarFindTask:
   car_type_little: /Resources/TruckCarFindTask/CarType/小车.png
   car_type_medium: /Resources/TruckCarFindTask/CarType/中车.png
   qin_xiu: /Resources/TruckCarFindTask/勤修.png
+  bang_hui: /Resources/TruckCarFindTask/帮会.png
   qin_xiu_activity_list: /Resources/TruckCarFindTask/活动列表.png
   qin_xiu_truck_car_npc_chengdu: /Resources/TruckCarFindTask/chengdu_truck_car_npc.png
   qin_xiu_truck_car_task: /Resources/TruckCarFindTask/日常运镖.png
@@ -61,6 +62,11 @@ TruckCarPic:
   task_monster_target_skill: /Resources/TruckCarPic/car_monster_skill_1.png
   task_star_mode: /Resources/TruckCarPic/truck_type.png
   fight_other_truck_car: /Resources/TruckCarPic/镖车切磋.png
+MapPic:
+  pox_x: /Resources/Map/pox_x.png
+  pox_y: /Resources/Map/pox_y.png
+  search_pos: /Resources/Map/search_pos.png
+  result_point: /Resources/Map/result_point.png
 danceConfig:
   dance_threshold_area: 0.3
   dance_threshold_tl: 0.9
@@ -90,6 +96,7 @@ goods:
   run_goods: /Resources/Goods/御风神水.png
   run_goods_buff: /Resources/Goods/御风神水buff.png
   run_goods_ready: /Resources/Goods/御风神水ready.png
+  non_blood: /Resources/Goods/空血条.png
 keyBoardMouseDll:
   dmDll:
     dm: /Resources/KeyBoardDriver/dm.dll

@@ -4,7 +4,7 @@ import json
 import yaml
 
 from DeskPageV2.Utils.dataClass import DancePic, WhzDancePic, DmDll, GhostDll, Config, Team, TruckCarPic, \
-    FindTruckCarTaskNPC, TruckCarReceiveTask, MarketPic, Goods
+    FindTruckCarTaskNPC, TruckCarReceiveTask, MarketPic, Goods, MapPic
 from DeskPageV2.Utils.project_path import PathUtil
 
 
@@ -111,6 +111,7 @@ class GetConfig:
         __goods.run_goods = self.project_dir + self.__datas["goods"]["run_goods"]
         __goods.run_goods_ready = self.project_dir + self.__datas["goods"]["run_goods_ready"]
         __goods.run_goods_buff = self.project_dir + self.__datas["goods"]["run_goods_buff"]
+        __goods.null_blood = self.project_dir + self.__datas["goods"]["non_blood"]
         return __goods
 
     def get_find_pic_config(self) -> Config:
@@ -238,6 +239,17 @@ class GetConfig:
         truck.fight_other_truck_car = self.project_dir + self.__datas["TruckCarPic"]["fight_other_truck_car"]
         return truck
 
+    def map_pic(self) -> MapPic:
+        """
+        地图
+        """
+        __map = MapPic()
+        __map.pos_x = self.project_dir + self.__datas["MapPic"]["pox_x"]
+        __map.pos_y = self.project_dir + self.__datas["MapPic"]["pox_y"]
+        __map.search_pos = self.project_dir + self.__datas["MapPic"]["search_pos"]
+        __map.result_point = self.project_dir + self.__datas["MapPic"]["result_point"]
+        return __map
+
     def find_track_car_task(self):
         """
         寻找地图上的接镖NPC
@@ -246,6 +258,8 @@ class GetConfig:
         truck_car_task.qin_xiu = self.project_dir + self.__datas["TruckCarFindTask"]["qin_xiu"]
         truck_car_task.qin_xiu_activity_list = self.project_dir + self.__datas["TruckCarFindTask"]["qin_xiu_activity_list"]
         truck_car_task.qin_xiu_truck_car_task = self.project_dir + self.__datas["TruckCarFindTask"]["qin_xiu_truck_car_task"]
+        truck_car_task.bang_hui = self.project_dir + self.__datas["TruckCarFindTask"]["bang_hui"]
+
         # 成都
         truck_car_task.task_point_chengdu = self.project_dir + self.__datas["TruckCarFindTask"]["Area"]["chengdu"]["address"]
         truck_car_task.task_point_chengdu_npc = self.project_dir + self.__datas["TruckCarFindTask"]["Area"]["chengdu"]["npc"]
