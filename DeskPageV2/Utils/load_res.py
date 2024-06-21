@@ -244,8 +244,8 @@ class GetConfig:
         地图
         """
         __map = MapPic()
-        __map.pos_x = self.project_dir + self.__datas["MapPic"]["pox_x"]
-        __map.pos_y = self.project_dir + self.__datas["MapPic"]["pox_y"]
+        __map.pos_x = self.project_dir + self.__datas["MapPic"]["pos_x"]
+        __map.pos_y = self.project_dir + self.__datas["MapPic"]["pos_y"]
         __map.search_pos = self.project_dir + self.__datas["MapPic"]["search_pos"]
         __map.result_point = self.project_dir + self.__datas["MapPic"]["result_point"]
         return __map

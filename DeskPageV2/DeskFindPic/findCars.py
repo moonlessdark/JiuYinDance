@@ -827,7 +827,8 @@ class TransportTaskFunc(TruckCar):
 
         SetGhostBoards().click_press_and_release_by_key_name("M")
         time.sleep(0.5)
-        __rec_pos_x = self.windows.find_windows_coordinate_rect(hwnd, img=self._load_pic(__map.pox_x))
+        print(f"{__map.pos_x}")
+        __rec_pos_x = self.windows.find_windows_coordinate_rect(hwnd, img=self._load_pic(__map.pos_x))
         if __rec_pos_x is None:
             return False
         SetGhostMouse().move_mouse_to(__rec_pos_x[0] + 50, __rec_pos_x[1])
@@ -858,7 +859,7 @@ class TransportTaskFunc(TruckCar):
             time.sleep(0.1)
             SetGhostBoards().click_press_and_release_by_key_name("5")
 
-        __rec_pos_y = self.windows.find_windows_coordinate_rect(hwnd, img=self._load_pic(__map.pox_y))
+        __rec_pos_y = self.windows.find_windows_coordinate_rect(hwnd, img=self._load_pic(__map.pos_y))
         if __rec_pos_y is None:
             return False
         SetGhostMouse().move_mouse_to(__rec_pos_y[0] + 50, __rec_pos_y[1])

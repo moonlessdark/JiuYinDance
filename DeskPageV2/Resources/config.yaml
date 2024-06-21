@@ -63,8 +63,8 @@ TruckCarPic:
   task_star_mode: /Resources/TruckCarPic/truck_type.png
   fight_other_truck_car: /Resources/TruckCarPic/镖车切磋.png
 MapPic:
-  pox_x: /Resources/Map/pox_x.png
-  pox_y: /Resources/Map/pox_y.png
+  pos_x: /Resources/Map/pox_x.png
+  pos_y: /Resources/Map/pox_y.png
   search_pos: /Resources/Map/search_pos.png
   result_point: /Resources/Map/result_point.png
 danceConfig:

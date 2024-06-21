@@ -179,8 +179,8 @@ class Config:
 
 @dataclasses.dataclass
 class MapPic:
-    pox_x: str = dataclasses.field(default_factory=str)
-    pox_y: str = dataclasses.field(default_factory=str)
+    pos_x: str = dataclasses.field(default_factory=str)
+    pos_y: str = dataclasses.field(default_factory=str)
     search_pos: str = dataclasses.field(default_factory=str)
     result_point: str = dataclasses.field(default_factory=str)
 
