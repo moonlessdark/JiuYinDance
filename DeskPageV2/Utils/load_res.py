@@ -112,6 +112,7 @@ class GetConfig:
         __goods.run_goods_ready = self.project_dir + self.__datas["goods"]["run_goods_ready"]
         __goods.run_goods_buff = self.project_dir + self.__datas["goods"]["run_goods_buff"]
         __goods.null_blood = self.project_dir + self.__datas["goods"]["non_blood"]
+        __goods.sit_blood = self.project_dir + self.__datas["goods"]["sit_blood"]
         return __goods
 
     def get_find_pic_config(self) -> Config:
@@ -248,6 +249,7 @@ class GetConfig:
         __map.pos_y = self.project_dir + self.__datas["MapPic"]["pos_y"]
         __map.search_pos = self.project_dir + self.__datas["MapPic"]["search_pos"]
         __map.result_point = self.project_dir + self.__datas["MapPic"]["result_point"]
+        __map.plus_map = self.project_dir + self.__datas["MapPic"]["plus_map"]
         return __map
 
     def find_track_car_task(self):

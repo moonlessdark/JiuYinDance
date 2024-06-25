@@ -68,6 +68,7 @@ class Goods:
     run_goods_ready: str = dataclasses.field(default_factory=str)
     run_goods_buff: str = dataclasses.field(default_factory=str)
     null_blood: str = dataclasses.field(default_factory=str)
+    sit_blood: str = dataclasses.field(default_factory=str)
 
 
 @dataclasses.dataclass
@@ -183,6 +184,7 @@ class MapPic:
     pos_y: str = dataclasses.field(default_factory=str)
     search_pos: str = dataclasses.field(default_factory=str)
     result_point: str = dataclasses.field(default_factory=str)
+    plus_map: str = dataclasses.field(default_factory=str)
 
 
 @dataclasses.dataclass

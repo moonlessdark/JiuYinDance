@@ -67,6 +67,7 @@ MapPic:
   pos_y: /Resources/Map/pox_y.png
   search_pos: /Resources/Map/search_pos.png
   result_point: /Resources/Map/result_point.png
+  plus_map: /Resources/Map/plus_map.png
 danceConfig:
   dance_threshold_area: 0.3
   dance_threshold_tl: 0.9
@@ -96,7 +97,8 @@ goods:
   run_goods: /Resources/Goods/御风神水.png
   run_goods_buff: /Resources/Goods/御风神水buff.png
   run_goods_ready: /Resources/Goods/御风神水ready.png
-  non_blood: /Resources/Goods/空血条.png
+  non_blood: /Resources/Goods/满血.png
+  sit_blood: /Resources/Goods/打坐.png
 keyBoardMouseDll:
   dmDll:
     dm: /Resources/KeyBoardDriver/dm.dll

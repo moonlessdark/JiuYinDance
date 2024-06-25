@@ -76,10 +76,18 @@ class TruckCarTaskQth(QThread):
 
         self.mutex.lock()  # 先加锁
         self.sin_out.emit(f"线程:5秒后开始启动押镖...")
-        self.sin_out.emit(f"本轮押镖次数为: {self.truck_count} 次")
         self.sin_status_bar_out.emit(f"已经押镖了 {0} 次", 0)
 
         time.sleep(5)
+
+        self.__get_task.reply_person_perspective_up(self.windows_handle)  # 初始化视角
+        self.sin_out.emit("初始化视角...")
+
+        self.__transport_task.plus_map(self.windows_handle)
+        time.sleep(0.5)
+
+        self.sin_out.emit(f"本轮押镖次数为: {self.truck_count} 次")
+
         for count_i in range(self.truck_count):
 
             self.sin_out.emit(f"开始执行第 {count_i + 1} 次押镖")
@@ -107,7 +115,6 @@ class TruckCarTaskQth(QThread):
                     map_name: str = self.__team.get_map_and_person(self.windows_handle)
 
                 if __task_status == 0:
-
                     # 创建队伍
                     if self.__team.create_team(self.windows_handle) is False:
                         continue
@@ -115,9 +122,6 @@ class TruckCarTaskQth(QThread):
                     self.sin_out.emit(f"当前地图:{map_name}...")
 
                     self.sin_out.emit("步骤一:已创建队伍...")
-
-                    # self.__get_task.reply_person_perspective(self.windows_handle)  # 初始化视角
-                    # self.sin_out.emit("步骤一:初始化视角...")
 
                     # 检测是否使用了御风
                     self.__use_goods.use_yu_feng_shen_shui(self.windows_handle)
@@ -174,11 +178,13 @@ class TruckCarTaskQth(QThread):
 
                     self.sin_out.emit("步骤四:驾驶镖车,运输中...")
 
-                    self.next_step.emit(1)  # 等待劫镖NPC出现
+                    self.__get_task.reply_person_perspective_up(self.windows_handle)  # 初始化视角
 
                     __task_status = 4
 
-                    self.__get_task.reply_person_perspective_up(self.windows_handle)
+                    # self.__get_task.reply_person_perspective_up(self.windows_handle)
+
+                    self.next_step.emit(1)  # 等待劫镖NPC出现
 
                     mutex.acquire()
                     is_not_in_car_sum = 0

@@ -115,7 +115,8 @@ class TruckCar:
         退出不小心点到别人的镖车触发劫镖
         """
         __find_task_car: TruckCarPic = self._get_pic_truck_car()
-        __break_car_talk = self.windows.find_windows_coordinate_rect(handle=hwnd, img=__find_task_car.fight_other_truck_car)
+        __break_car_talk = self.windows.find_windows_coordinate_rect(handle=hwnd,
+                                                                     img=__find_task_car.fight_other_truck_car)
         if __break_car_talk is None:
             return False
         WindowsHandle().activate_windows(hwnd)
@@ -271,9 +272,11 @@ class TruckCar:
             image = self.windows.capture(hwnd)
             __h, __w, __content = image.pic_height, image.pic_width, image.pic_content
         if display_area == 0:
-            _v3_new_pic = image.pic_content[1:int(image.pic_height * 0.6), int(image.pic_width * 0.4):int(image.pic_width * 0.6)]
+            _v3_new_pic = image.pic_content[1:int(image.pic_height * 0.6),
+                          int(image.pic_width * 0.4):int(image.pic_width * 0.6)]
         else:
-            _v3_new_pic = image.pic_content[1:int(image.pic_height * 0.6), int(image.pic_width * 0.3):int(image.pic_width * 0.7)]
+            _v3_new_pic = image.pic_content[1:int(image.pic_height * 0.6),
+                          int(image.pic_width * 0.3):int(image.pic_width * 0.7)]
 
         __rec = self.ocr.find_truck_car_ocr(_v3_new_pic, "的镖车")
         if __rec is None:
@@ -342,13 +345,15 @@ class FightMonster(TruckCar):
             if self._check_monster_skill_status(hwnd):
                 # print("怪要放技能了，进行格挡")
                 is_skill_tag_status = 1
-                continue
-                # if is_skill_tag_status:
-                #     if SetGhostMouse().is_mouse_button_pressed(3) is False:
-                #         print("怪要放技能了，进行格挡")
-                #         # 如果当前状态时格挡中
-                #         SetGhostMouse().press_mouse_right_button()
-                #         continue
+                # if SetGhostMouse().is_mouse_button_pressed(3) is False:
+                #     print("怪要放技能了，进行格挡")
+                #     # 如果当前状态时格挡中
+                #     SetGhostMouse().press_mouse_right_button()
+                # continue
+                SetGhostBoards().click_press_and_release_by_key_code_hold_time(32, 0.5)
+
+                SetGhostBoards().click_press_and_release_by_key_code_hold_time(32, 0.5)
+                time.sleep(2)
             else:
                 if is_skill_tag_status == 1:
                     # 表示放技能的图标已经消失了，
@@ -387,7 +392,7 @@ class FightMonster(TruckCar):
         SetGhostMouse().click_mouse_right_button()  # 按住鼠标右键
 
         if self.__fight_func(hwnd):
-            time.sleep(2)
+            time.sleep(3)
             return True
 
 
@@ -736,7 +741,8 @@ class TransportTaskFunc(TruckCar):
             time.sleep(0.1)
             SetGhostBoards().click_press_and_release_by_key_code_hold_time(37, 0.4)
             return None
-        res_center_car_bool: bool = self.find_car_in_center_display_v3(image=__cap, display_area=display_area)  # 检测图片是否在中间
+        res_center_car_bool: bool = self.find_car_in_center_display_v3(image=__cap,
+                                                                       display_area=display_area)  # 检测图片是否在中间
         if res_center_car_bool is False:
             # cap = self.windows.capture(hwnd)
             __car_quadrant: int = self.check_target_pos_direction(__cap, target_pos=res_car)
@@ -772,6 +778,7 @@ class TransportTaskFunc(TruckCar):
     """
     寻找镖车，并上车
     """
+
     def driver_truck_car(self, hwnd: int, map_name: str) -> bool:
         """
         寻找镖车，并上车
@@ -820,16 +827,17 @@ class TransportTaskFunc(TruckCar):
         不找车，直接在地图输入坐标前往
         """
 
-        if self.windows.find_windows_coordinate_rect(hwnd, img=self._load_pic(self._get_pic_truck_car().task_star_mode)) is None:
+        if self.windows.find_windows_coordinate_rect(hwnd, img=self._load_pic(
+                self._get_pic_truck_car().task_star_mode)) is None:
             return False
 
         __map = self._get_map()
 
         SetGhostBoards().click_press_and_release_by_key_name("M")
         time.sleep(0.5)
-        print(f"{__map.pos_x}")
         __rec_pos_x = self.windows.find_windows_coordinate_rect(hwnd, img=self._load_pic(__map.pos_x))
         if __rec_pos_x is None:
+            SetGhostBoards().click_press_and_release_by_key_name("M")
             return False
         SetGhostMouse().move_mouse_to(__rec_pos_x[0] + 50, __rec_pos_x[1])
         time.sleep(0.2)
@@ -843,7 +851,7 @@ class TransportTaskFunc(TruckCar):
             time.sleep(0.1)
             SetGhostBoards().click_press_and_release_by_key_name("9")
             time.sleep(0.1)
-            SetGhostBoards().click_press_and_release_by_key_name("2")
+            SetGhostBoards().click_press_and_release_by_key_name("1")
         elif map_name == "洛阳":
             SetGhostBoards().click_press_and_release_by_key_name("9")
             time.sleep(0.1)
@@ -872,9 +880,9 @@ class TransportTaskFunc(TruckCar):
         if map_name == "燕京":
             SetGhostBoards().click_press_and_release_by_key_name("2")
             time.sleep(0.1)
-            SetGhostBoards().click_press_and_release_by_key_name("0")
+            SetGhostBoards().click_press_and_release_by_key_name("1")
             time.sleep(0.1)
-            SetGhostBoards().click_press_and_release_by_key_name("8")
+            SetGhostBoards().click_press_and_release_by_key_name("7")
         elif map_name == "洛阳":
             SetGhostBoards().click_press_and_release_by_key_name("7")
             time.sleep(0.1)
@@ -917,6 +925,60 @@ class TransportTaskFunc(TruckCar):
 
         return True
 
+    def plus_map(self, hwnd: int):
+        """
+        将地图的缩放放到最大
+        """
+        __map = self._get_map()
+
+        SetGhostBoards().click_press_and_release_by_key_name("M")
+        time.sleep(0.5)
+        __rec_pos_plus = self.windows.find_windows_coordinate_rect(hwnd, img=self._load_pic(__map.plus_map))
+        if __rec_pos_plus is None:
+            SetGhostBoards().click_press_and_release_by_key_name("M")
+            return False
+        SetGhostMouse().move_mouse_to(__rec_pos_plus[0], __rec_pos_plus[1])
+        time.sleep(0.2)
+        SetGhostMouse().press_mouse_left_button()
+        time.sleep(1)
+        SetGhostMouse().release_mouse_left_button()
+        time.sleep(0.1)
+        SetGhostBoards().click_press_and_release_by_key_name("M")
+        return True
+
+    def check_blood(self, hwnd: int) -> bool:
+        """
+        查询血量
+        """
+        __cap = self.windows.capture(hwnd)
+        __cap_pic = bitwise_and(__cap.pic_content, (0, int(__cap.pic_height * 0.2), __cap.pic_width, __cap.pic_height))
+
+        __rec_pos_plus = self.windows.find_windows_coordinate_rect_img(handle=hwnd,
+                                                                       img=self._load_pic(
+                                                                           self._get_bag_goods().null_blood),
+                                                                       origin_img=__cap_pic)
+
+        if __rec_pos_plus is not None:
+            return False
+        self.sit_body(hwnd)
+        time.sleep(1)
+        pos = coordinate_change_from_windows(hwnd, (1, 1))
+        SetGhostMouse().move_mouse_to(pos[0], pos[1])
+        return True
+
+    def sit_body(self, hwnd: int):
+        """
+        查询血量
+        """
+        __rec_pos_plus_x = self.windows.find_windows_coordinate_rect(hwnd, img=self._load_pic(self._get_bag_goods().sit_blood))
+        if __rec_pos_plus_x is None:
+            return False
+
+        SetGhostMouse().move_mouse_to(__rec_pos_plus_x[0], __rec_pos_plus_x[1])
+        time.sleep(0.2)
+        SetGhostMouse().click_mouse_left_button()
+        return True
+
     def click_truck_car_in_display_center(self, hwnd: int):
         """
         点一下屏幕中间，让押镖的按钮出现
@@ -937,7 +999,8 @@ class TransportTaskFunc(TruckCar):
         pos = coordinate_change_from_windows(hwnd, (1, 1))
         SetGhostMouse().move_mouse_to(pos[0], pos[1])
 
-        if self.windows.find_windows_coordinate_rect(hwnd, img=self._load_pic(self._get_pic_truck_car().task_star_mode)) is not None:
+        if self.windows.find_windows_coordinate_rect(hwnd, img=self._load_pic(
+                self._get_pic_truck_car().task_star_mode)) is not None:
             return True
         return False
 
@@ -946,6 +1009,7 @@ class UserGoods(TruckCar):
     """
     使用物品
     """
+
     def __init__(self):
         super().__init__()
 
@@ -962,8 +1026,10 @@ class UserGoods(TruckCar):
         SetGhostBoards().click_press_and_release_by_key_code_hold_time(66, 0.3)
         time.sleep(1)
 
-        __rec_goods_bag_tag_clicked = self.windows.find_windows_coordinate_rect(hwnd, img=self._load_pic(__goods_bag_tag_clicked))
-        __rec_goods_bag_tag_clickable = self.windows.find_windows_coordinate_rect(hwnd, img=self._load_pic(__goods_bag_tag_clickable))
+        __rec_goods_bag_tag_clicked = self.windows.find_windows_coordinate_rect(hwnd, img=self._load_pic(
+            __goods_bag_tag_clicked))
+        __rec_goods_bag_tag_clickable = self.windows.find_windows_coordinate_rect(hwnd, img=self._load_pic(
+            __goods_bag_tag_clickable))
 
         __rec_bag = __rec_goods_bag_tag_clicked if __rec_goods_bag_tag_clicked is not None else __rec_goods_bag_tag_clickable if __rec_goods_bag_tag_clickable is not None else None
 
@@ -1018,12 +1084,12 @@ class UserGoods(TruckCar):
             for i in range(10):
                 # 等待10秒
                 time.sleep(1)
-                __rec_yf_goods_ready = self.windows.find_windows_coordinate_rect(hwnd, img=self._load_pic(__yf_goods_ready))
+                __rec_yf_goods_ready = self.windows.find_windows_coordinate_rect(hwnd,
+                                                                                 img=self._load_pic(__yf_goods_ready))
 
-                if __rec_yf_goods_ready is not None or self.ocr.find_ocr(image=self.windows.capture(hwnd).pic_content, temp_text="不断跑动跳跃"):
+                if __rec_yf_goods_ready is not None or self.ocr.find_ocr(image=self.windows.capture(hwnd).pic_content,
+                                                                         temp_text="不断跑动跳跃"):
                     SetGhostBoards().click_press_and_release_by_key_code_hold_time(66, 0.3)
                     return True
         SetGhostBoards().click_press_and_release_by_key_code_hold_time(66, 0.3)
         return False
-
-
