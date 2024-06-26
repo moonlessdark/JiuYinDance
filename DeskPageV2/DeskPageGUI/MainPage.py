@@ -4,9 +4,9 @@ import sys
 import time
 
 from PySide6 import QtWidgets, QtCore, QtGui
-from PySide6.QtCore import Qt, QObject, QEvent, QSettings
-from PySide6.QtGui import QIcon, QAction, QIntValidator
-from PySide6.QtWidgets import QApplication, QListWidget, QMessageBox, QHeaderView
+from PySide6.QtCore import Qt, QObject, QEvent
+from PySide6.QtGui import QIcon, QIntValidator
+from PySide6.QtWidgets import QApplication, QListWidget, QHeaderView
 
 from DeskPageV2.DeskPageGUI.MarkdownViewer import MarkdownViewer
 
@@ -194,7 +194,7 @@ class MainGui(QtWidgets.QMainWindow):
         self.push_button_start_or_stop_execute = QtWidgets.QPushButton(self.group_box_get_windows)
         self.push_button_start_or_stop_execute.setText("开始执行")
         self.push_button_start_or_stop_execute.setEnabled(False)
-        self.push_button_start_or_stop_execute.setToolTip("快捷键: F11")
+        # self.push_button_start_or_stop_execute.setToolTip("快捷键: F11")
 
         # 加载一个横向的布局
         self.layout_group_box_get_windows = QtWidgets.QHBoxLayout(self.group_box_get_windows)

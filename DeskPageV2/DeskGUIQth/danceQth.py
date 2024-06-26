@@ -87,12 +87,7 @@ def check_windows_size(w: int, h: int) -> int:
              0: 不符合要求，游戏画面低于1366*768，无法继续执行
     """
     result_type: int = 0
-    if w >= 1366 or h >= 768:
-        """
-        窗口分辨率正常
-        """
-        result_type = 3
-    elif min(w, h) == 0 and max(w, h) > 768:
+    if min(w, h) == 0 and max(w, h) > 0:
         """
         最小值是0，最大值有值，说明是在按下按钮后的画面
         """
@@ -102,6 +97,11 @@ def check_windows_size(w: int, h: int) -> int:
         截图的宽高都是0，表示窗口都是黑色的，可能是在过图或者单纯的游戏画面黑屏了,需要继续等待画面
         """
         result_type = 1
+    elif w >= 1340 or h >= 725:
+        """
+        窗口分辨率正常
+        """
+        result_type = 3
     return result_type
 
 
@@ -223,15 +223,16 @@ class DanceThByFindPic(QThread):
                     self.working = False
                     break
 
+                __pic_contents: PicCapture = self.windows_cap.capture(windows_this_handle)
                 # 开始检查分辨率是否正常
-                windows_check_result: int = check_windows_size(w=pic_contents.pic_width, h=pic_contents.pic_height)
+                windows_check_result: int = check_windows_size(w=__pic_contents.pic_width, h=__pic_contents.pic_height)
                 if windows_check_result == 0:
                     """
                     如果分辨率太低了
                     """
                     if wait_game_pic is False:
-                        # self.sin_out.emit(f"游戏窗口分辨率过低，请重新设置游戏窗口m分辨率大于1366*768。\n"
-                        #                   f"当前分辨率为 {pic_contents.pic_width}*{pic_contents.pic_height} 。")
+                        self.sin_out.emit(f"游戏窗口分辨率过低，请重新设置游戏窗口m分辨率大于1366*768。\n"
+                                          f"当前分辨率为 {__pic_contents.pic_width}*{__pic_contents.pic_height} 。")
                         self.sin_out.emit("等待窗口刷新...")
                     else:
                         self.sin_out.emit("等待窗口刷新...")
@@ -249,7 +250,7 @@ class DanceThByFindPic(QThread):
                     if wait_game_pic:
                         wait_game_pic = False
                         self.sin_out.emit(f"游戏窗口分辨率已经符合要求。\n"
-                                          f"当前分辨率为 {pic_contents.pic_width}*{pic_contents.pic_height} 。\n"
+                                          f"当前分辨率为 {__pic_contents.pic_width}*{__pic_contents.pic_height} 。\n"
                                           f"继续检测游戏窗口...")
 
                 # 开始检查是否有按钮出现

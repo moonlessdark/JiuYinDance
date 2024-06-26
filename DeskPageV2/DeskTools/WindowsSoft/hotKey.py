@@ -16,7 +16,7 @@ class HotKey(QThread):
     def run(self):
         user32 = windll.user32
         while True:
-            if not user32.RegisterHotKey(None, 1, 0, win32con.VK_F11):  # alt+~
+            if not user32.RegisterHotKey(None, 1, 0, fnkey=win32con.MOD_ALT, vkey=win32con.VK_F11):  # alt+~
                 pass
             try:
                 msg = MSG()
