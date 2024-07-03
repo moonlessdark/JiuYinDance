@@ -5,6 +5,12 @@
 <img src="https://github.com/moonlessdark/JiuYinDance/blob/master/DeskPageV2/Resources/cover.png">
 </div>
 
+## 特别提示：  
+如果该脚本被微软的杀毒软件(Windows Defender)报毒，请按照此教程给出的方案处理。  
+https://segmentfault.com/q/1010000039054120/a-1020000039066088  
+
+
+
 ## 前言:  
 本项目是用于学习opencv与PySide6的实操作品，仅供学习。免费作品,请勿用于商业。  
 
