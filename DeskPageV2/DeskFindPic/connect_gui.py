@@ -1,7 +1,7 @@
 import platform
 import time
 
-from PySide6 import QtWidgets
+from PySide6 import QtWidgets, QtCore
 from PySide6.QtGui import QTextCursor
 
 from PySide6.QtWidgets import QMessageBox
@@ -113,6 +113,10 @@ class Dance(MainGui):
 
         # 获取竞拍物品列表
         self.push_button_market_get_goods_list.clicked.connect(self.get_screen_market_goods_list)
+
+        # 设置技能
+        self._button_save_skill_table.clicked.connect(self.save_skill_table)
+        self.action_edit_skill_list.triggered.connect(self.open_skill_table)
 
     def hot_key_event(self, data):
         # print(f"当前按下的键盘value是——{data}")
@@ -681,4 +685,90 @@ class Dance(MainGui):
             return None
         return _goods_price_list
 
+    def __load_skill_table(self):
+        _skill_obj: dict = self.file_config.get_skill_group_list().get("打怪套路")  # 当前正在使用的技能组
 
+        self._skill_table.clear()
+        self._skill_table.setHorizontalHeaderLabels(['技能名', '技能冷却(秒)', '释放时间(秒)', '释放优先级', '键盘Key'])
+
+        row_index: int = 0
+        for skill_name in _skill_obj:
+            if self._skill_table.rowCount() < row_index + 1:
+                self._skill_table.insertRow(self._skill_table.rowCount())
+
+            # 技能名称
+            item = QtWidgets.QTableWidgetItem(str(skill_name).format(row_index, 1))
+            item.setTextAlignment(QtCore.Qt.AlignCenter)
+            self._skill_table.setItem(row_index, 0, QtWidgets.QTableWidgetItem(item))
+
+            _skill: dict = _skill_obj.get(skill_name)
+            # 技能CD
+            if _skill.get("CD") is not None:
+                column_index: int = 1
+                item = QtWidgets.QTableWidgetItem(str(_skill.get("CD")).format(row_index, column_index))
+                item.setTextAlignment(QtCore.Qt.AlignCenter)
+                self._skill_table.setItem(row_index, column_index, QtWidgets.QTableWidgetItem(item))
+
+            # 技能释放时间
+            if _skill.get("active_cd") is not None:
+                column_index: int = 2
+                item = QtWidgets.QTableWidgetItem(str(_skill.get("active_cd")).format(row_index, column_index))
+                item.setTextAlignment(QtCore.Qt.AlignCenter)
+                self._skill_table.setItem(row_index, column_index, QtWidgets.QTableWidgetItem(item))
+            # 技能释放优先级
+            if _skill.get("level") is not None:
+                column_index: int = 3
+                item = QtWidgets.QTableWidgetItem(str(_skill.get("level")).format(row_index, column_index))
+                item.setTextAlignment(QtCore.Qt.AlignCenter)
+                self._skill_table.setItem(row_index, column_index, QtWidgets.QTableWidgetItem(item))
+            # 技能释放优先级
+            if _skill.get("key") is not None:
+                column_index: int = 4
+                item = QtWidgets.QTableWidgetItem(str(_skill.get("key")).format(row_index, column_index))
+                item.setTextAlignment(QtCore.Qt.AlignCenter)
+                self._skill_table.setItem(row_index, column_index, QtWidgets.QTableWidgetItem(item))
+            row_index += 1
+
+    def open_skill_table(self):
+        if self.dialog_skill_table.isVisible() is False:
+            self.__load_skill_table()
+            self.dialog_skill_table.setVisible(True)
+
+    def save_skill_table(self):
+        """
+        保存技能设置
+        {
+  "打怪套路": {
+    "梵心降魔": {"CD": 2, "active_cd": 1, "level": 2, "key": "Q"},
+    "三阳开泰": {"CD": 6, "active_cd": 1.8, "level": 1, "key": "R"},
+    "五气呈祥": {"CD": 2, "active_cd": 1, "level": 2, "key": "1"},
+    "罡风推云": {"CD": 6, "active_cd": 1, "level": 3, "key": "3"},
+    "气贯长虹": {"CD": 8, "active_cd": 1, "level": 2, "key": "2"}
+  }
+}
+        """
+        skill_dict_json: dict = {}
+        skill_group_name: str = "打怪套路"
+        for row in range(self._skill_table.rowCount()):
+
+            _skill_name: str = ""
+            _skill_cd: int = 0
+            _skill_active_cd: float = 0.0
+            _skill_level: int = 0
+            _skill_key: str = ""
+
+            for cum in range(self._skill_table.columnCount()):
+                __content = self._skill_table.item(row, cum).text()
+                if cum == 0:
+                    _skill_name = __content
+                elif cum == 1:
+                    _skill_cd = int(__content)
+                elif cum == 2:
+                    _skill_active_cd = float(__content)
+                elif cum == 3:
+                    _skill_level = int(__content)
+                elif cum == 4:
+                    _skill_key = __content
+            skill_dict_json[str(_skill_name)] = {"CD": _skill_cd, "active_cd": _skill_active_cd, "level": _skill_level, "key": _skill_key}
+        self.file_config.update_skill_group_list(_skill_dict=skill_dict_json)
+        self.show_dialog("保存成功")

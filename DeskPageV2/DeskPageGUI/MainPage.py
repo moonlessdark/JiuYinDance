@@ -93,6 +93,9 @@ class MainGui(QtWidgets.QMainWindow):
         file_menu.addAction(action_edit_config_file)
         action_edit_config_file.triggered.connect(self.edit_config_file)
 
+        self.action_edit_skill_list = QtGui.QAction("编辑技能", self)
+        file_menu.addAction(self.action_edit_skill_list)
+
         action_open_url = QtGui.QAction("访问项目", self)
         about_menu.addAction(action_open_url)
         action_open_url.triggered.connect(self.open_url_project)
@@ -344,6 +347,59 @@ class MainGui(QtWidgets.QMainWindow):
         self.addDockWidget(QtCore.Qt.DockWidgetArea.RightDockWidgetArea, self.widget_dock_setting)
         self.widget_dock_setting.setVisible(False)
         self.widget_dock_setting.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable)  # dockWidget窗口禁止回到主窗口
+
+        """
+        配置打怪技能
+        """
+        self.dialog_skill_table = QtWidgets.QDialog(self)
+        self.dialog_skill_table.setWindowTitle("设置技能")
+        self.dialog_skill_table.resize(530, 300)
+        self._skill_table = QtWidgets.QTableWidget(self.dialog_skill_table)
+        self._skill_table.setRowCount(1)
+        self._skill_table.setColumnCount(5)
+        __widget = QtWidgets.QWidget()
+        self._button_add_skill_table_row = QtWidgets.QPushButton("新增")
+        self._button_del_skill_table_row = QtWidgets.QPushButton("删除")
+        self._button_save_skill_table = QtWidgets.QPushButton("保存")
+
+        __lay_table_ui_button = QtWidgets.QHBoxLayout(__widget)
+        __lay_table_ui_button.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight)
+        __lay_table_ui_button.addWidget(self._button_add_skill_table_row)
+        __lay_table_ui_button.addWidget(self._button_del_skill_table_row)
+        __lay_table_ui_button.addWidget(self._button_save_skill_table)
+        __lay_table_ui_button.setSpacing(1)
+
+        __lay_table_ui = QtWidgets.QVBoxLayout(self.dialog_skill_table)
+        __lay_table_ui.addWidget(__widget)
+        __lay_table_ui.addWidget(self._skill_table)
+        __lay_table_ui.setSpacing(2)
+        __lay_table_ui.setContentsMargins(5, 5, 5, 5)
+
+        self._button_add_skill_table_row.clicked.connect(self.add_skill_table_row)
+        self._button_del_skill_table_row.clicked.connect(self.del_skill_table_row)
+
+    def del_skill_table_row(self):
+        """
+        删除行，需要选中具体的行
+        :return:
+        """
+        selected_row = self._skill_table.currentRow()
+        if selected_row == 0 and not self._skill_table.selectedItems():
+            QtWidgets.QMessageBox.information(self, '提示', "请选择需要删除的技能")
+            return False
+        self._skill_table.removeRow(selected_row)
+        return True
+
+    def add_skill_table_row(self):
+        """
+        新增行
+        如果没有选择制定的行，那么就插入在最后面
+        :return:
+        """
+        selected_row = self._skill_table.currentRow() + 1
+        if not self._skill_table.selectedItems():
+            selected_row = self._skill_table.rowCount()
+        self._skill_table.insertRow(selected_row)
 
     def open_config_file(self):
         """

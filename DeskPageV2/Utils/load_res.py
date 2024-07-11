@@ -162,6 +162,19 @@ class GetConfig:
             res = json.loads(fs)
             return res
 
+    def update_skill_group_list(self, *args, **kwargs):
+        """
+        更新配置文件
+        :param kwargs: dance_threshold, whz_dance_threshold, is_debug
+
+        :return:
+        """
+        dict_skill: dict = {}
+        with open(_get_dir_skill_group(), 'w', encoding="gbk") as file:
+            dict_skill["打怪套路"] = kwargs.get("_skill_dict")
+            json.dump(dict_skill, file, ensure_ascii=False, indent=4)
+
+
     @staticmethod
     def save_key_even_code_auto_list(key_list: list):
         """

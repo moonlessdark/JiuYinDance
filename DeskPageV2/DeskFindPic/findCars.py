@@ -353,12 +353,12 @@ class FightMonster(TruckCar):
                 SetGhostBoards().click_press_and_release_by_key_code_hold_time(32, 0.5)
 
                 SetGhostBoards().click_press_and_release_by_key_code_hold_time(32, 0.5)
-                time.sleep(2)
+                time.sleep(1)
             else:
                 if is_skill_tag_status == 1:
                     # 表示放技能的图标已经消失了，
                     # print("怪结束放技能了，多格挡2秒")
-                    time.sleep(2)
+                    time.sleep(1)
                     is_skill_tag_status = 0
                     # SetGhostMouse().release_mouse_right_button()  # 放开格挡
             if self.check_fight_status(hwnd) is False:
