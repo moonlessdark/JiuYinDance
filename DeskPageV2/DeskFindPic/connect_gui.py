@@ -572,8 +572,8 @@ class Dance(MainGui):
         def get_all_items(list_widget):
             items = []
             for i in range(list_widget.count()):
-                item = list_widget.item(i)
-                items.append(item.text())
+                item_text = list_widget.item(i)
+                items.append(item_text.text())
             return items
 
         key_list: list = []
@@ -748,7 +748,6 @@ class Dance(MainGui):
 }
         """
         skill_dict_json: dict = {}
-        skill_group_name: str = "打怪套路"
         for row in range(self._skill_table.rowCount()):
 
             _skill_name: str = ""
@@ -769,6 +768,7 @@ class Dance(MainGui):
                     _skill_level = int(__content)
                 elif cum == 4:
                     _skill_key = __content
-            skill_dict_json[str(_skill_name)] = {"CD": _skill_cd, "active_cd": _skill_active_cd, "level": _skill_level, "key": _skill_key}
+            skill_dict_json[str(_skill_name)] = {"CD": _skill_cd, "active_cd": _skill_active_cd, "level": _skill_level,
+                                                 "key": _skill_key}
         self.file_config.update_skill_group_list(_skill_dict=skill_dict_json)
-        self.show_dialog("保存成功")
+        self.show_dialog("保存成功,请重启脚本")
