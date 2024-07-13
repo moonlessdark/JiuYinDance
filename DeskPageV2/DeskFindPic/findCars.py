@@ -341,6 +341,7 @@ class FightMonster(TruckCar):
         """
         is_skill_tag_status: int = 0  # 是否结束释放按钮， 0,表示 初始化，1 表示 技能条出现中，2表示技能条结束
         SetGhostMouse().press_mouse_right_button()
+        time.sleep(0.1)
         while 1:
             if self._check_monster_skill_status(hwnd):
                 # print("怪要放技能了，进行格挡")
@@ -351,16 +352,13 @@ class FightMonster(TruckCar):
                 #     SetGhostMouse().press_mouse_right_button()
                 # continue
                 SetGhostBoards().click_press_and_release_by_key_code_hold_time(32, 0.5)
-
                 SetGhostBoards().click_press_and_release_by_key_code_hold_time(32, 0.5)
-                time.sleep(1)
+                time.sleep(2)  # 2秒等待刚好落地
             else:
                 if is_skill_tag_status == 1:
                     # 表示放技能的图标已经消失了，
-                    # print("怪结束放技能了，多格挡2秒")
-                    time.sleep(2)
+                    # time.sleep(0.5)
                     is_skill_tag_status = 0
-                    # SetGhostMouse().release_mouse_right_button()  # 放开格挡
             if self.check_fight_status(hwnd) is False:
                 """
                 如果怪消失了,右上角没有怪的buff了
