@@ -80,6 +80,10 @@ class TruckCarTaskQth(QThread):
 
         time.sleep(5)
 
+        SetGhostMouse().press_mouse_right_button()
+        time.sleep(0.5)
+        SetGhostMouse().release_mouse_right_button()
+
         self.__get_task.reply_person_perspective_up(self.windows_handle)  # 初始化视角
         self.sin_out.emit("初始化视角...")
 
@@ -215,6 +219,12 @@ class TruckCarTaskQth(QThread):
                         continue
 
                     if is_can_go_car:
+
+                        if self.__transport_task.check_task_status(self.windows_handle) is False:
+                            # 如果打完怪后，右上角的押镖tag消失了，那么就可以结束了
+                            __task_status = 6
+                            continue
+
                         if self.__transport_task.transport_truck(self.windows_handle) is False:
                             # 失败次数+1
                             mutex.acquire()

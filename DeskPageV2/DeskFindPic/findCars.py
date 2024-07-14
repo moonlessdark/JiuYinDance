@@ -346,11 +346,7 @@ class FightMonster(TruckCar):
             if self._check_monster_skill_status(hwnd):
                 # print("怪要放技能了，进行格挡")
                 is_skill_tag_status = 1
-                # if SetGhostMouse().is_mouse_button_pressed(3) is False:
-                #     print("怪要放技能了，进行格挡")
-                #     # 如果当前状态时格挡中
-                #     SetGhostMouse().press_mouse_right_button()
-                # continue
+
                 SetGhostBoards().click_press_and_release_by_key_code_hold_time(32, 0.5)
                 SetGhostBoards().click_press_and_release_by_key_code_hold_time(32, 0.5)
                 time.sleep(2)  # 2秒等待刚好落地
@@ -392,6 +388,7 @@ class FightMonster(TruckCar):
         if self.__fight_func(hwnd):
             time.sleep(3)
             return True
+        return False
 
 
 class TeamFunc(TruckCar):
