@@ -340,7 +340,11 @@ class FightMonster(TruckCar):
         打怪啊
         """
         is_skill_tag_status: int = 0  # 是否结束释放按钮， 0,表示 初始化，1 表示 技能条出现中，2表示技能条结束
-        SetGhostMouse().press_mouse_right_button()
+
+        if SetGhostMouse().is_mouse_button_pressed(3) is False:
+            # print("鼠标右键未按住，开始格挡")
+            SetGhostMouse().press_mouse_right_button()
+
         time.sleep(0.1)
         while 1:
             if self._check_monster_skill_status(hwnd):
@@ -379,11 +383,16 @@ class FightMonster(TruckCar):
         """
 
         WindowsHandle().activate_windows(hwnd)
+
+        # 避免异常,先释放一下所有按钮和鼠标
+        SetGhostMouse().release_all_mouse_button()
+        SetGhostBoards().release_all_key()
+
         time.sleep(0.5)
         # 按一下tab,锁定一下NPC怪
         SetGhostBoards().click_press_and_release_by_code(9)
-
-        SetGhostMouse().click_mouse_right_button()  # 按住鼠标右键
+        time.sleep(0.2)
+        # SetGhostMouse().click_mouse_right_button()  # 按住鼠标右键
 
         if self.__fight_func(hwnd):
             time.sleep(3)
