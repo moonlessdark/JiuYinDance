@@ -107,7 +107,7 @@ class GetHandleList:
             return True
         except Exception as e:
             return False
-
+    
     @staticmethod
     def set_allow_set_foreground_window():
         """

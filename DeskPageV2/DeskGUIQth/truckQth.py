@@ -258,7 +258,6 @@ class TruckCarTaskQth(QThread):
                             self.sin_out.emit(f"本次押镖(第{count_i + 1}轮已经完成)")
                         else:
                             self.sin_out.emit("押镖未完成，超时或者镖车被毁")
-
                     mutex.acquire()
                     # 参数初始化我
                     is_not_in_car_sum = 0  # 已经连续多少次没有找到镖车

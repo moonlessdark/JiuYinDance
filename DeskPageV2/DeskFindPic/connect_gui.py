@@ -131,6 +131,7 @@ class Dance(MainGui):
         在这里主要是断开幽灵键鼠的连接
         """
         SetGhostBoards().release_all_key()  # 释放所有按钮
+        SetGhostBoards().close_device()
         time.sleep(0.1)
 
     @staticmethod
@@ -524,6 +525,7 @@ class Dance(MainGui):
         检测游戏窗口.对当前活跃的游戏窗口进行检测
         :return:
         """
+
         handle_list = self.check_handle_is_selected()
         if len(handle_list) == 0:
             self.print_logs("请勾选需要测试的窗口", is_clear=True)
@@ -537,6 +539,7 @@ class Dance(MainGui):
                         continue
                     else:
                         if self.keyboard_type == "ghost":
+
                             SetGhostBoards().click_press_and_release_by_key_name("K")
                         else:
                             getKeyBoardMouse().key_press_char("K")
