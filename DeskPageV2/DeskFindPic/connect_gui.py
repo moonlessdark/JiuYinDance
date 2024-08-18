@@ -6,6 +6,7 @@ from PySide6.QtGui import QTextCursor, QFont
 
 from PySide6.QtWidgets import QMessageBox
 
+from DeskPageV2.DeskFindPic.findChengyuInput import ChengYuInput
 from DeskPageV2.DeskGUIQth.UIQth import QProgressBarQth
 from DeskPageV2.DeskGUIQth.danceQth import (DanceThByFindPic, ScreenGameQth)
 from DeskPageV2.DeskGUIQth.keyAutoQth import AutoPressKeyQth
@@ -28,6 +29,7 @@ class Dance(MainGui):
     """
 
     file_config = GetConfig()
+    chengyu = ChengYuInput()
 
     _fight_monster_qth_sub_thread = None  # 线程对象
     _find_track_qth_sub_thread = None  # 线程对象
@@ -124,6 +126,7 @@ class Dance(MainGui):
         self.th_chengyu.sin_out.connect(self.print_chengyu)
         self.th_chengyu.sin_out_non.connect(self.print_logs)
         self.th_chengyu.sin_work_status.connect(self._th_execute_stop)
+        self.push_button_chengyu_search.clicked.connect(self.search_chengyu)
 
     def hot_key_event(self, data):
         # print(f"当前按下的键盘value是——{data}")
@@ -794,7 +797,7 @@ class Dance(MainGui):
 
     def print_chengyu(self, chengyu_list: list):
         _chengyu_dialog = QtWidgets.QDialog(self)
-        _chengyu_dialog.setWindowTitle("查询到的成语")
+        _chengyu_dialog.setWindowTitle("可能的成语推荐")
         _chengyu_dialog.resize(300, 300)
         _chengyu_dialog.setFixedWidth(300)
 
@@ -828,3 +831,47 @@ class Dance(MainGui):
         _lay_out_chengyu_table = QtWidgets.QVBoxLayout(_chengyu_dialog)
         _lay_out_chengyu_table.addWidget(_table_chengyu)
         _lay_out_chengyu_table.setContentsMargins(5, 5, 5, 5)
+
+    def search_chengyu(self):
+        """
+        查询成语
+        """
+
+        _search_key_str = [self.line_edit_chengyu_input_1.text(), self.line_edit_chengyu_input_2.text(),
+                           self.line_edit_chengyu_input_3.text(), self.line_edit_chengyu_input_4.text()]
+
+        _wait_search_key: list = []
+        for key_search_str in _search_key_str:
+            if key_search_str == "":
+                continue
+            _wait_search_key.append(key_search_str)
+        if len(_wait_search_key) == 0:
+            self.show_dialog("请输入查询条件")
+            return None
+
+        _res_search_chengyu: list = self.chengyu.search_chengyu(_wait_search_key)
+        if len(_res_search_chengyu) == 0:
+            self.show_dialog("未查询到相关成语")
+            return None
+
+        self.table_chengyu_search.setRowCount(1)
+        self.table_chengyu_search.setColumnCount(4)
+        self.table_chengyu_search.setFont(QFont('SansSerif', 15))
+        for col in range(self.table_chengyu_search.columnCount()):
+            self.table_chengyu_search.setColumnWidth(col, 60)
+
+        self.table_chengyu_search.horizontalHeader().hide()
+
+        try:
+
+            for row in range(len(_res_search_chengyu)):
+                for column in range(self.table_chengyu_search.columnCount()):
+
+                    if self.table_chengyu_search.rowCount() < row + 1:
+                        self.table_chengyu_search.insertRow(self.table_chengyu_search.rowCount())
+
+                    item = QtWidgets.QTableWidgetItem(_res_search_chengyu[row][column])  # 创建数据项
+                    item.setTextAlignment(QtCore.Qt.AlignCenter)
+                    self.table_chengyu_search.setItem(row, column, item)  # 插入数据项
+        except Exception as e:
+            raise e

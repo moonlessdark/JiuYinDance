@@ -54,7 +54,8 @@ class ChengYuInput:
             (['纷', '至', '来'], '沓'),
             (['莫', '衷', '是'], '一'),
             (['老', '奸', '巨'], '猾'),
-            (['患', '难', '与'], '共')
+            (['患', '难', '与'], '共'),
+            (['云', '覆', '雨'], '翻')
         ]
         for chengyu_str in less_chengyu:
             if set(list(chengyu_str[0])).issubset(str_list) is True:
@@ -151,28 +152,44 @@ class ChengYuInput:
         result_list: list = []
         for chengyu_str in self._chengyu_json_load:
             str_result_sum: int = 0
+
             for chengyu_len_str in chengyu_str:
                 if chengyu_len_str in new_list:
                     str_result_sum += 1
             if len(chengyu_str) > 4:
                 continue
-            if str_result_sum == 4:
-                # 4字成语
-                # print(f"当前有成语 {chengyu_str} 符合条件")
-                # 好了，初步过滤出来后，再精确过滤一遍
-                # 每个成语中必须保持上下2个数据都有字符出现，并且每个字符只出现一次
-                res_up_list = []
-                res_down_list = []
-                for chengyu_result_key in chengyu_str:
-                    if chengyu_result_key in _key_input:
-                        res_up_list.append(chengyu_result_key)
-                    elif chengyu_result_key in _key_wait:
-                        res_down_list.append(chengyu_result_key)
-                if min(len(res_up_list), len(res_down_list)) > 0:
-                    # print(f"当前有成语 {chengyu_str} 符合条件")
-                    result_list.append(chengyu_str)
+            if str_result_sum >= 4:
+                result_list.append(chengyu_str)
+        return list(set(result_list))
 
-        return result_list
+    def search_chengyu(self, key_str: list) -> list:
+        """
+        查询成语
+        """
+        if len(self._chengyu_json_load) == 0:
+            with open(self.chengyu_pic_file_json, "r", encoding='UTF-8') as f:
+                data = json.load(f)
+
+                for dict_key in data:
+                    self._chengyu_json_load.append(dict_key.get("word"))
+        _wait_search_key: list = key_str
+
+        if len(_wait_search_key) == 0:
+            return []
+        result_list: list = []
+        for chengyu_str in self._chengyu_json_load:
+            if len(chengyu_str) != 4:
+                # 我们只查询4个字的成语
+                continue
+            _is_equal: bool = True
+            for wai_s in _wait_search_key:
+                if wai_s not in chengyu_str:
+                    # 如果出现待查询的字符不在此成语中
+                    _is_equal = False
+                    break
+            if _is_equal:
+                result_list.append(chengyu_str)
+        return sorted(list(set(result_list)))
 
 
 if __name__ == '__main__':
