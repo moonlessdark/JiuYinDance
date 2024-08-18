@@ -441,7 +441,7 @@ class MainGui(QtWidgets.QMainWindow):
         _lay_out_chengyu_search_input.addWidget(self.line_edit_chengyu_input_4)
 
         self.push_button_chengyu_search = QtWidgets.QPushButton("搜索")
-        self.push_button_chengyu_search.setToolTip("输入关键字模糊查询成语")
+        self.push_button_chengyu_search.setToolTip("输入关键字模糊查询成语,每个输入框只能输入一个文字")
 
         _lay_out_chengyu_search_search = QtWidgets.QHBoxLayout()
         _lay_out_chengyu_search_search.addLayout(_lay_out_chengyu_search_input)
