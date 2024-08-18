@@ -196,3 +196,13 @@ class MarketPic:
     plus_price_10: str = dataclasses.field(default_factory=str)
     plus_price_100: str = dataclasses.field(default_factory=str)
     summit_price: str = dataclasses.field(default_factory=str)
+
+
+@dataclasses.dataclass
+class ChengYuPic:
+    # 世界竞拍
+    down_move: str = dataclasses.field(default_factory=str)
+    idiom: str = dataclasses.field(default_factory=str)
+    up_move: str = dataclasses.field(default_factory=str)
+    l_r_tag: str = dataclasses.field(default_factory=str)
+    unlock: str = dataclasses.field(default_factory=str)

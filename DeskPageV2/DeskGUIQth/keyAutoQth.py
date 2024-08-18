@@ -60,7 +60,7 @@ class AutoPressKeyQth(QThread):
     def run(self):
         self.mutex.lock()  # 先加锁
         key_code_list = qt_key_get_ghost_key_code(self.key_press_list)
-        print(key_code_list)
+        # print(key_code_list)
         for count_i in range(self.press_count):
             if self.working is False:
                 break

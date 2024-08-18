@@ -7,11 +7,9 @@ import time
 import cv2
 import numpy
 import numpy as np
-from typing import List
 
 from numpy import fromfile
 
-from DeskPageV2.DeskTools.WindowsSoft.MonitorDisplay import coordinate_change_from_windows
 from DeskPageV2.DeskTools.WindowsSoft.findOcr import FindPicOCR
 from DeskPageV2.DeskTools.WindowsSoft.get_windows import find_pic, find_area
 from DeskPageV2.Utils.load_res import GetConfig
@@ -60,7 +58,7 @@ class FindAuctionMarket:
     def __check_summit_price_clicked(button_image: np.ndarray):
         """
         检测确认出价按钮是否高亮可点击
-        :param person_image:
+        :param button_image:
         """
         hsv_image = cv2.cvtColor(button_image, cv2.COLOR_BGR2HSV)
 

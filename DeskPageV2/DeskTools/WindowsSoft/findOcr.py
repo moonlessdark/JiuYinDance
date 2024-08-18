@@ -10,7 +10,9 @@ import cv2
 class FindPicOCR:
 
     def __init__(self):
-        self.text_sys = TextSystem(use_angle_cls=True)
+        self.text_sys = TextSystem(use_angle_cls=True,
+                                   box_thresh=0.6,
+                                   unclip_ratio=1.5)
 
     @staticmethod
     def _format_img(image: np.ndarray) -> np.ndarray:

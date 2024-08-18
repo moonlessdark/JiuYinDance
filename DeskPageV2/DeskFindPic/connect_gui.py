@@ -2,7 +2,7 @@ import platform
 import time
 
 from PySide6 import QtWidgets, QtCore
-from PySide6.QtGui import QTextCursor
+from PySide6.QtGui import QTextCursor, QFont
 
 from PySide6.QtWidgets import QMessageBox
 
@@ -19,6 +19,7 @@ from DeskPageV2.Utils.dataClass import DmDll, GhostDll, Config
 from DeskPageV2.Utils.keyEvenQTAndGhost import check_ghost_code_is_def
 from DeskPageV2.Utils.load_res import GetConfig
 from DeskPageV2.DeskFindPic.findAuctionMarket import FindAuctionMarket
+from DeskPageV2.DeskGUIQth.chengYuQth import ChengYuQth
 
 
 class Dance(MainGui):
@@ -39,6 +40,7 @@ class Dance(MainGui):
         self.th_progress_bar = QProgressBarQth()
         self.th_key_press_auto = AutoPressKeyQth()
         self.th_market = MarKetQth()
+        self.th_chengyu = ChengYuQth()
 
         # 押镖
         self.th_truck_task = TruckCarTaskQth()  # 运镖
@@ -117,6 +119,11 @@ class Dance(MainGui):
         # 设置技能
         self._button_save_skill_table.clicked.connect(self.save_skill_table)
         self.action_edit_skill_list.triggered.connect(self.open_skill_table)
+
+        # 成语填空
+        self.th_chengyu.sin_out.connect(self.print_chengyu)
+        self.th_chengyu.sin_out_non.connect(self.print_logs)
+        self.th_chengyu.sin_work_status.connect(self._th_execute_stop)
 
     def hot_key_event(self, data):
         # print(f"当前按下的键盘value是——{data}")
@@ -369,12 +376,13 @@ class Dance(MainGui):
         self.th.stop_execute_init()
         # 键盘连按
         self.th_key_press_auto.stop_execute_init()
-
         # 世界竞拍
         self.th_market.stop_execute_init()
         # 押镖
         self.truck_task_func_switch(step=0)
         self.th_truck_task.set_close()
+        # 成语填空
+        self.th_chengyu.stop_execute_init()
         # 进度条跑马灯
         self.th_progress_bar.stop_init()
         self.__update_ui_changed_execute_button_text_and_status(False)
@@ -473,6 +481,14 @@ class Dance(MainGui):
                         # 开始执行跑马灯效果
                         self.th_progress_bar.start_init()
                         self.th_progress_bar.start()
+            elif self.radio_button_chengyu_input.isChecked():
+                self.th_chengyu.get_param(windows_handle=windows_list)
+                self.th_chengyu.start()
+                self.__update_ui_changed_execute_button_text_and_status(True)
+                # 开始执行跑马灯效果
+                self.th_progress_bar.start_init()
+                self.th_progress_bar.start()
+
             else:
                 self.print_logs("还未选择需要执行的功能")
 
@@ -775,3 +791,40 @@ class Dance(MainGui):
                                                  "key": _skill_key}
         self.file_config.update_skill_group_list(_skill_dict=skill_dict_json)
         self.show_dialog("保存成功,请重启脚本")
+
+    def print_chengyu(self, chengyu_list: list):
+        _chengyu_dialog = QtWidgets.QDialog(self)
+        _chengyu_dialog.setWindowTitle("查询到的成语")
+        _chengyu_dialog.resize(300, 300)
+        _chengyu_dialog.setFixedWidth(300)
+
+        _table_chengyu = QtWidgets.QTableWidget()
+        _table_chengyu.setRowCount(1)
+        _table_chengyu.setColumnCount(4)
+        _table_chengyu.setFont(QFont('SansSerif', 15))
+        for col in range(_table_chengyu.columnCount()):
+            _table_chengyu.setColumnWidth(col, 60)
+
+        _table_chengyu.horizontalHeader().hide()
+
+        try:
+
+            for row in range(len(chengyu_list)):
+                for column in range(_table_chengyu.columnCount()):
+
+                    if _table_chengyu.rowCount() < row + 1:
+                        _table_chengyu.insertRow(_table_chengyu.rowCount())
+
+                    item = QtWidgets.QTableWidgetItem(chengyu_list[row][column])  # 创建数据项
+                    item.setTextAlignment(QtCore.Qt.AlignCenter)
+                    _table_chengyu.setItem(row, column, item)  # 插入数据项
+        except Exception as e:
+            raise e
+        if _chengyu_dialog.isVisible() is False:
+            _chengyu_dialog.show()
+            # _table_chengyu.setColumnWidth(0, 75)
+            # _table_chengyu.resizeColumnsToContents()
+            _table_chengyu.show()
+        _lay_out_chengyu_table = QtWidgets.QVBoxLayout(_chengyu_dialog)
+        _lay_out_chengyu_table.addWidget(_table_chengyu)
+        _lay_out_chengyu_table.setContentsMargins(5, 5, 5, 5)

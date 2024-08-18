@@ -110,3 +110,9 @@ team:
   flag_team: /Resources/Team/team_mark.png
   flag_team_status: /Resources/Team/队伍标志.png
   leave_team: /Resources/Team/解散队伍.png
+ShaMo:
+  down_move: /Resources/ShaMo/down_move.png
+  idiom: /Resources/ShaMo/idiom.json
+  up_move: /Resources/ShaMo/up_move.png
+  l_r_tag: /Resources/ShaMo/l_r_tag.png
+  unlock: /Resources/ShaMo/unlock.png

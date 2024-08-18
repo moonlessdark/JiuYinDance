@@ -4,7 +4,7 @@ import json
 import yaml
 
 from DeskPageV2.Utils.dataClass import DancePic, WhzDancePic, DmDll, GhostDll, Config, Team, TruckCarPic, \
-    FindTruckCarTaskNPC, TruckCarReceiveTask, MarketPic, Goods, MapPic
+    FindTruckCarTaskNPC, TruckCarReceiveTask, MarketPic, Goods, MapPic, ChengYuPic
 from DeskPageV2.Utils.project_path import PathUtil
 
 
@@ -302,6 +302,16 @@ class GetConfig:
         __market_pic.plus_price_100 = self.project_dir + self.__datas["MarketPic"]["plus_price_100"]
         __market_pic.summit_price = self.project_dir + self.__datas["MarketPic"]["summit_price"]
         return __market_pic
+
+    def get_chengyu_pic(self) -> ChengYuPic:
+        # 成语填空
+        __chengyu = ChengYuPic()
+        __chengyu.idiom = self.project_dir + self.__datas["ShaMo"]["idiom"]
+        __chengyu.up_move = self.project_dir + self.__datas["ShaMo"]["up_move"]
+        __chengyu.down_move = self.project_dir + self.__datas["ShaMo"]["down_move"]
+        __chengyu.unlock = self.project_dir + self.__datas["ShaMo"]["unlock"]
+        __chengyu.l_r_tag = self.project_dir + self.__datas["ShaMo"]["l_r_tag"]
+        return __chengyu
 
 
 if __name__ == '__main__':
