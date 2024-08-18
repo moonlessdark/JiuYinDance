@@ -59,7 +59,7 @@ class MainGui(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.resize(300, 440)
+        self.resize(300, 460)
         self.setFixedWidth(300)
         # self.setWindowTitle("蜗牛跳舞小助手")
         # 加载任务栏和窗口左上角图标
@@ -442,6 +442,11 @@ class MainGui(QtWidgets.QMainWindow):
 
         self.push_button_chengyu_search = QtWidgets.QPushButton("搜索")
         self.push_button_chengyu_search.setToolTip("输入关键字模糊查询成语,每个输入框只能输入一个文字")
+
+        _input_line_height: int = 30
+        for line_e in [self.line_edit_chengyu_input_1, self.line_edit_chengyu_input_2, self.line_edit_chengyu_input_3,
+                       self.line_edit_chengyu_input_4, self.push_button_chengyu_search]:
+            line_e.setFixedHeight(_input_line_height)
 
         _lay_out_chengyu_search_search = QtWidgets.QHBoxLayout()
         _lay_out_chengyu_search_search.addLayout(_lay_out_chengyu_search_input)
