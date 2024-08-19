@@ -1,7 +1,9 @@
 import platform
 import time
 
+import win32gui
 from PySide6 import QtWidgets, QtCore
+from PySide6.QtCore import QTimer
 from PySide6.QtGui import QTextCursor, QFont
 
 from PySide6.QtWidgets import QMessageBox
@@ -20,7 +22,7 @@ from DeskPageV2.Utils.dataClass import DmDll, GhostDll, Config
 from DeskPageV2.Utils.keyEvenQTAndGhost import check_ghost_code_is_def
 from DeskPageV2.Utils.load_res import GetConfig
 from DeskPageV2.DeskFindPic.findAuctionMarket import FindAuctionMarket
-from DeskPageV2.DeskGUIQth.chengYuQth import ChengYuQth
+from DeskPageV2.DeskGUIQth.chengYuSearchQth import ChengYuSearchQth, ChengYuScreenGetQth
 
 
 class Dance(MainGui):
@@ -42,8 +44,8 @@ class Dance(MainGui):
         self.th_progress_bar = QProgressBarQth()
         self.th_key_press_auto = AutoPressKeyQth()
         self.th_market = MarKetQth()
-        self.th_chengyu = ChengYuQth()
-
+        self.th_chengyu = ChengYuSearchQth()
+        self.th_chengyu_get = ChengYuScreenGetQth()
         # 押镖
         self.th_truck_task = TruckCarTaskQth()  # 运镖
         self.th_truck_fight_monster = TruckTaskFightMonsterQth()  # 打怪
@@ -126,6 +128,11 @@ class Dance(MainGui):
         self.th_chengyu.sin_out.connect(self.print_chengyu)
         self.th_chengyu.sin_out_non.connect(self.print_logs)
         self.th_chengyu.sin_work_status.connect(self._th_execute_stop)
+        self.th_chengyu_get.sin_out.connect(self.get_chengyu_str_result)  # 将屏幕上获取的成语显示出来
+        self.th_chengyu_get.sin_out_non.connect(self.print_logs)
+
+        self.push_button_chengyu_get_pic_text.clicked.connect(self.get_chengyu_screen_pic_text)
+        self.push_button_chengyu_input_add_row.clicked.connect(self.add_row)
         self.push_button_chengyu_search.clicked.connect(self.search_chengyu)
 
     def hot_key_event(self, data):
@@ -247,6 +254,7 @@ class Dance(MainGui):
             if SetGhostBoards().check_usb_connect():
                 self.print_logs("幽灵键鼠加载成功。\n如有疑问，请查看“帮助”-“功能说明”")
                 self.keyboard_type = "ghost"
+                self.auto_radio_check_all_windows()  # 开始自动勾选游戏窗口
                 return True
             else:
                 self.print_logs("未检测到usb设备,请检查后重试")
@@ -324,6 +332,13 @@ class Dance(MainGui):
         看看哪些窗口已经勾选了
         :return:
         """
+
+        def is_hwnd_exists(is_hwnd_exists_d: int):
+            if win32gui.IsWindow(is_hwnd_exists_d):
+                return True
+            else:
+                return False
+
         windows_list = []
         if self.check_box_windows_one.isChecked():
             windows_list.append(self.handle_dict["windows_1"])
@@ -331,7 +346,12 @@ class Dance(MainGui):
             windows_list.append(self.handle_dict["windows_2"])
         if self.check_box_windows_three.isChecked():
             windows_list.append(self.handle_dict["windows_3"])
-        return windows_list
+
+        _new_windows_list: list = []
+        for hwnd_check in windows_list:
+            if is_hwnd_exists(hwnd_check):
+                _new_windows_list.append(hwnd_check)
+        return _new_windows_list
 
     def __update_ui_changed_execute_button_text_and_status(self, button_status: bool):
         """
@@ -517,12 +537,23 @@ class Dance(MainGui):
             self.push_button_start_or_stop_execute.setEnabled(True)
             for index_handle in range(len(handle_list)):
                 self.handle_dict["windows_" + str(index_handle + 1)] = str(handle_list[index_handle])
-            self.print_logs("已检测到了 %d 个获取到的窗口" % len(self.handle_dict.keys()), is_clear=True)
+            self.print_logs("已检测到了 %d 个获取到的窗口" % len(self.handle_dict.keys()), is_clear=False)
         elif len(handle_list) > 4:
             self.print_logs("检测到 %d 个游戏窗口，请减少至3个再次重试" % len(handle_list), is_clear=True)
         else:
             self.print_logs("未发现游戏窗口，请登录游戏后再次重试", is_clear=True)
         self.set_check_box_by_game_windows_enable()
+
+    def auto_radio_check_all_windows(self):
+        """
+        自动勾选所有窗口
+        """
+        self.get_windows_handle()
+        _auto_windows_check_element = [self.check_box_windows_one, self.check_box_windows_two, self.check_box_windows_three]
+
+        for auto_check_element in _auto_windows_check_element:
+            if auto_check_element.isEnabled() is True:
+                auto_check_element.setChecked(True)
 
     def set_check_box_by_game_windows_enable(self):
         """
@@ -832,21 +863,74 @@ class Dance(MainGui):
         _lay_out_chengyu_table.addWidget(_table_chengyu)
         _lay_out_chengyu_table.setContentsMargins(5, 5, 5, 5)
 
+    def get_chengyu_screen_pic_text(self):
+        """
+        获取屏幕上的成语
+        """
+        windows_list_s = self.check_handle_is_selected()
+        if len(windows_list_s) == 0:
+            self.print_logs("请选择您需要执行的游戏窗口")
+            return None
+        self.th_chengyu_get.get_param(windows_list_s)
+        self.th_chengyu_get.start()
+
+    def add_row(self):
+        # 表格新插一行
+        self.table_chengyu_screen.insertRow(self.table_chengyu_screen.rowCount())
+
+    def get_chengyu_str_result(self, chengyu_input_str_list):
+        """
+        获取需要组合的成语文字
+        """
+        def group_list(lst: list, group_size: int):
+            # 按个数重新分组
+            return [lst[i:i + group_size] for i in range(0, len(lst), group_size)]
+
+        if len(chengyu_input_str_list) == 0:
+            self.print_logs("未获取到成语")
+            return None
+
+        _table_column_count: int = 4
+
+        self.table_chengyu_screen.setRowCount(1)
+        self.table_chengyu_screen.setColumnCount(_table_column_count)
+        self.table_chengyu_screen.horizontalHeader().hide()
+        # self.table_chengyu_screen.verticalHeader().hide()
+        self.table_chengyu_screen.setFont(QFont('SansSerif', 14))
+
+        group_str_list: list = group_list(lst=chengyu_input_str_list, group_size=_table_column_count)
+
+        for chengyu_input_str_g in group_str_list:
+            _it = iter(chengyu_input_str_g)
+            for column in range(self.table_chengyu_screen.columnCount()):
+                _str_chengyu: str = next(_it, None)
+                if _str_chengyu is None:
+                    return None
+                item = QtWidgets.QTableWidgetItem(str(_str_chengyu))  # 创建数据项
+                item.setTextAlignment(QtCore.Qt.AlignCenter)
+                # print(self.table_chengyu_screen.rowCount(), column, _str_chengyu)
+                self.table_chengyu_screen.setItem(self.table_chengyu_screen.rowCount()-1, column, item)  # 插入数据项
+            self.table_chengyu_screen.insertRow(self.table_chengyu_screen.rowCount())
+
     def search_chengyu(self):
         """
-        查询成语
+        成语文字
         """
 
-        _search_key_str = [self.line_edit_chengyu_input_1.text(), self.line_edit_chengyu_input_2.text(),
-                           self.line_edit_chengyu_input_3.text(), self.line_edit_chengyu_input_4.text()]
+        def get_wait_str() -> list:
+            _screen_table_str_list: list = []
+            for row_s in range(self.table_chengyu_screen.rowCount()):
+                for column_s in range(self.table_chengyu_screen.columnCount()):
+                    item_s = self.table_chengyu_screen.item(row_s, column_s)
+                    if item_s is not None:
+                        if item_s.text() != "":
+                            _screen_table_str_list.append(item_s.text())
+            return _screen_table_str_list
 
-        _wait_search_key: list = []
-        for key_search_str in _search_key_str:
-            if key_search_str == "":
-                continue
-            _wait_search_key.append(key_search_str)
+        _wait_search_key: list = get_wait_str()
+        print(_wait_search_key)
         if len(_wait_search_key) == 0:
-            self.show_dialog("请输入查询条件")
+            self.show_dialog("查询文字不能为空")
             return None
 
         _res_search_chengyu: list = self.chengyu.search_chengyu(_wait_search_key)
@@ -854,16 +938,27 @@ class Dance(MainGui):
             self.show_dialog("未查询到相关成语")
             return None
 
+        """
+        这里放一个逐个清理的效果，避免太快的以为没查询到
+        """
+
+        # _table_chengyu_search = self.table_chengyu_search
+        # rows_t = _table_chengyu_search.rowCount()
+        # for row_t in range(rows_t - 1, -1, -1):  # 从最后一行开始删除
+        #     _table_chengyu_search.removeRow(row_t)
+        #     QTimer.singleShot(100 * (rows_t - row_t), lambda: _table_chengyu_search.setRowCount(row_t))
+
+        self.table_chengyu_search.clear()
+
         self.table_chengyu_search.setRowCount(1)
         self.table_chengyu_search.setColumnCount(4)
         self.table_chengyu_search.setFont(QFont('SansSerif', 15))
-        for col in range(self.table_chengyu_search.columnCount()):
-            self.table_chengyu_search.setColumnWidth(col, 60)
-
+        # for col in range(self.table_chengyu_search.columnCount()):
+        #     self.table_chengyu_search.setColumnWidth(col, 60)
         self.table_chengyu_search.horizontalHeader().hide()
 
         try:
-
+            print(_res_search_chengyu)
             for row in range(len(_res_search_chengyu)):
                 for column in range(self.table_chengyu_search.columnCount()):
 

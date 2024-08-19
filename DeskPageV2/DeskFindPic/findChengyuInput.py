@@ -63,7 +63,7 @@ class ChengYuInput:
                     str_list.append(chengyu_str[1])
         return str_list
 
-    def __get_chengyu_string_key(self, image: np.ndarray):
+    def get_chengyu_string_key(self, image: np.ndarray):
         """
         识别游戏画面中出现的成语文字
         """
@@ -126,7 +126,7 @@ class ChengYuInput:
                 up_str_list.append(res_ocr_text)
             else:
                 down_str_list.append(res_ocr_text)
-        print(f"上部分:{up_str_list}, \n下部分:{down_str_list}")
+        # print(f"上部分:{up_str_list}, \n下部分:{down_str_list}")
         return up_str_list, down_str_list
 
     def check_chengyu(self, image: np.ndarray) -> list:
@@ -140,7 +140,7 @@ class ChengYuInput:
                 for dict_key in data:
                     self._chengyu_json_load.append(dict_key.get("word"))
 
-        up_str, down_str = self.__get_chengyu_string_key(image)
+        up_str, down_str = self.get_chengyu_string_key(image)
 
         _key_input = up_str
         _key_wait = down_str
@@ -172,7 +172,7 @@ class ChengYuInput:
 
                 for dict_key in data:
                     self._chengyu_json_load.append(dict_key.get("word"))
-        _wait_search_key: list = key_str
+        _wait_search_key: list = list(set(key_str))  # 顺便去重一下
 
         if len(_wait_search_key) == 0:
             return []
@@ -181,13 +181,12 @@ class ChengYuInput:
             if len(chengyu_str) != 4:
                 # 我们只查询4个字的成语
                 continue
-            _is_equal: bool = True
-            for wai_s in _wait_search_key:
-                if wai_s not in chengyu_str:
+            _is_equal_num: int = 0
+            for wai_s in chengyu_str:
+                if wai_s in _wait_search_key:
                     # 如果出现待查询的字符不在此成语中
-                    _is_equal = False
-                    break
-            if _is_equal:
+                    _is_equal_num += 1
+            if _is_equal_num == 4:
                 result_list.append(chengyu_str)
         return sorted(list(set(result_list)))
 

@@ -5,7 +5,7 @@ import time
 
 from PySide6 import QtWidgets, QtCore, QtGui
 from PySide6.QtCore import Qt, QObject, QEvent
-from PySide6.QtGui import QIcon, QIntValidator
+from PySide6.QtGui import QIcon, QIntValidator, QFont
 from PySide6.QtWidgets import QApplication, QListWidget, QHeaderView
 
 from DeskPageV2.DeskPageGUI.MarkdownViewer import MarkdownViewer
@@ -177,6 +177,7 @@ class MainGui(QtWidgets.QMainWindow):
         # 成语填空
         self.radio_button_chengyu_input = QtWidgets.QRadioButton()
         self.radio_button_chengyu_input.setText("成语填空")
+        self.radio_button_chengyu_input.setVisible(False)
         # 成语填空
         self.radio_button_chengyu_search = QtWidgets.QRadioButton()
         self.radio_button_chengyu_search.setText("成语搜索")
@@ -198,8 +199,8 @@ class MainGui(QtWidgets.QMainWindow):
 
         # 漠西风涛
         self.gridLayout_group_box_functional_area.addWidget(_label_desert_task, 2, 0)
-        self.gridLayout_group_box_functional_area.addWidget(self.radio_button_chengyu_input, 3, 0)
-        self.gridLayout_group_box_functional_area.addWidget(self.radio_button_chengyu_search, 3, 1)
+        # self.gridLayout_group_box_functional_area.addWidget(self.radio_button_chengyu_input, 3, 0)
+        self.gridLayout_group_box_functional_area.addWidget(self.radio_button_chengyu_search, 3, 0)
 
         # 其他工具
         self.gridLayout_group_box_functional_area.addWidget(_label_other_task, 4, 0)
@@ -425,46 +426,56 @@ class MainGui(QtWidgets.QMainWindow):
         """
         self.dialog_chengyu_search = QtWidgets.QDialog()
         self.dialog_chengyu_search.setWindowTitle("成语搜索")
-        self.dialog_chengyu_search.resize(300, 300)
+        self.dialog_chengyu_search.resize(460, 500)
+        self.dialog_chengyu_search.setFixedWidth(460)
+        self.table_chengyu_screen = QtWidgets.QTableWidget()  # 查询游戏页面上的文字
 
-        self.line_edit_chengyu_input_1 = QtWidgets.QLineEdit()
-        self.line_edit_chengyu_input_2 = QtWidgets.QLineEdit()
-        self.line_edit_chengyu_input_3 = QtWidgets.QLineEdit()
-        self.line_edit_chengyu_input_4 = QtWidgets.QLineEdit()
-
-        # 4个输入框
-        _lay_out_chengyu_search_input = QtWidgets.QHBoxLayout()
-        _lay_out_chengyu_search_input.setSpacing(2)
-        _lay_out_chengyu_search_input.addWidget(self.line_edit_chengyu_input_1)
-        _lay_out_chengyu_search_input.addWidget(self.line_edit_chengyu_input_2)
-        _lay_out_chengyu_search_input.addWidget(self.line_edit_chengyu_input_3)
-        _lay_out_chengyu_search_input.addWidget(self.line_edit_chengyu_input_4)
+        self.push_button_chengyu_get_pic_text = QtWidgets.QPushButton("获取")
 
         self.push_button_chengyu_search = QtWidgets.QPushButton("搜索")
         self.push_button_chengyu_search.setToolTip("输入关键字模糊查询成语,每个输入框只能输入一个文字")
 
-        _input_line_height: int = 30
-        for line_e in [self.line_edit_chengyu_input_1, self.line_edit_chengyu_input_2, self.line_edit_chengyu_input_3,
-                       self.line_edit_chengyu_input_4, self.push_button_chengyu_search]:
-            line_e.setFixedHeight(_input_line_height)
+        _label_get_chengyu_pic = QtWidgets.QLabel("请根据游戏画面中的文字补充完整")
+        _label_search_result_chengyu = QtWidgets.QLabel("查询结果如下")
 
-        _lay_out_chengyu_search_search = QtWidgets.QHBoxLayout()
-        _lay_out_chengyu_search_search.addLayout(_lay_out_chengyu_search_input)
-        _lay_out_chengyu_search_search.addWidget(self.push_button_chengyu_search)
+        self.push_button_chengyu_input_add_row = QtWidgets.QPushButton('插入新一行')
+        self.push_button_chengyu_input_add_row.setFixedWidth(100)
 
-        self.table_chengyu_search = QtWidgets.QTableWidget()
+        _lay_out_chengyu_search_input = QtWidgets.QHBoxLayout()
+        _lay_out_chengyu_search_input.setSpacing(2)
+        _lay_out_chengyu_search_input.setAlignment(QtCore.Qt.AlignCenter)
+        _lay_out_chengyu_search_input.addWidget(self.push_button_chengyu_get_pic_text)
+        _lay_out_chengyu_search_input.addWidget(self.push_button_chengyu_search)
 
-        _lay_out_chengyu_search_search_result = QtWidgets.QVBoxLayout()
-        _lay_out_chengyu_search_search_result.addLayout(_lay_out_chengyu_search_search)
-        _lay_out_chengyu_search_search_result.addWidget(self.table_chengyu_search)
+        _lay_out_chengyu_search_input_tips = QtWidgets.QHBoxLayout()
+        _lay_out_chengyu_search_input_tips.addWidget(_label_get_chengyu_pic, QtCore.Qt.AlignLeft)
+        _lay_out_chengyu_search_input_tips.addWidget(self.push_button_chengyu_input_add_row, QtCore.Qt.AlignRight)
 
-        self.dialog_chengyu_search.setLayout(_lay_out_chengyu_search_search_result)
+        # 将获取页面的布局准备好
+        _lay_out_chengyu_get_search = QtWidgets.QVBoxLayout()
+        _lay_out_chengyu_get_search.addLayout(_lay_out_chengyu_search_input)
+        _lay_out_chengyu_get_search.addLayout(_lay_out_chengyu_search_input_tips)
+        _lay_out_chengyu_get_search.addWidget(self.table_chengyu_screen)
 
-        self.radio_button_chengyu_search.clicked.connect(self.show_dialog_chengyu_search)
+        self.table_chengyu_search = QtWidgets.QTableWidget()  # 查询结果表格
+
+        # 将查询结果的布局准备好
+        _lay_out_chengyu_search_result = QtWidgets.QVBoxLayout()
+        _lay_out_chengyu_search_result.addLayout(_lay_out_chengyu_get_search)
+
+        _lay_out_chengyu_search_result.addWidget(_label_search_result_chengyu)
+        _lay_out_chengyu_search_result.addWidget(self.table_chengyu_search)
+
+        self.dialog_chengyu_search.setLayout(_lay_out_chengyu_search_result)
+
+        self.radio_button_chengyu_search.toggled.connect(self.show_dialog_chengyu_search)
 
     def show_dialog_chengyu_search(self):
-        if self.dialog_chengyu_search.isVisible() is False:
-            self.dialog_chengyu_search.show()
+        if self.radio_button_chengyu_search.isChecked():
+            if self.dialog_chengyu_search.isVisible() is False:
+                self.dialog_chengyu_search.show()
+        else:
+            self.dialog_chengyu_search.close()
 
     def del_skill_table_row(self):
         """
