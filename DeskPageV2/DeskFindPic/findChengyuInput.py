@@ -95,6 +95,37 @@ class ChengYuInput:
         _chengyu_pos_up_x, _chengyu_pos_up_y = int(res_left_x), int(res_up_y)
         _chengyu_pos_down_x, _chengyu_pos_down_y = int(res_unlock_x), int(res_unlock_y)
 
+        """
+        确定上半部分边框坐标
+        """
+        # 左上角pos
+        _chengyu_wait_left_up_x, _chengyu_wait_left_up_y = int(res_left_x), int(res_up_y)
+        # 左下角pos
+        _chengyu_wait_left_down_x, _chengyu_wait_left_down_y = int(res_left_x), int(res_down_y)
+        # 右上角pos
+        _chengyu_wait_right_up_x, _chengyu_wait_right_up_y = int(res_unlock_x), int(res_up_y)
+        # 右下角pos
+        _chengyu_wait_right_down_x, _chengyu_wait_right_down_y = int(res_unlock_x), int(res_down_y)
+
+        # print(f"左上角:{_chengyu_wait_left_up_x}_{_chengyu_wait_left_up_y}, 右上角:{_chengyu_wait_right_up_x}_{_chengyu_wait_right_up_y}")
+        # print(f"左下角:{_chengyu_wait_left_down_x}_{_chengyu_wait_left_down_y}, 右下角:{_chengyu_wait_right_down_x}_{_chengyu_wait_right_down_y}")
+
+        """
+        确定下半部分的边框坐标
+        """
+        # 左上角pos
+        _chengyu_input_left_up_x, _chengyu_input_left_up_y = int(res_left_x), int(res_down_y)
+        # 左下角pos
+        _chengyu_input_left_down_x, _chengyu_input_left_down_y = int(res_left_x), int(res_unlock_y)
+        # 右上角pos
+        _chengyu_input_right_up_x, _chengyu_input_right_up_y = int(res_unlock_x), int(res_down_y)
+        # 右下角pos
+        _chengyu_input_right_down_x, _chengyu_input_right_down_y = int(res_unlock_x), int(res_unlock_y)
+
+        print(f"左上角:{_chengyu_input_left_up_x}_{_chengyu_input_left_up_y}, 右上角:{_chengyu_input_right_up_x}_{_chengyu_input_right_up_y}")
+        print(f"左下角:{_chengyu_input_left_down_x}_{_chengyu_input_left_down_y}, 右下角:{_chengyu_input_right_down_x}_{_chengyu_input_right_down_y}")
+
+
         up_pic = bitwise_and(image, (_chengyu_pos_up_x, _chengyu_pos_up_y, _chengyu_pos_down_x, _chengyu_pos_down_y))
 
         # cv2.imshow("s", up_pic)
@@ -111,6 +142,7 @@ class ChengYuInput:
             if res_str is None:
                 continue
             res_ocr_text = res_str.ocr_text
+            # print(f"{res_ocr_text}{res_str.box}")
             # 识别异常的文字，先慢慢累积
             if "知口" == res_ocr_text:
                 res_ocr_text = '知'
@@ -124,8 +156,34 @@ class ChengYuInput:
             res_y = res_str.box[0][1]
             if res_y <= res_down_y:
                 up_str_list.append(res_ocr_text)
+
+                """
+                计算文字坐标。
+                box中的值如下:
+                [[531. 197.]
+                [562. 197.]
+                [562. 221.]
+                [531. 221.]]
+                """
+                _str_pox_center_x = int((res_str.box[0][0] + res_str.box[1][0]) / 2)
+                _str_pox_center_y = int((res_str.box[1][1] + res_str.box[2][1]) / 2)
+                """
+                计算文字在第几行第几列
+                每个文字的边框为: 长70,宽60
+                """
+
+                # row, columns
+                _str_columns, _str_row = int(np.ceil((_str_pox_center_x - _chengyu_wait_left_up_x) / 70)), int(
+                    np.ceil((_str_pox_center_y - _chengyu_wait_left_up_y) / 60))
+                print(f"{res_ocr_text}的坐标:{_str_pox_center_x}_{_str_pox_center_y}, 行列为{_str_row}_{_str_columns}")
             else:
                 down_str_list.append(res_ocr_text)
+                _str_pox_center_x = int((res_str.box[0][0] + res_str.box[1][0]) / 2)
+                _str_pox_center_y = int((res_str.box[1][1] + res_str.box[2][1]) / 2)
+                _str_columns, _str_row = int(np.ceil((_str_pox_center_x - _chengyu_input_left_down_x) / 70)), int(
+                    np.ceil((_str_pox_center_y - _chengyu_input_left_up_y - 20) / 60))
+                print(f"{res_ocr_text}的坐标:{_str_pox_center_x}_{_str_pox_center_y}, 行列为{_str_row}_{_str_columns}")
+
         # print(f"上部分:{up_str_list}, \n下部分:{down_str_list}")
         return up_str_list, down_str_list
 
