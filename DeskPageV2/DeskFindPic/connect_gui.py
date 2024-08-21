@@ -878,6 +878,12 @@ class Dance(MainGui):
         # 表格新插一行
         self.table_chengyu_screen.insertRow(self.table_chengyu_screen.rowCount())
 
+    @staticmethod
+    def __clear_table(_table_obj: QtWidgets.QTableWidget):
+        for c_row in range(_table_obj.rowCount()):
+            for c_column in range(_table_obj.columnCount()):
+                _table_obj.setItem(c_row, c_column, None)
+
     def get_chengyu_str_result(self, chengyu_input_str_list):
         """
         获取需要组合的成语文字
@@ -889,6 +895,8 @@ class Dance(MainGui):
         if len(chengyu_input_str_list) == 0:
             self.print_logs("未获取到成语")
             return None
+
+        self.__clear_table(self.table_chengyu_screen)
 
         self.table_chengyu_screen.setRowCount(9)
         self.table_chengyu_screen.setColumnCount(11)
