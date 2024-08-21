@@ -432,8 +432,8 @@ class MainGui(QtWidgets.QMainWindow):
         self.table_chengyu_screen = QtWidgets.QTableWidget()  # 查询游戏页面上的文字
         self.table_chengyu_screen.setFixedHeight(300)
 
-        self.push_button_chengyu_get_pic_text = QtWidgets.QPushButton("获取")
-        self.push_button_chengyu_search = QtWidgets.QPushButton("搜索")
+        self.push_button_chengyu_get_pic_text = QtWidgets.QPushButton("获取文字")
+        self.push_button_chengyu_search = QtWidgets.QPushButton("搜索成语")
 
         self.push_button_chengyu_search.setToolTip("输入关键字模糊查询成语,每个输入框只能输入一个文字")
 
