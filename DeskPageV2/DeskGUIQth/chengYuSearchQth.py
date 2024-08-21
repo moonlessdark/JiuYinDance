@@ -79,7 +79,7 @@ class ChengYuSearchQth(QThread):
 
 class ChengYuScreenGetQth(QThread):
     """
-    获取成语
+    获取屏幕上的文字
     """
     sin_out: Signal(list) = Signal(list)
     sin_out_non: Signal(str) = Signal(str)
@@ -132,7 +132,7 @@ class ChengYuScreenGetQth(QThread):
             for windows_handle_s in self.windows_handle:
                 _cap_content = WindowsCapture().capture(windows_handle_s).pic_content
                 _chengyu_res, _chengyu_res_2 = self._chengyu.get_chengyu_string_key(_cap_content)
-                _chengyu_res_new = list(set(_chengyu_res + _chengyu_res_2))
+                _chengyu_res_new = _chengyu_res + _chengyu_res_2
                 if len(_chengyu_res_new) > 0:
                     self.sin_out.emit(_chengyu_res+_chengyu_res_2)
                     is_get = True

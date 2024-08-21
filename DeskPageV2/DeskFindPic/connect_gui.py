@@ -890,27 +890,25 @@ class Dance(MainGui):
             self.print_logs("未获取到成语")
             return None
 
-        _table_column_count: int = 4
-
-        self.table_chengyu_screen.setRowCount(1)
-        self.table_chengyu_screen.setColumnCount(_table_column_count)
-        self.table_chengyu_screen.horizontalHeader().hide()
+        self.table_chengyu_screen.setRowCount(9)
+        self.table_chengyu_screen.setColumnCount(11)
+        # self.table_chengyu_screen.horizontalHeader().hide()
         # self.table_chengyu_screen.verticalHeader().hide()
         self.table_chengyu_screen.setFont(QFont('SansSerif', 14))
 
-        group_str_list: list = group_list(lst=chengyu_input_str_list, group_size=_table_column_count)
+        for chengyu_text_list in chengyu_input_str_list:
+            _chengyu_input_str: str = chengyu_text_list[0]
+            _row_num: int = chengyu_text_list[1]
+            _column_num: int = chengyu_text_list[2]
 
-        for chengyu_input_str_g in group_str_list:
-            _it = iter(chengyu_input_str_g)
-            for column in range(self.table_chengyu_screen.columnCount()):
-                _str_chengyu: str = next(_it, None)
-                if _str_chengyu is None:
-                    return None
-                item = QtWidgets.QTableWidgetItem(str(_str_chengyu))  # 创建数据项
-                item.setTextAlignment(QtCore.Qt.AlignCenter)
-                # print(self.table_chengyu_screen.rowCount(), column, _str_chengyu)
-                self.table_chengyu_screen.setItem(self.table_chengyu_screen.rowCount()-1, column, item)  # 插入数据项
-            self.table_chengyu_screen.insertRow(self.table_chengyu_screen.rowCount())
+            # print(f"{_chengyu_input_str}  {_row_num}_{_column_num}")
+
+            item = QtWidgets.QTableWidgetItem(str(_chengyu_input_str))  # 创建数据项
+            item.setTextAlignment(QtCore.Qt.AlignCenter)
+
+            self.table_chengyu_screen.setItem(_row_num-1, _column_num-1, item)  # 插入数据项
+        for _c in range(self.table_chengyu_screen.columnCount()):
+            self.table_chengyu_screen.setColumnWidth(_c, int(self.table_chengyu_screen.width()/11) - 2)
 
     def search_chengyu(self):
         """
@@ -924,11 +922,11 @@ class Dance(MainGui):
                     item_s = self.table_chengyu_screen.item(row_s, column_s)
                     if item_s is not None:
                         if item_s.text() != "":
-                            _screen_table_str_list.append(item_s.text())
+                            _screen_table_str_list.append(item_s.text().strip())
             return _screen_table_str_list
 
         _wait_search_key: list = get_wait_str()
-        print(_wait_search_key)
+        # print(_wait_search_key)
         if len(_wait_search_key) == 0:
             self.show_dialog("查询文字不能为空")
             return None
@@ -942,12 +940,6 @@ class Dance(MainGui):
         这里放一个逐个清理的效果，避免太快的以为没查询到
         """
 
-        # _table_chengyu_search = self.table_chengyu_search
-        # rows_t = _table_chengyu_search.rowCount()
-        # for row_t in range(rows_t - 1, -1, -1):  # 从最后一行开始删除
-        #     _table_chengyu_search.removeRow(row_t)
-        #     QTimer.singleShot(100 * (rows_t - row_t), lambda: _table_chengyu_search.setRowCount(row_t))
-
         self.table_chengyu_search.clear()
 
         self.table_chengyu_search.setRowCount(1)
@@ -958,7 +950,6 @@ class Dance(MainGui):
         self.table_chengyu_search.horizontalHeader().hide()
 
         try:
-            print(_res_search_chengyu)
             for row in range(len(_res_search_chengyu)):
                 for column in range(self.table_chengyu_search.columnCount()):
 

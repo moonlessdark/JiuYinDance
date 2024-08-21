@@ -51,11 +51,11 @@ class ChengYuInput:
         由于OCR识别精度的问题，导致部分词语识别失败，所以会产生确实。这里可以补充一下
         """
         less_chengyu: list = [
-            (['纷', '至', '来'], '沓'),
-            (['莫', '衷', '是'], '一'),
-            (['老', '奸', '巨'], '猾'),
-            (['患', '难', '与'], '共'),
-            (['云', '覆', '雨'], '翻')
+            # (['纷', '至', '来'], '沓'),
+            # (['莫', '衷', '是'], '一'),
+            # (['老', '奸', '巨'], '猾'),
+            # (['患', '难', '与'], '共'),
+            # (['云', '覆', '雨'], '翻')
         ]
         for chengyu_str in less_chengyu:
             if set(list(chengyu_str[0])).issubset(str_list) is True:
@@ -122,9 +122,8 @@ class ChengYuInput:
         # 右下角pos
         _chengyu_input_right_down_x, _chengyu_input_right_down_y = int(res_unlock_x), int(res_unlock_y)
 
-        print(f"左上角:{_chengyu_input_left_up_x}_{_chengyu_input_left_up_y}, 右上角:{_chengyu_input_right_up_x}_{_chengyu_input_right_up_y}")
-        print(f"左下角:{_chengyu_input_left_down_x}_{_chengyu_input_left_down_y}, 右下角:{_chengyu_input_right_down_x}_{_chengyu_input_right_down_y}")
-
+        # print(f"左上角:{_chengyu_input_left_up_x}_{_chengyu_input_left_up_y}, 右上角:{_chengyu_input_right_up_x}_{_chengyu_input_right_up_y}")
+        # print(f"左下角:{_chengyu_input_left_down_x}_{_chengyu_input_left_down_y}, 右下角:{_chengyu_input_right_down_x}_{_chengyu_input_right_down_y}")
 
         up_pic = bitwise_and(image, (_chengyu_pos_up_x, _chengyu_pos_up_y, _chengyu_pos_down_x, _chengyu_pos_down_y))
 
@@ -155,8 +154,6 @@ class ChengYuInput:
 
             res_y = res_str.box[0][1]
             if res_y <= res_down_y:
-                up_str_list.append(res_ocr_text)
-
                 """
                 计算文字坐标。
                 box中的值如下:
@@ -175,14 +172,16 @@ class ChengYuInput:
                 # row, columns
                 _str_columns, _str_row = int(np.ceil((_str_pox_center_x - _chengyu_wait_left_up_x) / 70)), int(
                     np.ceil((_str_pox_center_y - _chengyu_wait_left_up_y) / 60))
-                print(f"{res_ocr_text}的坐标:{_str_pox_center_x}_{_str_pox_center_y}, 行列为{_str_row}_{_str_columns}")
+                # print(f"{res_ocr_text}的坐标:{_str_pox_center_x}_{_str_pox_center_y}, 行列为{_str_row}_{_str_columns}")
+                up_str_list.append([res_ocr_text, _str_row, _str_columns])
             else:
-                down_str_list.append(res_ocr_text)
                 _str_pox_center_x = int((res_str.box[0][0] + res_str.box[1][0]) / 2)
                 _str_pox_center_y = int((res_str.box[1][1] + res_str.box[2][1]) / 2)
                 _str_columns, _str_row = int(np.ceil((_str_pox_center_x - _chengyu_input_left_down_x) / 70)), int(
                     np.ceil((_str_pox_center_y - _chengyu_input_left_up_y - 20) / 60))
-                print(f"{res_ocr_text}的坐标:{_str_pox_center_x}_{_str_pox_center_y}, 行列为{_str_row}_{_str_columns}")
+                # print(f"{res_ocr_text}的坐标:{_str_pox_center_x}_{_str_pox_center_y}, 行列为{_str_row}_{_str_columns}")
+
+                up_str_list.append([res_ocr_text, _str_row + 7, _str_columns])
 
         # print(f"上部分:{up_str_list}, \n下部分:{down_str_list}")
         return up_str_list, down_str_list
@@ -205,7 +204,7 @@ class ChengYuInput:
 
         new_list: list = _key_wait + _key_input
 
-        new_list = self.less_str_chengyu(new_list)
+        # new_list = self.less_str_chengyu(new_list)
 
         result_list: list = []
         for chengyu_str in self._chengyu_json_load:

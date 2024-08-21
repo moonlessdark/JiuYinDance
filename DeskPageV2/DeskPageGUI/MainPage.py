@@ -426,13 +426,15 @@ class MainGui(QtWidgets.QMainWindow):
         """
         self.dialog_chengyu_search = QtWidgets.QDialog()
         self.dialog_chengyu_search.setWindowTitle("成语搜索")
-        self.dialog_chengyu_search.resize(460, 500)
+        self.dialog_chengyu_search.resize(460, 650)
         self.dialog_chengyu_search.setFixedWidth(460)
+
         self.table_chengyu_screen = QtWidgets.QTableWidget()  # 查询游戏页面上的文字
+        self.table_chengyu_screen.setFixedHeight(300)
 
         self.push_button_chengyu_get_pic_text = QtWidgets.QPushButton("获取")
-
         self.push_button_chengyu_search = QtWidgets.QPushButton("搜索")
+
         self.push_button_chengyu_search.setToolTip("输入关键字模糊查询成语,每个输入框只能输入一个文字")
 
         _label_get_chengyu_pic = QtWidgets.QLabel("请根据游戏画面中的文字补充完整")
@@ -462,10 +464,9 @@ class MainGui(QtWidgets.QMainWindow):
         # 将查询结果的布局准备好
         _lay_out_chengyu_search_result = QtWidgets.QVBoxLayout()
         _lay_out_chengyu_search_result.addLayout(_lay_out_chengyu_get_search)
-
         _lay_out_chengyu_search_result.addWidget(_label_search_result_chengyu)
-        _lay_out_chengyu_search_result.addWidget(self.table_chengyu_search)
 
+        _lay_out_chengyu_search_result.addWidget(self.table_chengyu_search)
         self.dialog_chengyu_search.setLayout(_lay_out_chengyu_search_result)
 
         self.radio_button_chengyu_search.toggled.connect(self.show_dialog_chengyu_search)
