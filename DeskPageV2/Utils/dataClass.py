@@ -69,6 +69,7 @@ class Goods:
     run_goods_buff: str = dataclasses.field(default_factory=str)
     null_blood: str = dataclasses.field(default_factory=str)
     sit_blood: str = dataclasses.field(default_factory=str)
+    gift_card: str = dataclasses.field(default_factory=str)
 
 
 @dataclasses.dataclass

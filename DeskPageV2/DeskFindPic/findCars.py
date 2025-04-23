@@ -1038,7 +1038,7 @@ class UserGoods(TruckCar):
         __rec_bag = __rec_goods_bag_tag_clicked if __rec_goods_bag_tag_clicked is not None else __rec_goods_bag_tag_clickable if __rec_goods_bag_tag_clickable is not None else None
 
         if __rec_bag is not None:
-            time.sleep(1)
+            time.sleep(0.5)
             SetGhostMouse().move_mouse_to(__rec_bag[0], __rec_bag[1])
             SetGhostMouse().click_mouse_left_button()
             return True

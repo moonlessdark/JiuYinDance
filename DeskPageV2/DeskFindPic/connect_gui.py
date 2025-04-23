@@ -16,13 +16,14 @@ from DeskPageV2.DeskGUIQth.truckQth import (TruckCarTaskQth, TruckTaskFightMonst
 from DeskPageV2.DeskGUIQth.marketQth import MarKetQth
 from DeskPageV2.DeskPageGUI.MainPage import MainGui
 from DeskPageV2.DeskTools.DmSoft.get_dm_driver import getDM, getWindows, getKeyBoardMouse
-from DeskPageV2.DeskTools.GhostSoft.get_driver_v3 import GetGhostDriver, SetGhostBoards
+from DeskPageV2.DeskTools.GhostSoft.get_driver_v3 import GetGhostDriver, SetGhostBoards, SetGhostMouse
 from DeskPageV2.DeskTools.WindowsSoft.get_windows import GetHandleList, WindowsCapture
 from DeskPageV2.Utils.dataClass import DmDll, GhostDll, Config
 from DeskPageV2.Utils.keyEvenQTAndGhost import check_ghost_code_is_def
 from DeskPageV2.Utils.load_res import GetConfig
 from DeskPageV2.DeskFindPic.findAuctionMarket import FindAuctionMarket
 from DeskPageV2.DeskGUIQth.chengYuSearchQth import ChengYuSearchQth, ChengYuScreenGetQth
+from DeskPageV2.DeskGUIQth.OpenGiftCardQth import OpenGiftCard
 
 
 class Dance(MainGui):
@@ -46,6 +47,8 @@ class Dance(MainGui):
         self.th_market = MarKetQth()
         self.th_chengyu = ChengYuSearchQth()
         self.th_chengyu_get = ChengYuScreenGetQth()
+        self.th_open_gift = OpenGiftCard()
+
         # 押镖
         self.th_truck_task = TruckCarTaskQth()  # 运镖
         self.th_truck_fight_monster = TruckTaskFightMonsterQth()  # 打怪
@@ -134,6 +137,9 @@ class Dance(MainGui):
         self.push_button_chengyu_get_pic_text.clicked.connect(self.get_chengyu_screen_pic_text)
         self.push_button_chengyu_input_add_row.clicked.connect(self.add_row)
         self.push_button_chengyu_search.clicked.connect(self.search_chengyu)
+
+        # 9点开卡
+        self.th_open_gift.sin_out.connect(self.print_logs)
 
     def hot_key_event(self, data):
         # print(f"当前按下的键盘value是——{data}")
@@ -255,6 +261,7 @@ class Dance(MainGui):
                 self.print_logs("幽灵键鼠加载成功。\n如有疑问，请查看“帮助”-“功能说明”")
                 self.keyboard_type = "ghost"
                 self.auto_radio_check_all_windows()  # 开始自动勾选游戏窗口
+                SetGhostMouse().set_mouse_movement_speed(5)  # 初始化鼠标移动速度
                 return True
             else:
                 self.print_logs("未检测到usb设备,请检查后重试")
@@ -406,6 +413,8 @@ class Dance(MainGui):
         self.th_truck_task.set_close()
         # 成语填空
         self.th_chengyu.stop_execute_init()
+        # 自动开卡
+        self.th_open_gift.stop_execute_init()
         # 进度条跑马灯
         self.th_progress_bar.stop_init()
         self.__update_ui_changed_execute_button_text_and_status(False)
@@ -505,8 +514,21 @@ class Dance(MainGui):
                         self.th_progress_bar.start_init()
                         self.th_progress_bar.start()
             elif self.radio_button_chengyu_input.isChecked():
+                """
+                如果是成语填空
+                """
                 self.th_chengyu.get_param(windows_handle=windows_list)
                 self.th_chengyu.start()
+                self.__update_ui_changed_execute_button_text_and_status(True)
+                # 开始执行跑马灯效果
+                self.th_progress_bar.start_init()
+                self.th_progress_bar.start()
+            elif self.radio_button_open_card.isChecked():
+                """
+                如果是9点开卡
+                """
+                self.th_open_gift.get_param(windows_list)
+                self.th_open_gift.start()
                 self.__update_ui_changed_execute_button_text_and_status(True)
                 # 开始执行跑马灯效果
                 self.th_progress_bar.start_init()

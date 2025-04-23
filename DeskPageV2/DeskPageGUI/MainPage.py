@@ -154,7 +154,7 @@ class MainGui(QtWidgets.QMainWindow):
         self.group_box_functional_area.setTitle("选择功能")
 
         _label_day_task = QtWidgets.QLabel("每日任务")
-        _label_desert_task = QtWidgets.QLabel("漠西风涛")
+        _label_desert_task = QtWidgets.QLabel("活动工具")
         _label_other_task = QtWidgets.QLabel("其他")
 
         self.radio_button_school_dance = QtWidgets.QRadioButton()
@@ -181,6 +181,9 @@ class MainGui(QtWidgets.QMainWindow):
         # 成语填空
         self.radio_button_chengyu_search = QtWidgets.QRadioButton()
         self.radio_button_chengyu_search.setText("成语搜索")
+        # 自动开卡
+        self.radio_button_open_card = QtWidgets.QRadioButton()
+        self.radio_button_open_card.setText("自动开卡")
 
         """
         增加一下布局框
@@ -201,6 +204,9 @@ class MainGui(QtWidgets.QMainWindow):
         self.gridLayout_group_box_functional_area.addWidget(_label_desert_task, 2, 0)
         # self.gridLayout_group_box_functional_area.addWidget(self.radio_button_chengyu_input, 3, 0)
         self.gridLayout_group_box_functional_area.addWidget(self.radio_button_chengyu_search, 3, 0)
+
+        # 自动开卡
+        self.gridLayout_group_box_functional_area.addWidget(self.radio_button_open_card, 3, 1)
 
         # 其他工具
         self.gridLayout_group_box_functional_area.addWidget(_label_other_task, 4, 0)

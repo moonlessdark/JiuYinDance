@@ -99,6 +99,7 @@ goods:
   run_goods_ready: /Resources/Goods/御风神水ready.png
   non_blood: /Resources/Goods/满血.png
   sit_blood: /Resources/Goods/打坐.png
+  gift_card: /Resources/Goods/礼卡.png
 keyBoardMouseDll:
   dmDll:
     dm: /Resources/KeyBoardDriver/dm.dll

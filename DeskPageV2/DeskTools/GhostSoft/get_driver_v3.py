@@ -422,7 +422,7 @@ class SetGhostMouse(SetGhostDriver):
         :param speed_value: 整数类型，移动速度，取值范围1-10，其他值无效，默认 7
         :return:
         """
-        speed_value = 10 if speed_value > 10 else 1 if speed_value < 1 else 1
+        speed_value = 10 if speed_value > 10 else 1 if speed_value < 1 else speed_value
         result_int: int = self.ghost_driver.setmousemovementspeed(speed_value)
         return True if result_int > 0 else False
 

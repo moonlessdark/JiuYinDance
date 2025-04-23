@@ -279,6 +279,10 @@ def _internal_find(gray_source, gray_template, maxcnt, threshold, debug):
         if max_val < threshold:
             break
 
+        # cv2.imshow("s", gray_source)
+        # cv2.imshow("ss", gray_template)
+        # cv2.waitKey()
+
         left = top_left[0]
         top = top_left[1]
         middle_point = (left + w / 2, top + h / 2)
