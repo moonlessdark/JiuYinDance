@@ -46,14 +46,13 @@ class FindGiftCard:
         # 先检查一下包裹打开了没有
         __rec_goods_bag_tag_clicked = self.windows.find_windows_coordinate_rect(hwnd, img=self._goods_pic_bag_clicked)
         __rec_goods_bag_tag_clickable = self.windows.find_windows_coordinate_rect(hwnd, img=self._goods_pic_bag_unclick)
-        __rec_bag = __rec_goods_bag_tag_clicked if __rec_goods_bag_tag_clicked is not None else __rec_goods_bag_tag_clickable if __rec_goods_bag_tag_clickable is not None else None
-
-        if __rec_bag is None:
+        if __rec_goods_bag_tag_clicked is None and __rec_goods_bag_tag_clickable is None:
             # 包裹还没打开啊
             WindowsHandle().activate_windows(hwnd)
             time.sleep(0.5)
             SetGhostBoards().click_press_and_release_by_key_code_hold_time(66, 0.3)
             time.sleep(0.5)
+
         # 打开了，再检查一次
         __rec_goods_bag_tag_clicked = self.windows.find_windows_coordinate_rect(hwnd, img=self._goods_pic_bag_clicked)
         __rec_goods_bag_tag_clickable = self.windows.find_windows_coordinate_rect(hwnd, img=self._goods_pic_bag_unclick)
@@ -63,12 +62,12 @@ class FindGiftCard:
             SetGhostMouse().move_mouse_to(__rec_goods_bag_tag_clickable[0], __rec_goods_bag_tag_clickable[1])
             SetGhostMouse().click_mouse_left_button()
             time.sleep(0.5)
-            return True
-        elif __rec_goods_bag_tag_clicked is not None:
+
+        if self.find_gift_card(hwnd):
             return True
         return False
 
-    def find_gift_card(self, hwnd: int):
+    def find_gift_card(self, hwnd: int) -> bool:
         """
         找到第一个礼品卡(优先点击左上)
         """
