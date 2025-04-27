@@ -26,7 +26,11 @@ https://segmentfault.com/q/1010000039054120/a-1020000039066088
 ## 系统硬件与设置  
 ### 硬件  
 * 22年6月蜗牛更新之后，免费版大漠插件只能在win7系统使用，此脚本改为使用“幽灵键鼠”(一个小U盘)。  
-“幽灵键鼠”请在淘宝购买，买最便宜的那款就行了。  
+<div align=center>
+<img src="https://github.com/moonlessdark/JiuYinDance/blob/master/DeskPageV2/Resources/ghostkb.jpg" width='30%'>
+</div>  
+<div align=center>“幽灵键鼠”请在淘宝购买，买最便宜的那款就行了。</div> 
+
 
 ### 游戏设置
 * 启动脚本前，一定要确认好客户端设置的游戏缩放模式是【经典模式】还是【极致模式】，如果游戏客户端缩放模式与启动的脚本不一致，会导致无法识别到图像的。  
@@ -47,7 +51,7 @@ https://segmentfault.com/q/1010000039054120/a-1020000039066088
 
 ##  功能说明事项
 <div align=center>
-<img src="https://github.com/moonlessdark/JiuYinDance/blob/master/DeskPageV2/Resources/cover2.PNG">
+<img src="https://github.com/moonlessdark/JiuYinDance/blob/master/DeskPageV2/Resources/cover2.PNG"  width='30%'>
 </div>
 
 
@@ -91,7 +95,7 @@ https://segmentfault.com/q/1010000039054120/a-1020000039066088
 * 目前还没有做过多的干扰项判断(比如垃圾四害的干扰)，在打劫镖的NPC时，会受到游戏内的横幅提示的影响。(例如：某某帮会发动了追杀，某某玩家砸蛋出了金丝粉)，横幅会的出现会遮挡劫镖NPC放技能的图标，导致人物无法格挡技能被击飞，影响后续的镖车判断。  
 
 <div align=center>
-<img src="https://github.com/moonlessdark/JiuYinDance/blob/master/DeskPageV2/Resources/cover3.PNG">
+<img src="https://github.com/moonlessdark/JiuYinDance/blob/master/DeskPageV2/Resources/cover3.PNG"  width='60%'>
 </div>  
 
 ### 关于成语搜索  
