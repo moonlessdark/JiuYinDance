@@ -59,30 +59,52 @@ class OpenGiftCard(QThread):
 
     def run(self):
         self.mutex.lock()  # 先加锁
+
+        _is_ready_hwnd: list = []
+        _is_ok_hwnd: list = []
+        _is_wait: bool = False  # False 表示这一轮已经执行，等待下一轮  True 真在在执行中
+
         while 1:
             if self.working is False:
                 break
+
             now = datetime.datetime.now()
-            if now.time() >= datetime.time(20, 59, 50) or now.time() >= datetime.time(21, 3, 50):
+            # 计算到21点整还有多久
+            if now in [datetime.datetime(now.year, now.month, now.day, 20, 59, 55),
+                       datetime.datetime(now.year, now.month, now.day, 20, 59, 56),
+                       datetime.datetime(now.year, now.month, now.day, 21, 3, 55),
+                       datetime.datetime(now.year, now.month, now.day, 21, 3, 56)]:  # 如果已经过了21点，则设置为明天的21点
+
+                # 先把背包打开,并检查是否有礼卡，如果包裹里没有礼卡的花那就没啥意义了啊
                 for hwnd_i in self.windows_handle_list:
                     if self.find_gift_card.open_bag(hwnd_i) is False:
-                        self.working = False
-                        break
-                break
-                # self.sin_out.emit(f"准备开卡中")
-            elif now.time() >= datetime.time(20, 59, 55) or now.time() >= datetime.time(21, 3, 55):
-                self.sin_out.emit(f"开卡中")
-                for hwnd_i in self.windows_handle_list:
-                    self.windows_opt.activate_windows(hwnd_i)
+                        # 如果包裹里没有礼卡
+                        continue
+                    _is_ready_hwnd.append(hwnd_i)
+
+                if len(_is_ready_hwnd) == len(_is_ok_hwnd):
+                    # 如果，所有的窗口都没有检测到礼卡，那么就可以跳出去了，没有意义
+                    # 如果所有的窗口已经检测完成了，那么就可以跳出去了，没有意义
+                    _is_ready_hwnd = []
+                    _is_ok_hwnd = []
+                    break
+
+                for _read_hwnd in _is_ready_hwnd:
+                    if _read_hwnd in _is_ok_hwnd:
+                        continue
+                    self.windows_opt.activate_windows(_read_hwnd)
                     time.sleep(0.2)
-                    self.find_gift_card.find_gift_card(hwnd_i)
+                    self.find_gift_card.find_gift_card(_read_hwnd)
                     for run_i in range(50):
                         SetGhostMouse().click_mouse_right_button()
-                        if self.find_gift_card.click_ok(hwnd_i):
-                            self.sin_out.emit(f"窗口id:{hwnd_i}已开卡")
+                        if self.find_gift_card.click_ok(_read_hwnd):
+                            self.sin_out.emit(f"窗口id:{_read_hwnd}已开卡")
+                            _is_ok_hwnd.append(_read_hwnd)
                             break
+
             else:
                 self.sin_out.emit(f"等待到开卡时间")
+            time.sleep(1)
         self.mutex.unlock()
         self.sin_work_status.emit(False)
         return None
