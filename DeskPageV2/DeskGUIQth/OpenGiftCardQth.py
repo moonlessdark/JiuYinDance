@@ -3,7 +3,6 @@ import datetime
 import time
 
 from PySide6.QtCore import QThread, Signal, QWaitCondition, QMutex
-from sympy import Interval
 
 from DeskPageV2.DeskTools.GhostSoft.get_driver_v3 import SetGhostMouse
 from DeskPageV2.DeskTools.WindowsSoft.get_windows import GetHandleList
@@ -45,7 +44,7 @@ class OpenGiftCard(QThread):
         # 获取当前时间并去除微秒
         current_time = datetime.datetime.now().replace(microsecond=0)
         # 定义目标时间字符串列表
-        target_times = ["20:59:55", "21:03:55"]
+        target_times: list = ["20:59:55", "21:03:55"]
 
         # 转换为datetime对象并生成时间范围（前后2秒）
         time_ranges = []
@@ -58,15 +57,12 @@ class OpenGiftCard(QThread):
             time_ranges.append((target - datetime.timedelta(seconds=2), target + datetime.timedelta(seconds=2)))
 
         # 判断当前时间是否落入任一区间
-        match_flag = False
+        match_flag: bool = False
         for start, end in time_ranges:
             if start <= current_time <= end:
                 match_flag = True
                 break
-        if match_flag:
-            # print("当前时间匹配" if match_flag else "未匹配")
-            return True
-        time.sleep(1)
+        return match_flag
 
     def stop_execute_init(self):
         """
@@ -97,35 +93,48 @@ class OpenGiftCard(QThread):
                 break
 
             # 计算到21点整还有多久
-            if self.check_local_time():
-                # 先把背包打开,并检查是否有礼卡，如果包裹里没有礼卡的花那就没啥意义了啊
-                for hwnd_i in self.windows_handle_list:
-                    if self.find_gift_card.open_bag(hwnd_i) is False:
-                        # 如果包裹里没有礼卡
-                        continue
-                    _is_ready_hwnd.append(hwnd_i)
+            if self.check_local_time() is False:
+                # 如果还没有到21点
+                time.sleep(1)
+                continue
 
-                if len(_is_ready_hwnd) == len(_is_ok_hwnd):
-                    # 如果，所有的窗口都没有检测到礼卡，那么就可以跳出去了，没有意义
-                    # 如果所有的窗口已经检测完成了，那么就可以跳出去了，没有意义
-                    _is_ready_hwnd = []
-                    _is_ok_hwnd = []
+            # 先把背包打开,并检查是否有礼卡，如果包裹里没有礼卡的花那就没啥意义了啊
+            for hwnd_i in self.windows_handle_list:
+                if self.find_gift_card.open_bag(hwnd_i) is False:
+                    # 如果包裹里没有礼卡
+                    continue
+                _is_ready_hwnd.append(hwnd_i)
+
+            if len(_is_ready_hwnd) == len(_is_ok_hwnd):
+                # 如果，所有的窗口都没有检测到礼卡，那么就可以跳出去了，没有意义
+                # 如果所有的窗口已经检测完成了，那么就可以跳出去了，没有意义
+                _is_ready_hwnd = []
+                _is_ok_hwnd = []
+                break
+
+            for _read_hwnd in _is_ready_hwnd:
+
+                if self.working is False:
                     break
 
-                for _read_hwnd in _is_ready_hwnd:
-                    if _read_hwnd in _is_ok_hwnd:
-                        continue
-                    self.windows_opt.activate_windows(_read_hwnd)
-                    time.sleep(0.2)
-                    self.find_gift_card.find_gift_card(_read_hwnd)
-                    for run_i in range(20):
-                        SetGhostMouse().click_mouse_right_button()
-                        if self.find_gift_card.click_ok(_read_hwnd):
-                            self.sin_out.emit(f"窗口id:{_read_hwnd}已开卡")
-                            _is_ok_hwnd.append(_read_hwnd)
-                            break
-                        time.sleep(0.2)
-            time.sleep(1)
+                if _read_hwnd in _is_ok_hwnd:
+                    continue
+                self.windows_opt.activate_windows(_read_hwnd)
+                time.sleep(0.2)
+                if self.find_gift_card.find_gift_card(_read_hwnd) is False:
+                    continue
+                for run_i in range(20):
+
+                    if self.working is False:
+                        break
+
+                    SetGhostMouse().click_mouse_right_button()
+                    if self.find_gift_card.find_open_loading(_read_hwnd):
+                        self.sin_out.emit(f"窗口id:{_read_hwnd}已开卡,请结束后自行查看开卡记录")
+                        _is_ok_hwnd.append(_read_hwnd)
+                        SetGhostMouse().move_mouse_to(10, 10)  # 鼠标移动一下，避免挡住了包裹的图标
+                        break
+                    time.sleep(0.5)
         self.mutex.unlock()
         self.sin_work_status.emit(False)
         return None

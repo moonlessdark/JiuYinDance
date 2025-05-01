@@ -114,6 +114,7 @@ class GetConfig:
         __goods.null_blood = self.project_dir + self.__datas["goods"]["non_blood"]
         __goods.sit_blood = self.project_dir + self.__datas["goods"]["sit_blood"]
         __goods.gift_card = self.project_dir + self.__datas["goods"]["gift_card"]
+        __goods.open_loading = self.project_dir + self.__datas["goods"]["open_loading"]
         return __goods
 
     def get_find_pic_config(self) -> Config:
@@ -174,7 +175,6 @@ class GetConfig:
         with open(_get_dir_skill_group(), 'w', encoding="gbk") as file:
             dict_skill["打怪套路"] = kwargs.get("_skill_dict")
             json.dump(dict_skill, file, ensure_ascii=False, indent=4)
-
 
     @staticmethod
     def save_key_even_code_auto_list(key_list: list):

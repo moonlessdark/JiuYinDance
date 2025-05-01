@@ -100,6 +100,7 @@ goods:
   non_blood: /Resources/Goods/满血.png
   sit_blood: /Resources/Goods/打坐.png
   gift_card: /Resources/Goods/礼卡.png
+  open_loading: /Resources/Goods/open_loading.png
 keyBoardMouseDll:
   dmDll:
     dm: /Resources/KeyBoardDriver/dm.dll

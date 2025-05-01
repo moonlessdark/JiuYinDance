@@ -38,6 +38,8 @@ class FindGiftCard:
         self._goods_pic_bag_gift_card = bitwise_and(self._goods_pic_bag_gift_card)
 
         self._button_ok = cv2.imdecode(fromfile(bu, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
+        self._goods_pic_open_loading = cv2.imdecode(fromfile(self._config.open_loading, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
+
 
     def open_bag(self, hwnd: int) -> bool:
         """
@@ -86,5 +88,14 @@ class FindGiftCard:
             SetGhostMouse().move_mouse_to(__rec_goods_bag_tag_clickable[0], __rec_goods_bag_tag_clickable[1])
             time.sleep(0.2)
             SetGhostMouse().click_mouse_left_button()
+            return True
+        return False
+
+    def find_open_loading(self, hwnd: int):
+        """
+        查询打开状态
+        """
+        __rec_goods_bag_open_loading = self.windows.find_windows_coordinate_rect(hwnd, img=self._goods_pic_open_loading)
+        if __rec_goods_bag_open_loading is not None:
             return True
         return False
