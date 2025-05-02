@@ -71,6 +71,7 @@ class Goods:
     sit_blood: str = dataclasses.field(default_factory=str)
     gift_card: str = dataclasses.field(default_factory=str)
     open_loading: str = dataclasses.field(default_factory=str)
+    get_all_goods: str = dataclasses.field(default_factory=str)
 
 
 @dataclasses.dataclass

@@ -101,6 +101,7 @@ goods:
   sit_blood: /Resources/Goods/打坐.png
   gift_card: /Resources/Goods/礼卡.png
   open_loading: /Resources/Goods/open_loading.png
+  get_all_goods: /Resources/Goods/全部拾取.png
 keyBoardMouseDll:
   dmDll:
     dm: /Resources/KeyBoardDriver/dm.dll

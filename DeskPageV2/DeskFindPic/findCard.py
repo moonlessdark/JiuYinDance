@@ -29,17 +29,20 @@ class FindGiftCard:
     def __init__(self):
         self._find_tag_goods = None  # 物品背包
         self._config = GetConfig().get_bag_goods()
-        bu = GetConfig().get_track_car().receive_task_confirm
         self.windows = WindowsCapture()
-        self._goods_pic_bag_unclick = cv2.imdecode(fromfile(self._config.goods_bag_tag_clickable, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
-        self._goods_pic_bag_clicked = cv2.imdecode(fromfile(self._config.goods_bag_tag_clicked, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
+        self._goods_pic_bag_unclick = cv2.imdecode(fromfile(self._config.goods_bag_tag_clickable, dtype=np.uint8),
+                                                   cv2.IMREAD_UNCHANGED)
+        self._goods_pic_bag_clicked = cv2.imdecode(fromfile(self._config.goods_bag_tag_clicked, dtype=np.uint8),
+                                                   cv2.IMREAD_UNCHANGED)
 
-        self._goods_pic_bag_gift_card = cv2.imdecode(fromfile(self._config.gift_card, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
+        self._goods_pic_bag_gift_card = cv2.imdecode(fromfile(self._config.gift_card, dtype=np.uint8),
+                                                     cv2.IMREAD_UNCHANGED)
         self._goods_pic_bag_gift_card = bitwise_and(self._goods_pic_bag_gift_card)
 
-        self._button_ok = cv2.imdecode(fromfile(bu, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
-        self._goods_pic_open_loading = cv2.imdecode(fromfile(self._config.open_loading, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
-
+        self._goods_pic_open_loading = cv2.imdecode(fromfile(self._config.open_loading, dtype=np.uint8),
+                                                    cv2.IMREAD_UNCHANGED)
+        self._button_ok = cv2.imdecode(fromfile(self._config.get_all_goods, dtype=np.uint8),
+                                       cv2.IMREAD_UNCHANGED)
 
     def open_bag(self, hwnd: int) -> bool:
         """
@@ -65,7 +68,10 @@ class FindGiftCard:
             SetGhostMouse().click_mouse_left_button()
             time.sleep(0.5)
 
-        if self.find_gift_card(hwnd):
+        # 看看礼卡在不在
+        __rec_goods_bag_tag_clickable = self.windows.find_windows_coordinate_rect(hwnd,
+                                                                                  img=self._goods_pic_bag_gift_card)
+        if __rec_goods_bag_tag_clickable is not None:
             return True
         return False
 
@@ -73,7 +79,8 @@ class FindGiftCard:
         """
         找到第一个礼品卡(优先点击左上)
         """
-        __rec_goods_bag_tag_clickable = self.windows.find_windows_coordinate_rect(hwnd, img=self._goods_pic_bag_gift_card)
+        __rec_goods_bag_tag_clickable = self.windows.find_windows_coordinate_rect(hwnd,
+                                                                                  img=self._goods_pic_bag_gift_card)
         if __rec_goods_bag_tag_clickable is not None:
             SetGhostMouse().move_mouse_to(__rec_goods_bag_tag_clickable[0], __rec_goods_bag_tag_clickable[1])
             return True
@@ -83,6 +90,7 @@ class FindGiftCard:
         """
         点击确定按钮
         """
+        time.sleep(1)
         __rec_goods_bag_tag_clickable = self.windows.find_windows_coordinate_rect(hwnd, img=self._button_ok)
         if __rec_goods_bag_tag_clickable is not None:
             SetGhostMouse().move_mouse_to(__rec_goods_bag_tag_clickable[0], __rec_goods_bag_tag_clickable[1])

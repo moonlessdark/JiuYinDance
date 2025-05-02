@@ -115,6 +115,7 @@ class GetConfig:
         __goods.sit_blood = self.project_dir + self.__datas["goods"]["sit_blood"]
         __goods.gift_card = self.project_dir + self.__datas["goods"]["gift_card"]
         __goods.open_loading = self.project_dir + self.__datas["goods"]["open_loading"]
+        __goods.get_all_goods = self.project_dir + self.__datas["goods"]["get_all_goods"]
         return __goods
 
     def get_find_pic_config(self) -> Config:

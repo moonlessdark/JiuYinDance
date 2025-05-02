@@ -140,6 +140,7 @@ class Dance(MainGui):
 
         # 9点开卡
         self.th_open_gift.sin_out.connect(self.print_logs)
+        self.th_open_gift.sin_work_status.connect(self._th_execute_stop)
 
     def hot_key_event(self, data):
         # print(f"当前按下的键盘value是——{data}")

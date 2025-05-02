@@ -5,6 +5,7 @@ import time
 from PySide6.QtCore import QThread, Signal, QWaitCondition, QMutex
 
 from DeskPageV2.DeskTools.GhostSoft.get_driver_v3 import SetGhostMouse
+from DeskPageV2.DeskTools.WindowsSoft.MonitorDisplay import coordinate_change_from_windows
 from DeskPageV2.DeskTools.WindowsSoft.get_windows import GetHandleList
 from DeskPageV2.DeskFindPic.findCard import FindGiftCard
 
@@ -86,7 +87,6 @@ class OpenGiftCard(QThread):
 
         _is_ready_hwnd: list = []
         _is_ok_hwnd: list = []
-        _is_wait: bool = False  # False 表示这一轮已经执行，等待下一轮  True 真在在执行中
 
         while 1:
             if self.working is False:
@@ -103,14 +103,21 @@ class OpenGiftCard(QThread):
                 if self.find_gift_card.open_bag(hwnd_i) is False:
                     # 如果包裹里没有礼卡
                     continue
-                _is_ready_hwnd.append(hwnd_i)
+                if hwnd_i not in _is_ready_hwnd:
+                    _is_ready_hwnd.append(hwnd_i)
 
-            if len(_is_ready_hwnd) == len(_is_ok_hwnd):
+            if len(_is_ready_hwnd) == len(_is_ok_hwnd) and len(_is_ready_hwnd) > 0:
                 # 如果，所有的窗口都没有检测到礼卡，那么就可以跳出去了，没有意义
                 # 如果所有的窗口已经检测完成了，那么就可以跳出去了，没有意义
+
+                for is_ok_h in _is_ok_hwnd:
+                    # 如果有“获取全部”的按钮的话，那么就全部关掉吧
+                    self.find_gift_card.click_ok(is_ok_h)
+
                 _is_ready_hwnd = []
                 _is_ok_hwnd = []
-                break
+
+                continue
 
             for _read_hwnd in _is_ready_hwnd:
 
@@ -123,18 +130,43 @@ class OpenGiftCard(QThread):
                 time.sleep(0.2)
                 if self.find_gift_card.find_gift_card(_read_hwnd) is False:
                     continue
-                for run_i in range(20):
+
+                _index_x, _index_y = 0, 0
+                for run_i in range(10):
 
                     if self.working is False:
+                        break
+
+                    # 检测一些鼠标的位置，如果人为移动的鼠标，那说明有突发情况，需要停止
+                    x, y = SetGhostMouse().get_mouse_x_y()
+                    if _index_x == 0 and _index_y == 0:
+                        _index_x, _index_y = x, y
+                    elif x != _index_x or y != _index_y:
+                        self.sin_out.emit(f"发现鼠标移动,或许有突发情况，停止开卡")
+                        self.working = False
                         break
 
                     SetGhostMouse().click_mouse_right_button()
                     if self.find_gift_card.find_open_loading(_read_hwnd):
                         self.sin_out.emit(f"窗口id:{_read_hwnd}已开卡,请结束后自行查看开卡记录")
-                        _is_ok_hwnd.append(_read_hwnd)
-                        SetGhostMouse().move_mouse_to(10, 10)  # 鼠标移动一下，避免挡住了包裹的图标
+                        if _read_hwnd not in _is_ok_hwnd:
+                            _is_ok_hwnd.append(_read_hwnd)
+                        w_point = coordinate_change_from_windows(_read_hwnd, (10, 10))
+                        SetGhostMouse().move_mouse_to(w_point[0], w_point[1])  # 鼠标移动一下，避免挡住了包裹的图标
                         break
-                    time.sleep(0.5)
+                    time.sleep(0.1)
+            if len(_is_ready_hwnd) == len(_is_ok_hwnd) and len(_is_ready_hwnd) > 0:
+                # 如果，所有的窗口都没有检测到礼卡，那么就可以跳出去了，没有意义
+                # 如果所有的窗口已经检测完成了，那么就可以跳出去了，没有意义
+
+                for is_ok_h in _is_ok_hwnd:
+                    # 如果有“获取全部”的按钮的话，那么就全部关掉吧
+                    self.find_gift_card.click_ok(is_ok_h)
+
+                _is_ready_hwnd = []
+                _is_ok_hwnd = []
+                continue
+
         self.mutex.unlock()
         self.sin_work_status.emit(False)
         return None
