@@ -132,7 +132,7 @@ class OpenGiftCard(QThread):
                     continue
 
                 _index_x, _index_y = 0, 0
-                for run_i in range(10):
+                for run_i in range(50):
 
                     if self.working is False:
                         break
