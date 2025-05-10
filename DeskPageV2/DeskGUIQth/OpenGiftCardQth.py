@@ -126,8 +126,9 @@ class OpenGiftCard(QThread):
 
                 if _read_hwnd in _is_ok_hwnd:
                     continue
+
                 self.windows_opt.activate_windows(_read_hwnd)
-                time.sleep(0.2)
+                time.sleep(1)
                 if self.find_gift_card.find_gift_card(_read_hwnd) is False:
                     continue
 
