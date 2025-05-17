@@ -1,3 +1,4 @@
+import time
 from collections import namedtuple
 from ctypes import windll, c_ubyte, wintypes, pointer, byref, sizeof
 from typing import List
@@ -51,7 +52,11 @@ class GetHandleList:
         :param windows_handle:
         :return:
         """
-        return self.activate_windows_1(windows_handle)
+        for i in range(5):
+            if self.activate_windows_1(windows_handle):
+                return True
+            time.sleep(0.3)
+        return False
 
     @staticmethod
     def activate_windows_1(windows_handle: int):
