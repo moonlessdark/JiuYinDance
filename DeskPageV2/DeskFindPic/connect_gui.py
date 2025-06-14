@@ -24,6 +24,7 @@ from DeskPageV2.Utils.load_res import GetConfig
 from DeskPageV2.DeskFindPic.findAuctionMarket import FindAuctionMarket
 from DeskPageV2.DeskGUIQth.chengYuSearchQth import ChengYuSearchQth, ChengYuScreenGetQth
 from DeskPageV2.DeskGUIQth.OpenGiftCardQth import OpenGiftCard
+from DeskPageV2.DeskGUIQth.getMapGoodsQth import MapGoodsQth
 
 
 class Dance(MainGui):
@@ -52,6 +53,9 @@ class Dance(MainGui):
         # 押镖
         self.th_truck_task = TruckCarTaskQth()  # 运镖
         self.th_truck_fight_monster = TruckTaskFightMonsterQth()  # 打怪
+
+        # 地图采集
+        self.map_get_qth = MapGoodsQth()
 
         # # 键盘驱动对象
         self.dm_window = getWindows()
@@ -126,6 +130,12 @@ class Dance(MainGui):
         # 设置技能
         self._button_save_skill_table.clicked.connect(self.save_skill_table)
         self.action_edit_skill_list.triggered.connect(self.open_skill_table)
+
+        # 设置地图采集坐标
+        self.action_edit_map_goods_point_list.triggered.connect(self.open_map_goods_point)
+        self._button_save_map_goods_point_table.clicked.connect(self.save_map_goods_point_table)
+        self.map_get_qth.sin_out.connect(self.print_logs)
+        self.map_get_qth.sin_work_status.connect(self._th_execute_stop)
 
         # 成语填空
         self.th_chengyu.sin_out.connect(self.print_chengyu)
@@ -416,6 +426,9 @@ class Dance(MainGui):
         self.th_chengyu.stop_execute_init()
         # 自动开卡
         self.th_open_gift.stop_execute_init()
+        # 地图资源采集
+        self.map_get_qth.stop_execute_init()
+
         # 进度条跑马灯
         self.th_progress_bar.stop_init()
         self.__update_ui_changed_execute_button_text_and_status(False)
@@ -534,7 +547,24 @@ class Dance(MainGui):
                 # 开始执行跑马灯效果
                 self.th_progress_bar.start_init()
                 self.th_progress_bar.start()
+            elif self.radio_button_get_goods.isChecked():
+                """
+                如果是地图采集
+                """
+                if len(windows_list) != 1:
+                    self.print_logs("此功能只支持勾选1个游戏窗口")
+                else:
 
+                    _point_list = self.file_config.get_map_goods_point_list_by_selected()
+                    if len(_point_list) == 0:
+                        self.print_logs("还未配置/启用地图路线，请在配置菜单中确认")
+                    else:
+                        self.map_get_qth.get_param(windows_list[0], _point_list)
+                        self.map_get_qth.start()
+                        self.__update_ui_changed_execute_button_text_and_status(True)
+                        # 开始执行跑马灯效果
+                        self.th_progress_bar.start_init()
+                        self.th_progress_bar.start()
             else:
                 self.print_logs("还未选择需要执行的功能")
 
@@ -732,7 +762,7 @@ class Dance(MainGui):
         else:
             __res: dict = FindAuctionMarket().find_goods(WindowsCapture().capture(handle_list[0]).pic_content)
             __goods_name_list: list = []
-            if len(__res) > 0:
+            if __res is not None:
                 for __good_line in __res:
                     __goods_name = __res[__good_line]["goods_name"]
                     __goods_name_list.append(__goods_name)
@@ -760,6 +790,43 @@ class Dance(MainGui):
             self.print_logs("还有物品没有设置价格")
             return None
         return _goods_price_list
+
+    def open_map_goods_point(self):
+        """
+        打开设置地图采集坐标
+        """
+        if self.dialog_map_goods_table.isVisible() is False:
+            self.dialog_map_goods_table.setVisible(True)
+
+    def save_map_goods_point_table(self):
+        """
+        list:[{
+            line_name: 路线1,
+            selected: true.
+            map_point: [[100, 1], [200, 20], [300, 30]]
+        }]
+        """
+        _map_point_list: list = []
+        for row in range(self._table_map_goods_point.rowCount()):
+            _line_name: str = ""
+            point_list: list = []
+            line_dict: dict = {}
+            for cul in range(self._table_map_goods_point.columnCount()-1):
+                _content = self._table_map_goods_point.item(row, cul).text()
+                if cul == 0:
+                    # 第0列是标题
+                    _line_name = _content
+                    line_dict["line_name"] = _line_name
+                    line_dict["selected"] = False
+                    continue
+                else:
+                    point_list.append(_content)
+            line_dict["map_point"] = point_list
+            _map_point_list.append(line_dict)
+        self.file_config.update_map_goods_point_list(_map_point_list)
+        self.show_dialog("保存成功,请重启脚本")
+
+
 
     def __load_skill_table(self):
         _skill_obj: dict = self.file_config.get_skill_group_list().get("打怪套路")  # 当前正在使用的技能组

@@ -1,5 +1,6 @@
 import ctypes
 import os
+import subprocess
 import sys
 import time
 
@@ -59,8 +60,8 @@ class MainGui(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.resize(300, 460)
-        self.setFixedWidth(300)
+        self.setFixedSize(300, 460)
+        # self.setFixedWidth(300)
         # self.setWindowTitle("蜗牛跳舞小助手")
         # 加载任务栏和窗口左上角图标
         self.setWindowIcon(QIcon("./_internal/Resources/logo/logo.ico"))
@@ -96,6 +97,9 @@ class MainGui(QtWidgets.QMainWindow):
 
         self.action_edit_skill_list = QtGui.QAction("编辑技能", self)
         file_menu.addAction(self.action_edit_skill_list)
+
+        self.action_edit_map_goods_point_list = QtGui.QAction("地图采集", self)
+        file_menu.addAction(self.action_edit_map_goods_point_list)
 
         action_open_url = QtGui.QAction("访问项目", self)
         about_menu.addAction(action_open_url)
@@ -184,6 +188,9 @@ class MainGui(QtWidgets.QMainWindow):
         # 自动开卡
         self.radio_button_open_card = QtWidgets.QRadioButton()
         self.radio_button_open_card.setText("自动开卡")
+        # 采集/砍树/挖矿
+        self.radio_button_get_goods = QtWidgets.QRadioButton()
+        self.radio_button_get_goods.setText("地图采集")
 
         """
         增加一下布局框
@@ -207,6 +214,7 @@ class MainGui(QtWidgets.QMainWindow):
 
         # 自动开卡
         self.gridLayout_group_box_functional_area.addWidget(self.radio_button_open_card, 3, 1)
+        self.gridLayout_group_box_functional_area.addWidget(self.radio_button_get_goods, 3, 2)
 
         # 其他工具
         self.gridLayout_group_box_functional_area.addWidget(_label_other_task, 4, 0)
@@ -428,6 +436,38 @@ class MainGui(QtWidgets.QMainWindow):
         self._button_del_skill_table_row.clicked.connect(self.del_skill_table_row)
 
         """
+        配置地图采集坐标
+        """
+        self.dialog_map_goods_table = QtWidgets.QDialog()
+        self.dialog_map_goods_table.setWindowTitle("设置采集坐标")
+        self.dialog_map_goods_table.resize(530, 300)
+        self._table_map_goods_point = QtWidgets.QTableWidget(self.dialog_map_goods_table)
+        self._table_map_goods_point.setRowCount(1)
+        self._table_map_goods_point.setColumnCount(2)
+        self.init_table()
+
+        __widget_map_goods_point = QtWidgets.QWidget()
+        self._button_add_map_goods_point_row = QtWidgets.QPushButton("新增")
+        self._button_del_map_goods_point_row = QtWidgets.QPushButton("删除")
+        self._button_save_map_goods_point_table = QtWidgets.QPushButton("保存")
+
+        __lay_table_ui_button_map_goods_point = QtWidgets.QHBoxLayout(__widget_map_goods_point)
+        __lay_table_ui_button_map_goods_point.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight)
+        __lay_table_ui_button_map_goods_point.addWidget(self._button_add_map_goods_point_row)
+        __lay_table_ui_button_map_goods_point.addWidget(self._button_del_map_goods_point_row)
+        __lay_table_ui_button_map_goods_point.addWidget(self._button_save_map_goods_point_table)
+        __lay_table_ui_button_map_goods_point.setSpacing(1)
+
+        __lay_table_ui_map_goods_point = QtWidgets.QVBoxLayout(self.dialog_map_goods_table)
+        __lay_table_ui_map_goods_point.addWidget(__widget_map_goods_point)
+        __lay_table_ui_map_goods_point.addWidget(self._table_map_goods_point)
+        __lay_table_ui_map_goods_point.setSpacing(2)
+        __lay_table_ui_map_goods_point.setContentsMargins(5, 5, 5, 5)
+
+        self._button_add_map_goods_point_row.clicked.connect(self.add_map_goods_point_table_row)
+        self._button_del_map_goods_point_row.clicked.connect(self.del_map_goods_point_table_row_table_row)
+
+        """
         成语搜索
         """
         self.dialog_chengyu_search = QtWidgets.QDialog()
@@ -476,6 +516,83 @@ class MainGui(QtWidgets.QMainWindow):
         self.dialog_chengyu_search.setLayout(_lay_out_chengyu_search_result)
 
         self.radio_button_chengyu_search.toggled.connect(self.show_dialog_chengyu_search)
+
+    def update_button_column(self):
+        last_col = self._table_map_goods_point.columnCount() - 1
+
+        # 清除原有按钮
+        for row in range(self._table_map_goods_point.rowCount()):
+            if self._table_map_goods_point.cellWidget(row, last_col - 1):
+                self._table_map_goods_point.removeCellWidget(row, last_col - 1)
+
+        # 添加新按钮
+        for row in range(self._table_map_goods_point.rowCount()):
+            btn = QtWidgets.QPushButton("添加列")
+            btn.clicked.connect(self.add_new_column)
+            self._table_map_goods_point.setCellWidget(row, last_col, btn)
+
+    def init_table(self):
+        # 填充初始数据（最后一列留空放按钮）
+        self._table_map_goods_point.setHorizontalHeaderItem(0, QtWidgets.QTableWidgetItem("路线名"))
+        for i in range(1, self._table_map_goods_point.columnCount()):
+            self._table_map_goods_point.setHorizontalHeaderItem(i, QtWidgets.QTableWidgetItem(f"坐标 {i}"))
+        for row in range(self._table_map_goods_point.rowCount()):
+            for col in range(self._table_map_goods_point.columnCount() - 1):
+                self.set_cell_data(row, col)
+        # 添加按钮列
+        self.update_button_column()
+
+    def add_new_column(self):
+        # 添加新列
+        new_col = self._table_map_goods_point.columnCount()
+        self._table_map_goods_point.setColumnCount(new_col + 1)
+
+        # 填充新列数据（倒数第二列）
+        for row in range(self._table_map_goods_point.rowCount()):
+            self.set_cell_data(row, new_col - 1)
+
+        # 更新按钮到新最后一列
+        self.update_button_column()
+        for i in range(1, self._table_map_goods_point.columnCount()):
+            self._table_map_goods_point.setHorizontalHeaderItem(i, QtWidgets.QTableWidgetItem(f"坐标 {i}"))
+
+    def set_cell_data(self, row: int, col: int):
+        if col == 0:
+            item = QtWidgets.QTableWidgetItem(f"路线{row+1}")
+        # else:
+        #     item = QtWidgets.QTableWidgetItem(f"x,y")
+            item.setTextAlignment(Qt.AlignCenter)
+            self._table_map_goods_point.setItem(row, col, item)
+
+    def del_map_goods_point_table_row_table_row(self):
+        """
+        删除行，需要选中具体的行
+        :return:
+        """
+        selected_row = self._table_map_goods_point.currentRow()
+        if selected_row == 0 and not self._table_map_goods_point.selectedItems():
+            QtWidgets.QMessageBox.information(self, '提示', "请选择需要删除路线")
+            return False
+        self._table_map_goods_point.removeRow(selected_row)
+        return True
+
+    def add_map_goods_point_table_row(self):
+        """
+        新增行
+        如果没有选择制定的行，那么就插入在最后面
+        :return:
+        """
+        selected_row = self._table_map_goods_point.currentRow() + 1
+        if not self._table_map_goods_point.selectedItems():
+            selected_row = self._table_map_goods_point.rowCount()
+        self._table_map_goods_point.insertRow(selected_row)
+
+        # 显示一下路线名
+        item = QtWidgets.QTableWidgetItem(f"路线{selected_row+1}")
+        item.setTextAlignment(Qt.AlignCenter)
+        self._table_map_goods_point.setItem(selected_row, 0, item)
+
+        self.update_button_column()
 
     def show_dialog_chengyu_search(self):
         if self.radio_button_chengyu_search.isChecked():
@@ -529,7 +646,13 @@ class MainGui(QtWidgets.QMainWindow):
         :param self:
         :return:
         """
-        QtGui.QDesktopServices.openUrl(QtCore.QUrl("https://blog.csdn.net/qq_26013403/article/details/129122971"))
+        config_file: str = '.\\_internal\\Resources\\fixSwitchWindowsFail.bat'
+        if not os.path.exists(config_file):
+            config_file = ".\\DeskPageV2\\Resources\\fixSwitchWindowsFail.bat"
+        if os.path.exists(config_file):
+            subprocess.run(config_file, shell=False)
+        else:
+            QtGui.QDesktopServices.openUrl(QtCore.QUrl("https://blog.csdn.net/qq_26013403/article/details/129122971"))
 
     @staticmethod
     def open_url_project():

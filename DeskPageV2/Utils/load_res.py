@@ -1,5 +1,6 @@
 # encodings: utf-8
 import json
+import os.path
 
 import yaml
 
@@ -31,6 +32,13 @@ def _get_dir_skill_group() -> str:
     获取技能组
     """
     return PathUtil().get_path_from_resources("SkillGroup.json")
+
+
+def _get_dir_map_goods_point_path() -> str:
+    """
+    地图采集物坐标list
+    """
+    return PathUtil().get_path_from_resources("mapGoodsPointList.json")
 
 
 def _get_project_path() -> str:
@@ -165,6 +173,29 @@ class GetConfig:
             res = json.loads(fs)
             return res
 
+    @staticmethod
+    def get_map_goods_point_list() -> list:
+        """
+        获取地图资源坐标
+        """
+        with open(_get_dir_map_goods_point_path(), 'r', encoding="gbk") as f:
+            fs = f.read()
+            res = json.loads(fs)
+            return res
+
+    def get_map_goods_point_list_by_selected(self) -> list:
+        """
+        查询已经选中的地图路线
+        """
+        _res: list = self.get_map_goods_point_list()
+        map_point_list = []
+        for pp in _res:
+            is_selected: bool = pp.get("selected")
+            if is_selected is False:
+                continue
+            map_point_list: list = pp.get("map_point")
+        return map_point_list
+
     def update_skill_group_list(self, *args, **kwargs):
         """
         更新配置文件
@@ -176,6 +207,21 @@ class GetConfig:
         with open(_get_dir_skill_group(), 'w', encoding="gbk") as file:
             dict_skill["打怪套路"] = kwargs.get("_skill_dict")
             json.dump(dict_skill, file, ensure_ascii=False, indent=4)
+
+    @staticmethod
+    def update_map_goods_point_list(content_list: list):
+        """
+        更新地图采集物坐标配置文件
+        :param content_list
+        :return:
+        """
+        if len(content_list) == 0:
+            return None
+        if not os.path.exists(_get_dir_map_goods_point_path()):
+            file = open(_get_dir_map_goods_point_path(), "w")
+            file.close()
+        with open(_get_dir_map_goods_point_path(), 'w', encoding="gbk") as file:
+            json.dump(content_list, file, ensure_ascii=False, indent=4)
 
     @staticmethod
     def save_key_even_code_auto_list(key_list: list):
