@@ -60,7 +60,7 @@ class MainGui(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.setFixedSize(300, 460)
+        self.setFixedSize(300, 480)
         # self.setFixedWidth(300)
         # self.setWindowTitle("蜗牛跳舞小助手")
         # 加载任务栏和窗口左上角图标
@@ -159,6 +159,7 @@ class MainGui(QtWidgets.QMainWindow):
 
         _label_day_task = QtWidgets.QLabel("每日任务")
         _label_desert_task = QtWidgets.QLabel("活动工具")
+        _label_life_task = QtWidgets.QLabel("生活采集")
         _label_other_task = QtWidgets.QLabel("其他")
 
         self.radio_button_school_dance = QtWidgets.QRadioButton()
@@ -190,7 +191,7 @@ class MainGui(QtWidgets.QMainWindow):
         self.radio_button_open_card.setText("自动开卡")
         # 采集/砍树/挖矿
         self.radio_button_get_goods = QtWidgets.QRadioButton()
-        self.radio_button_get_goods.setText("地图采集")
+        self.radio_button_get_goods.setText("地图物资")
 
         """
         增加一下布局框
@@ -203,24 +204,28 @@ class MainGui(QtWidgets.QMainWindow):
 
         # 每日任务
         self.gridLayout_group_box_functional_area.addWidget(_label_day_task, 0, 0)
+
         self.gridLayout_group_box_functional_area.addWidget(self.radio_button_school_dance, 1, 0)
         self.gridLayout_group_box_functional_area.addWidget(self.radio_button_party_dance, 1, 1)
         self.gridLayout_group_box_functional_area.addWidget(self.radio_button_truck_car_task, 1, 2)
 
-        # 漠西风涛
+        # 活动工具
         self.gridLayout_group_box_functional_area.addWidget(_label_desert_task, 2, 0)
         # self.gridLayout_group_box_functional_area.addWidget(self.radio_button_chengyu_input, 3, 0)
         self.gridLayout_group_box_functional_area.addWidget(self.radio_button_chengyu_search, 3, 0)
 
         # 自动开卡
         self.gridLayout_group_box_functional_area.addWidget(self.radio_button_open_card, 3, 1)
-        self.gridLayout_group_box_functional_area.addWidget(self.radio_button_get_goods, 3, 2)
+
+        # 生活采集
+        self.gridLayout_group_box_functional_area.addWidget(_label_life_task, 4, 0)
+        self.gridLayout_group_box_functional_area.addWidget(self.radio_button_get_goods, 5, 0)
 
         # 其他工具
-        self.gridLayout_group_box_functional_area.addWidget(_label_other_task, 4, 0)
-        self.gridLayout_group_box_functional_area.addWidget(self.radio_button_key_auto, 5, 0)
-        self.gridLayout_group_box_functional_area.addWidget(self.radio_button_auction_market, 5, 1)
-        self.gridLayout_group_box_functional_area.addWidget(self.radio_button_game_screen, 5, 2)
+        self.gridLayout_group_box_functional_area.addWidget(_label_other_task, 6, 0)
+        self.gridLayout_group_box_functional_area.addWidget(self.radio_button_key_auto, 7, 0)
+        self.gridLayout_group_box_functional_area.addWidget(self.radio_button_auction_market, 7, 1)
+        self.gridLayout_group_box_functional_area.addWidget(self.radio_button_game_screen, 7, 2)
 
         # 将布局放入容器中
         self.group_box_functional_area.setLayout(self.gridLayout_group_box_functional_area)
