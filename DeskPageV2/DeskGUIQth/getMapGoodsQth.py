@@ -90,8 +90,8 @@ class MapGoodsQth(QThread):
         _set_time_out: int = 20  # 设置检查超时时间为 20秒，即每隔20秒去检查一次人物坐标
         _run_count: int = 0  # 采集了多少次了
 
-        self.sin_out.emit("5秒后路线开始执行...")
-        time.sleep(5)
+        self.sin_out.emit("3秒后路线开始执行...")
+        time.sleep(3)
 
         # 先把地图缩放拉大
         self.find_map_goods.plus_map(self.windows_handle)
