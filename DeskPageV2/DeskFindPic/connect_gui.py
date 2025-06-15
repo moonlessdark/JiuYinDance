@@ -561,6 +561,9 @@ class Dance(MainGui):
                     if len(_point_list) == 0:
                         self.print_logs("还未配置/启用地图路线，请在配置菜单中确认")
                     else:
+                        _line_name: str = self.file_config.get_map_goods_line_name_by_selected()
+                        self.print_logs(f"当前启用的路线为: {_line_name}")
+
                         self.map_get_qth.get_param(windows_list[0], _point_list)
                         self.map_get_qth.start()
                         self.__update_ui_changed_execute_button_text_and_status(True)
@@ -801,6 +804,21 @@ class Dance(MainGui):
             self.dialog_map_goods_table.setVisible(True)
             self.__load_map_goods_point_table()
 
+    def __check_table_map_point_line_name(self) -> bool:
+        """
+        检测路线名称是否有重复
+        """
+        _table_line_name_list: list = []
+        for row in range(self._table_map_goods_point.rowCount()):
+            if self._table_map_goods_point.item(row, 0) is None:
+                continue
+            _line_name: str = self._table_map_goods_point.item(row, 0).text()
+            if _line_name in _table_line_name_list:
+                self.show_dialog(f"路线名: {_line_name} 不能重复")
+                return False
+            _table_line_name_list.append(_line_name)
+        return True
+
     def save_map_goods_point_table(self):
         """
         list:[{
@@ -810,6 +828,10 @@ class Dance(MainGui):
         }]
         """
         _map_point_list: list = []
+
+        # 先检测一下路线名是不是相同的
+        if self.__check_table_map_point_line_name() is False:
+            return None
 
         # 下拉框当前选中的路线
         current_text: str = self._combo_box_goods_point_selected.currentText()

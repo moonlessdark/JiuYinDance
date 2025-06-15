@@ -196,6 +196,19 @@ class GetConfig:
             map_point_list: list = pp.get("map_point")
         return map_point_list
 
+    def get_map_goods_line_name_by_selected(self) -> str:
+        """
+        获取已经选中的路线名
+        """
+        _res: list = self.get_map_goods_point_list()
+        for pp in _res:
+            is_selected: bool = pp.get("selected")
+            if is_selected is False:
+                continue
+            map_line_name: str = pp.get("line_name")
+            return map_line_name
+        return None
+
     def update_skill_group_list(self, *args, **kwargs):
         """
         更新配置文件
