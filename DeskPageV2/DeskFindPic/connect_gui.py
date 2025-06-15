@@ -601,6 +601,7 @@ class Dance(MainGui):
         else:
             self.print_logs("未发现游戏窗口，请登录游戏后再次重试", is_clear=True)
         self.set_check_box_by_game_windows_enable()
+        self.auto_radio_check_all_windows()
 
     def auto_radio_check_all_windows(self):
         """
