@@ -451,8 +451,14 @@ class MainGui(QtWidgets.QMainWindow):
         self._button_del_map_goods_point_row = QtWidgets.QPushButton("删除")
         self._button_save_map_goods_point_table = QtWidgets.QPushButton("保存")
 
+        _label_goods_point_selected = QtWidgets.QLabel("执行路线 ")
+        self._combo_box_goods_point_selected = QtWidgets.QComboBox()
+
         __lay_table_ui_button_map_goods_point = QtWidgets.QHBoxLayout(__widget_map_goods_point)
         __lay_table_ui_button_map_goods_point.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight)
+        __lay_table_ui_button_map_goods_point.addWidget(_label_goods_point_selected)
+        __lay_table_ui_button_map_goods_point.addWidget(self._combo_box_goods_point_selected)
+        __lay_table_ui_button_map_goods_point.addSpacing(20)
         __lay_table_ui_button_map_goods_point.addWidget(self._button_add_map_goods_point_row)
         __lay_table_ui_button_map_goods_point.addWidget(self._button_del_map_goods_point_row)
         __lay_table_ui_button_map_goods_point.addWidget(self._button_save_map_goods_point_table)
@@ -574,6 +580,7 @@ class MainGui(QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.information(self, '提示', "请选择需要删除路线")
             return False
         self._table_map_goods_point.removeRow(selected_row)
+        # self._update_combox_map_goods_point()
         return True
 
     def add_map_goods_point_table_row(self):

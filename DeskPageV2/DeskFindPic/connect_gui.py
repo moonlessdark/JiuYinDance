@@ -3,7 +3,6 @@ import time
 
 import win32gui
 from PySide6 import QtWidgets, QtCore
-from PySide6.QtCore import QTimer
 from PySide6.QtGui import QTextCursor, QFont
 
 from PySide6.QtWidgets import QMessageBox
@@ -136,6 +135,9 @@ class Dance(MainGui):
         self._button_save_map_goods_point_table.clicked.connect(self.save_map_goods_point_table)
         self.map_get_qth.sin_out.connect(self.print_logs)
         self.map_get_qth.sin_work_status.connect(self._th_execute_stop)
+        self._table_map_goods_point.itemChanged.connect(self._update_combox_map_goods_point)  # 更新选中的路线
+        self._button_del_map_goods_point_row.clicked.connect(self._update_combox_map_goods_point)  # 删除行的按钮也更新一下
+        self.map_get_qth.sin_status_bar_out.connect(self.print_status_bar)
 
         # 成语填空
         self.th_chengyu.sin_out.connect(self.print_chengyu)
@@ -797,6 +799,7 @@ class Dance(MainGui):
         """
         if self.dialog_map_goods_table.isVisible() is False:
             self.dialog_map_goods_table.setVisible(True)
+            self.__load_map_goods_point_table()
 
     def save_map_goods_point_table(self):
         """
@@ -807,26 +810,60 @@ class Dance(MainGui):
         }]
         """
         _map_point_list: list = []
+
+        # 下拉框当前选中的路线
+        current_text: str = self._combo_box_goods_point_selected.currentText()
+
         for row in range(self._table_map_goods_point.rowCount()):
             _line_name: str = ""
             point_list: list = []
             line_dict: dict = {}
             for cul in range(self._table_map_goods_point.columnCount()-1):
+                if self._table_map_goods_point.item(row, cul) is None:
+                    continue
                 _content = self._table_map_goods_point.item(row, cul).text()
                 if cul == 0:
                     # 第0列是标题
                     _line_name = _content
                     line_dict["line_name"] = _line_name
-                    line_dict["selected"] = False
+                    line_dict["selected"] = True if current_text == _line_name else False
                     continue
                 else:
+                    # 检测是否没填
+                    if _content == "":
+                        continue
+
+                    # 检查是否写错了分隔符
+                    char_list = ['.', '，', '。', '/']  # 有可能输入错了分隔符
+                    result: bool = any(char in _content for char in char_list)
+                    if result:
+                        separator = next(char for char in char_list if char in _content)
+                        _content: str = _content.replace(separator, ",")
+
+                    if _content.count(",") > 1:
+                        self.show_dialog(f"坐标 {_content} 输错错误,请按照格式 例如: 100,231 输入到表格中")
+                        return None
+                    # 检查是否写的时 x,y 这种标准格式
+                    _t_x, _t_y = _content.split(",")
+                    if "" in [_t_x, _t_y]:
+                        self.show_dialog(f"坐标 {_content} 输错错误,请按照格式 例如: 100,231 输入到表格中")
+                        return None
+                    # 检测结束，加入数组吧
                     point_list.append(_content)
+            if len(point_list) == 0:
+                # 如果这一行没有填写任何数据，那么就继续下一行
+                continue
             line_dict["map_point"] = point_list
             _map_point_list.append(line_dict)
+
+            """
+            字段的判断
+            """
+            if _line_name == "":
+                self.show_dialog("路线名不能为空")
+                return None
         self.file_config.update_map_goods_point_list(_map_point_list)
         self.show_dialog("保存成功,请重启脚本")
-
-
 
     def __load_skill_table(self):
         _skill_obj: dict = self.file_config.get_skill_group_list().get("打怪套路")  # 当前正在使用的技能组
@@ -1059,3 +1096,62 @@ class Dance(MainGui):
                     self.table_chengyu_search.setItem(row, column, item)  # 插入数据项
         except Exception as e:
             raise e
+
+    def __load_map_goods_point_table(self):
+        """
+        在表格中加载配置文件中的地图采集路线
+        """
+        point_list: list = self.file_config.get_map_goods_point_list()  # 配置文件中的所有路线
+
+        # 先把表格清理一下
+        row_index: int = 0  # 初始化表格的 row
+
+        point_line_name_list: list = []
+
+        for point_dict in point_list:
+
+            if self._table_map_goods_point.rowCount() - 1 < row_index:
+                # 如果当前 row 不够，那么就新增一个
+                self.add_map_goods_point_table_row()
+
+            _line_name: str = point_dict.get("line_name")  # 路线名
+            _line_map_point_list: list = point_dict.get("map_point")  # 坐标列表
+
+            point_line_name_list.append(point_dict.get("line_name"))
+
+            # 把第一列的路线名设置一下
+            item = QtWidgets.QTableWidgetItem(_line_name)
+            item.setTextAlignment(QtCore.Qt.AlignCenter)
+            self._table_map_goods_point.setItem(row_index, 0, QtWidgets.QTableWidgetItem(item))
+
+            # 把坐标设置一下
+            for point_index in range(len(_line_map_point_list)):
+                item = QtWidgets.QTableWidgetItem(_line_map_point_list[point_index])
+                item.setTextAlignment(QtCore.Qt.AlignCenter)
+                if self._table_map_goods_point.columnCount() - 2 == point_index:
+                    # 如果当前最大格子 减去开头和结束的2个格子，刚好等于 point_index ，说明现在没有多余的格子可以使用，需要增加一下
+                    self.add_new_column()
+                self._table_map_goods_point.setItem(row_index, point_index+1, QtWidgets.QTableWidgetItem(item))
+            row_index += 1  # 加一行
+
+    def _update_combox_map_goods_point(self):
+        """
+        更新地图路线的下拉框的值
+        """
+        # 先获取表格中的所有路线名
+        _table_line_name_list: list = []
+        for row in range(self._table_map_goods_point.rowCount()):
+            _line_name: str = self._table_map_goods_point.item(row, 0).text()
+            if _line_name not in _table_line_name_list:
+                _table_line_name_list.append(_line_name)
+
+        self._combo_box_goods_point_selected.clear()
+        self._combo_box_goods_point_selected.addItems(_table_line_name_list)
+
+        # 数据更新后继续设置一下默认选项
+        point_list: list = self.file_config.get_map_goods_point_list()  # 配置文件中的所有路线
+        for point_dict in point_list:
+            _line_name: str = point_dict.get("line_name")  # 路线名
+            if point_dict.get("selected") is True:
+                if _line_name in _table_line_name_list:
+                    self._combo_box_goods_point_selected.setCurrentText(_line_name)

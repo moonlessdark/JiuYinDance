@@ -40,12 +40,11 @@ class FindMapGoodsPointList:
 
         __map = self._map_pic
 
-        SetGhostBoards().click_press_and_release_by_key_name("M")
-        time.sleep(0.5)
         __rec_pos_plus = self.windows.find_windows_coordinate_rect(hwnd, img=self._load_pic(__map.plus_map))
         if __rec_pos_plus is None:
             SetGhostBoards().click_press_and_release_by_key_name("M")
-            return False
+            time.sleep(0.5)
+        __rec_pos_plus = self.windows.find_windows_coordinate_rect(hwnd, img=self._load_pic(__map.plus_map))
         SetGhostMouse().move_mouse_to(__rec_pos_plus[0], __rec_pos_plus[1])
         time.sleep(0.2)
         SetGhostMouse().press_mouse_left_button()
@@ -121,7 +120,7 @@ class FindMapGoodsPointList:
             break
 
         while 1:
-            __rec_pos_point = self.windows.find_windows_coordinate_rect(hwnd, img=self._load_pic(__map.result_point))
+            __rec_pos_point = self.windows.find_windows_coordinate_rect(hwnd, img=self._load_pic(__map.result_point),threshold=0.70)
             if __rec_pos_point is None:
                 time.sleep(1)
                 continue
@@ -131,8 +130,9 @@ class FindMapGoodsPointList:
             time.sleep(1)
             break
 
-        pos = coordinate_change_from_windows(hwnd, (1, 1))
-        SetGhostMouse().move_mouse_to(pos[0], pos[1])
+        pic_w = self.windows.capture(hwnd).pic_width
+        x, y = coordinate_change_from_windows(hwnd, (pic_w - 110, 180))
+        SetGhostMouse().move_mouse_to(x, y+50)
 
         SetGhostBoards().click_press_and_release_by_key_name("M")
         time.sleep(0.5)
@@ -180,10 +180,11 @@ class FindMapGoodsPointList:
                     if _last_ocr_str == pps.ocr_text:
                         # 如果2次ocr识别的内容相同，说明人物已经停止移动，到了目的地或者卡地形了
                         # 因为OCR识别有误差，所以使用此方法
-                        print("人物已经停止移动")
+                        # print("人物已经停止移动")
                         return True
             SetGhostMouse().move_mouse_to(x, y + 50)
-        print("人物移动中")
+            time.sleep(0.5)
+        # print("人物移动中")
         return False
 
     def click_ok(self, hwnd: int):

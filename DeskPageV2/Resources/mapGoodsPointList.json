@@ -1,12 +1,20 @@
 [
     {
         "line_name": "¶ëÃ¼ÍÚÍ­¿ó",
-        "selected": true,
+        "selected": false,
         "map_point": [
             "424,577",
             "609,623",
             "565,469",
             "790,636"
+        ]
+    },
+    {
+        "line_name": "¶ëÃ¼¿³Ê÷",
+        "selected": true,
+        "map_point": [
+            "746,668",
+            "635,605"
         ]
     }
 ]
