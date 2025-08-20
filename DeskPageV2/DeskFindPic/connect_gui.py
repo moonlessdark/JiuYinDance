@@ -607,7 +607,6 @@ class Dance(MainGui):
         """
         自动勾选所有窗口
         """
-        self.get_windows_handle()
         _auto_windows_check_element = [self.check_box_windows_one, self.check_box_windows_two, self.check_box_windows_three]
 
         for auto_check_element in _auto_windows_check_element:
