@@ -129,7 +129,7 @@ class DanceThByFindPic(QThread):
 
                 input_key_by_ghost(_button_list)  # 输入按钮
                 find_button_count += 1
-                self.sin_out.emit(f"按钮: {"".join(list(map(lambda x: mapping[x], _button_list)))}")
+                self.sin_out.emit(f"按钮: {''.join(list(map(lambda x: mapping[x], _button_list)))}")
                 if len(self._hwnd_list) == 1:
                     # 如果当前只有一个窗口，那么在连续识别时就停止一下，避免识别太快的问题。连续识别多个窗口就没用问题了
                     time.sleep(0.5)

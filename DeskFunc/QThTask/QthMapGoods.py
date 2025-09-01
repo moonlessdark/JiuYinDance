@@ -99,85 +99,86 @@ class MapGoodsQth(QThread):
         # 先把地图缩放拉大
         self.find_map_goods.plus_map(self.windows_handle)
 
-        for point in self.map_goods_point_list:
-            if self.map_goods_point_working is False:
-                # 如果已经停止
-                break
-
-            pi: list = point.split(",")  # 获取一下要执行的 x，y坐标
-            p_x, p_y = pi[0], pi[1]
-
-            self.sin_out.emit(f"开始执行坐标:({p_x},{p_y})的物资采集")
-
-            self.find_map_goods.search_goods_point(p_x, p_y, self.windows_handle)
-
-            while 1:
-
+        while self.map_goods_point_working:
+            for point in self.map_goods_point_list:
                 if self.map_goods_point_working is False:
+                    # 如果已经停止
                     break
 
-                self.status_bar.emit(_run_count)
+                pi: list = point.split(",")  # 获取一下要执行的 x，y坐标
+                p_x, p_y = pi[0], pi[1]
 
-                self.check_time_out(_set_time_out)
+                self.sin_out.emit(f"开始执行坐标:({p_x},{p_y})的物资采集")
 
-                if self.time_out is False:
-                    # 如果还没有等够10秒，就继续
-                    time.sleep(1)
-                    continue
+                self.find_map_goods.search_goods_point(p_x, p_y, self.windows_handle)
 
-                self.sin_out.emit("10秒后确认人物移动状态")
-
-                if self.find_map_goods.check_person_move_status(self.windows_handle) is False:
-                    # 任务依旧处于移动中
-                    continue
-
-                self.sin_out.emit(f"检测到人物已停止移动")
-
-                """
-                首次判断，看看有没有出现进度条或者获取所有的按钮
-                """
-                # 首次判断，一般无效
-                time.sleep(0.5)
-                for xx in range(8):
-
-                    if self.map_goods_point_working is False:
-                        # 如果已经停止
-                        break
-
-                    # 开卡自动寻路能不能直接挖到/砍树
-                    if self.find_map_goods.find_open_loading(self.windows_handle) is False:
-                        continue
-                    if self.find_map_goods.click_ok(self.windows_handle) is False:
-                        # 等待确定按钮出现
-                        continue
-                    else:
-                        _run_count += 1
-                        self.status_bar.emit(_run_count)
-                        self.sin_out.emit(f"采集成功...")
-                    time.sleep(0.5)
-
-                """
-                二次判断
-                """
                 while 1:
 
                     if self.map_goods_point_working is False:
-                        # 如果已经停止
                         break
 
-                    if self.check_and_get_goods() is True:
-                        _run_count += 1
-                        self.status_bar.emit(_run_count)
+                    self.status_bar.emit(_run_count)
+
+                    self.check_time_out(_set_time_out)
+
+                    if self.time_out is False:
+                        # 如果还没有等够10秒，就继续
+                        time.sleep(1)
                         continue
-                    else:
-                        if self.find_map_goods.check_person_move_status(self.windows_handle) is False:
-                            # 任务依旧处于移动中,说明这个点有问题，应该放弃
-                            SetGhostBoards().click_press_and_release_by_key_name("S")  # 按一下键盘,停止移动
-                            self.sin_out.emit(f"坐标({p_x},{p_y})地形不适合自动寻路,请优化坐标")
+
+                    self.sin_out.emit("10秒后确认人物移动状态")
+
+                    if self.find_map_goods.check_person_move_status(self.windows_handle) is False:
+                        # 任务依旧处于移动中
+                        continue
+
+                    self.sin_out.emit(f"检测到人物已停止移动")
+
+                    """
+                    首次判断，看看有没有出现进度条或者获取所有的按钮
+                    """
+                    # 首次判断，一般无效
+                    time.sleep(0.5)
+                    for xx in range(8):
+
+                        if self.map_goods_point_working is False:
+                            # 如果已经停止
+                            break
+
+                        # 开卡自动寻路能不能直接挖到/砍树
+                        if self.find_map_goods.find_open_loading(self.windows_handle) is False:
+                            continue
+                        if self.find_map_goods.click_ok(self.windows_handle) is False:
+                            # 等待确定按钮出现
+                            continue
                         else:
-                            self.sin_out.emit(f"坐标({p_x},{p_y})采集结束,继续执行")
-                        break
-                break
+                            _run_count += 1
+                            self.status_bar.emit(_run_count)
+                            self.sin_out.emit(f"采集成功...")
+                        time.sleep(0.5)
+
+                    """
+                    二次判断
+                    """
+                    while 1:
+
+                        if self.map_goods_point_working is False:
+                            # 如果已经停止
+                            break
+
+                        if self.check_and_get_goods() is True:
+                            _run_count += 1
+                            self.status_bar.emit(_run_count)
+                            continue
+                        else:
+                            if self.find_map_goods.check_person_move_status(self.windows_handle) is False:
+                                # 任务依旧处于移动中,说明这个点有问题，应该放弃
+                                SetGhostBoards().click_press_and_release_by_key_name("S")  # 按一下键盘,停止移动
+                                self.sin_out.emit(f"坐标({p_x},{p_y})地形不适合自动寻路,请优化坐标")
+                            else:
+                                self.sin_out.emit(f"坐标({p_x},{p_y})采集结束,继续执行")
+                            break
+                    break
 
                 #
                 #
