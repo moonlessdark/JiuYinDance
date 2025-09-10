@@ -2,7 +2,7 @@
 # <div align='center'>九阴真经OL摸鱼小助手</div> 
 
 <div align=center>
-<img src="./_internal/Resources/Readme/cover.png">
+<img src="https://github.com/moonlessdark/JiuYinDance/blob/master/Resources/Readme/cover.png">
 </div>
 
 ## 特别提示:
@@ -30,7 +30,7 @@
 ### 硬件  
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;22年6月蜗牛更新之后，免费版大漠插件只能在win7系统使用，此脚本改为使用“幽灵键鼠”(一个小U盘)。  
-<div align=center><img src="./_internal/Resources/Readme/ghostkb.png" style="width:20%; height:auto;"></div>
+<div align=center><img src="https://github.com/moonlessdark/JiuYinDance/blob/master/Resources/Readme/ghostkb.PNG" style="width:20%; height:auto;"></div>
 <div align=center>“幽灵键鼠”请在淘宝购买，买最便宜的那款就行了。</div>
 
 ### 游戏设置
@@ -49,7 +49,7 @@
 ##  功能说明事项  
 ----
 <div align=center>
-<img src="./_internal/Resources/Readme/主界面.PNG">
+<img src="https://github.com/moonlessdark/JiuYinDance/blob/master/Resources/Readme/主界面.PNG">
 </div>   
 
 ### 已经实现的功能  
@@ -85,7 +85,7 @@
 *  <font color=red>在使用押镖之前，请先去菜单栏“配置”-“编辑技能”文件修改一下您的技能按键。</font>  
  
 <div align=center>
-<img src="./_internal/Resources/Readme/技能设置.PNG">
+<img src="https://github.com/moonlessdark/JiuYinDance/blob/master/Resources/Readme/%E6%8A%80%E8%83%BD%E8%AE%BE%E7%BD%AE.PNG">
 </div>
 
 * 注意: 怒气招请的优先级请设置为最低。因为没有判断当前角色的“怒气值”是否足够。或者怒气招如果是加BUFF类型的，干脆就不填写此招式。  
@@ -95,7 +95,7 @@
 
 ### 关于物资采集
 <div align=center>
-<img src="./_internal/Resources/Readme/物资采集.PNG">
+<img src="https://github.com/moonlessdark/JiuYinDance/blob/master/Resources/Readme/%E7%89%A9%E8%B5%84%E9%87%87%E9%9B%86.PNG">
 </div>
 
 *  请先设置好采集的路径,将地图中物资(矿石、树木)的坐标填写到表格中。
@@ -112,5 +112,7 @@
 * 此脚本未绑定窗口，尽量减少被发现的几率。  
 * 键盘操作调用幽灵键鼠，截图操作调用windowsapi，图片识别使用opencv处理。  
 * 按钮之间增加随机等待时间，尽量表现的像个人(但是会影响执行速度，表现出的效果就是按键的时候时快时慢)  
+<br>
+<br>
 <br>
 <br>
