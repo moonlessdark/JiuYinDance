@@ -4,6 +4,7 @@ import subprocess
 from PySide6 import QtWidgets, QtGui, QtCore
 
 from DeskPage.MarkdownViewer import MarkdownViewer
+from DeskPage.mapMoXiLine import QuadrantChart
 from DeskPage.menu_action_map_point_page import MapPointTable
 from DeskPage.skillSettingDialog import SkillSetting
 
@@ -13,9 +14,11 @@ class MenuUI(QtWidgets.QMenuBar):
         super().__init__()
 
         file_menu = QtWidgets.QMenu("&配置", self)
+        tools_menu = QtWidgets.QMenu("&小工具", self)
         about_menu = QtWidgets.QMenu("&帮助", self)
 
         self.addMenu(file_menu)
+        self.addMenu(tools_menu)
         self.addMenu(about_menu)
 
         action_open_config_file = QtGui.QAction("资源目录", self)
@@ -45,6 +48,11 @@ class MenuUI(QtWidgets.QMenuBar):
         action_func_download_zip = QtGui.QAction("获取更新", self)
         about_menu.addAction(action_func_download_zip)
         action_func_download_zip.triggered.connect(self.open_func_download_widget)
+
+        action_func_mo_xi_find_goods_line = QtGui.QAction("漠西-挖宝指引", self)
+        tools_menu.addAction(action_func_mo_xi_find_goods_line)
+        action_func_mo_xi_find_goods_line.triggered.connect(self.open_mo_xi_find_goods_line)
+        self.widget_map_liene = None  # 挖宝指引的窗口
 
     def open_config_file(self):
         """
@@ -113,3 +121,12 @@ class MenuUI(QtWidgets.QMenuBar):
         if _skill.isVisible() is False:
             _skill.show()
             _skill.load_skill_table()
+
+    def open_mo_xi_find_goods_line(self):
+        """
+        漠西挖宝-指引
+        :return:
+        """
+        self.widget_map_liene = QuadrantChart()
+        self.widget_map_liene.raise_()  # 将窗口置于最前（如果需要）
+        self.widget_map_liene.show()
