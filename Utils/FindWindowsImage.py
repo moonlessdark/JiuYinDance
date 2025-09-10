@@ -107,6 +107,93 @@ class WindowsCapture:
             return None
         return cap_pic
 
+    def capture_window_region(self, hwnd: int, x: int, y: int, width: int, height: int) -> PicCapture:
+        """
+        根据坐标在窗口中截取一部分的画面。\n
+        注意传的x和y别比实际窗口要大。\n
+        注意传入的 x，y 的正负\n
+        例如: \n
+        1、截图左上角，宽高为100的画面: x=0, y=0, width=100, height=100\n
+        2、截图右上角，宽高为100的画面: x=-0, y=0, width=100, height=100\n
+        2、截图左下角，宽高为100的画面: x=0, y=-0, width=100, height=100\n
+        2、截图右下角，宽高为100的画面: x=-0, y=-0, width=100, height=100\n
+
+        :param hwnd: 窗口句柄
+        :param x: 截取区域的左上角 x 坐标，如果传负数，表示从右侧往左计算，计算规则与正数时相反
+        :param y: 截取区域的左上角 y 坐标，如果传负数，表示有下往上计算，计算规则与正数时相反
+        :param width: 要截取的宽度
+        :param height: 要截取的高度
+        :return:
+        """
+
+        hwnd = int(hwnd)
+
+        if self.windows_handle_visible(hwnd) is False:
+            return None
+
+        left, top, right, bottom = win32gui.GetWindowRect(hwnd)
+        window_width = right - left
+        window_height = bottom - top
+
+        # 获取客户区尺寸（不含边框）
+        client_rect = win32gui.GetClientRect(hwnd)
+        client_width = client_rect[2] - client_rect[0]
+        client_height = client_rect[3] - client_rect[1]
+
+        # 计算边框和标题栏尺寸
+        border_width = (window_width - client_width) // 2
+        title_height = window_height - client_height - border_width
+
+        # 针对 -0 特别处理一下，因为 -0 不太好判断。一般没有 +-0 这种概念
+        x = -1 if x == -0 else x
+        y = -1 if y == -0 else y
+
+        # 处理负坐标转换（核心新增功能）
+        if x < 0:
+            x = client_width + x - width + border_width
+        else:
+            x += border_width
+
+        if y < 0:
+            y = client_height + y - height + title_height
+        else:
+            y += title_height
+
+        # 边界检查
+        if x < border_width or y < title_height or \
+                (x + width) > (client_width + border_width) or \
+                (y + height) > (client_height + title_height):
+            raise ValueError("传的x,y坐标超出游戏窗口的实际大小了\n"
+                             f"当前窗口的宽高为{client_width}*{client_height}")
+
+        # 创建设备上下文
+        hwnd_dc = win32gui.GetWindowDC(hwnd)
+        mfc_dc = win32ui.CreateDCFromHandle(hwnd_dc)
+        save_dc = mfc_dc.CreateCompatibleDC()
+
+        # 执行区域拷贝
+        save_bitmap = win32ui.CreateBitmap()
+        save_bitmap.CreateCompatibleBitmap(mfc_dc, width, height)
+        save_dc.SelectObject(save_bitmap)
+        save_dc.BitBlt((0, 0), (width, height), mfc_dc, (x, y), win32con.SRCCOPY)
+
+        # 转换为OpenCV格式
+        bmp_info = save_bitmap.GetInfo()
+        bmp_array = np.frombuffer(save_bitmap.GetBitmapBits(True), dtype=np.uint8)
+        img = bmp_array.reshape((bmp_info['bmHeight'], bmp_info['bmWidth'], 4))
+        img = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
+
+        # 资源释放
+        win32gui.DeleteObject(save_bitmap.GetHandle())
+        save_dc.DeleteDC()
+        mfc_dc.DeleteDC()
+        win32gui.ReleaseDC(hwnd, hwnd_dc)
+
+        cap_pic = PicCapture(img, width, height)
+        if not self.__check_capture_width_height(cap_pic):
+            return None
+        return cap_pic
+
 
 class WindowsHandle:
 
