@@ -11,10 +11,9 @@ if __name__ == '__main__':
     app.setStyle("Fusion")
     w = TaskConnect()
 
-    w.log_print("\n\n更新日期: 2025-08-10\n"
+    w.log_print("\n\n更新日期: 2025-09-10\n"
                 "更新内容: \n"
-                "新增内容: 玄机秘境自动报名\n"
-                "优化内容: 优化地图右上角坐标识别率")
+                "新增内容: 新增漠西-挖宝指引")
 
     w.show()
     app.exec()
