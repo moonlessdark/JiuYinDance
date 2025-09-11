@@ -30,7 +30,7 @@ class MoXiMapLine:
         self.windows_hwnd_list = _hwnd_list
         return _hwnd_list
 
-    def get_game_windows_mini_map(self) -> tuple[int, list]:
+    def get_game_windows_mini_map(self) -> tuple:
         """
         截图窗口右上角小地图，在进行此操作时请确保已经开启了挖宝
         :return: code: 200, [最小坐标，最大坐标]
@@ -62,7 +62,7 @@ class MoXiMapLine:
             # 发现有多个窗口在漠西地图，我不知道该以哪个为准
             return 202, [0, 0]
 
-    def find_line(self, pic: np.ndarray) -> tuple[int, int]:
+    def find_line(self, pic: np.ndarray) -> tuple:
         """
         将图片二值化，查找指针的坐标
         :param pic:

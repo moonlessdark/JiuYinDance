@@ -58,14 +58,14 @@ class FindButton:
         """
         return cv2.imdecode(fromfile(pic_path, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
 
-    def find_pic_grey(self, orign_pic: np.ndarray) -> list[str]:
+    def find_pic_grey(self, orign_pic: np.ndarray) -> list:
         """
         团练、授业
         :return:
         """
         return self.__find_button_sort(orign_pic, "grey")
 
-    def find_pic_green(self, orign_pic: np.ndarray) -> list[str]:
+    def find_pic_green(self, orign_pic: np.ndarray) -> list:
         """
         绿色的按钮(漠西风涛)
         :param orign_pic:
@@ -104,7 +104,7 @@ class FindButton:
         _bu_list: list = self.__find_button_sort(orign_pic, "green")
         return _bu_list
 
-    def __find_button_sort(self, orign_pic: np.ndarray, dance_type: str) -> list[str]:
+    def __find_button_sort(self, orign_pic: np.ndarray, dance_type: str) -> list:
         """
         查询并排序
         :param dance_type: grey or green
