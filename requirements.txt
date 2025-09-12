@@ -3,7 +3,7 @@ comtypes
 PySide6
 pywin32
 opencv-python
-pyinstaller
+pyinstaller==5.13.2
 PyYaml
 psutil
 screeninfo
