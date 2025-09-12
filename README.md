@@ -7,7 +7,7 @@
 
 ## 特别提示:
 ----  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;如果该脚本被微软的杀毒软件(Windows Defender)报毒，请按照  **[此教程](https://segmentfault.com/q/1010000039054120/a-1020000039066088)**  给出的方案处理。
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;如果该脚本被微软的杀毒软件(Windows Defender)报毒，请按照  **[此教程](https://segmentfault.com/q/1010000039054120/a-1020000039066088)** 或者 **[此打包方法](https://blog.csdn.net/gitblog_07610/article/details/148467320)** 给出的方案处理。
 报毒是打包工具Pyinstaller引起的。  
   
 ## 欢迎语：
@@ -37,6 +37,9 @@
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;22年6月蜗牛更新之后，免费版大漠插件只能在win7系统使用，此脚本改为使用“幽灵键鼠”(一个小U盘)。  
 <div align=center><img src="https://github.com/moonlessdark/JiuYinDance/blob/master/Resources/Readme/ghostkb.PNG" style="width:20%; height:auto;"></div>
 <div align=center>“幽灵键鼠”请在淘宝购买，买最便宜的那款就行了。</div>
+
+### Python  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Python3.8或以上版本  
 
 ### 游戏设置
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;启动脚本前，一定要确认好客户端设置的游戏缩放模式是【经典模式】还是【极致模式】，如果游戏客户端缩放模式与启动的脚本不一致，会导致无法识别到图像的。  
@@ -117,7 +120,5 @@
 * 此脚本未绑定窗口，尽量减少被发现的几率。  
 * 键盘操作调用幽灵键鼠，截图操作调用windowsapi，图片识别使用opencv处理。  
 * 按钮之间增加随机等待时间，尽量表现的像个人(但是会影响执行速度，表现出的效果就是按键的时候时快时慢)  
-<br>
-<br>
 <br>
 <br>
