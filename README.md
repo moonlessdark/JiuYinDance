@@ -116,12 +116,12 @@
 
 ### 关于漠西-挖宝指引  
 <div align=center>
-<img src="https://github.com/moonlessdark/JiuYinDance/blob/master/Resources/Readme/%E7%89%A9%E8%B5%84%E9%87%87%E9%9B%86.PNG">
+<img src="https://github.com/moonlessdark/JiuYinDance/blob/master/Resources/Readme/%E6%BC%A0%E8%A5%BF%E6%8C%96%E5%AE%9D.png">
 </div>  
 
-说明: 由于原来的地图是一张3500*3500分辨率的图片，为了映射到小地图(900*900)，势必会产生精度丢失。所以2条虚线相交并不一定代码挖宝的位置一定准确。  
-到了那附近后还需要根据指引方向寻找一下宝箱。一般差的不远，都是在那附近的。    
-本功能是图色识别，所以在传送到新的复活点后，必须等右上角的指针加载出来后，才能点击“绘制连线”。
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;说明: 由于原来的地图是一张3500*3500分辨率的图片，为了映射到小地图(900*900)，势必会产生精度丢失。所以2条虚线相交并不一定代表挖宝的位置一定准确。  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;到了那附近后还需要根据指引方向寻找一下宝箱。一般差的不远，都是在那附近的。    
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;本功能是图色识别，所以在传送到新的复活点后，必须等右上角的指针加载出来后，才能点击“绘制连线”。
 
 * 第一步: 传送至某个复活点  
 * 第二步: 在窗口右上角，点击“绘制坐标连线”  
