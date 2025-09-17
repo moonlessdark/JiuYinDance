@@ -132,6 +132,7 @@ class OpenGiftCard(QThread):
                         self.sin_out.emit(f"窗口id:{hwnd_i}已开卡,请结束后自行查看开卡记录")
 
                         _open_card_count += 1
+                        self.status_bar.emit(_open_card_count)
 
                         # 鼠标移动一下，避免挡住了包裹的图标
                         m_x, m_y = SetGhostMouse().get_mouse_x_y()
