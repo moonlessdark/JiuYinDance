@@ -57,7 +57,7 @@
 ##  功能说明事项  
 ----
 <div align=center>
-<img src="https://github.com/moonlessdark/JiuYinDance/blob/master/Resources/Readme/主界面.PNG">
+<img src="https://github.com/moonlessdark/JiuYinDance/blob/master/Resources/Readme/主界面.png">
 </div>   
 
 ### 已经实现的功能  
