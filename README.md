@@ -2,7 +2,7 @@
 # <div align='center'>九阴真经OL摸鱼小助手</div> 
 
 <div align=center>
-<img src="https://github.com/moonlessdark/JiuYinDance/blob/master/Resources/Readme/cover.png1">
+<img src="https://github.com/moonlessdark/JiuYinDance/blob/master/Resources/Readme/cover.png">
 </div>
 
 ## 特别提示:
