@@ -42,7 +42,7 @@ class MyFightXJ(QThread):
         # 获取当前时间并去除微秒
         current_time = datetime.datetime.now().replace(microsecond=0)
         # 定义目标时间字符串列表
-        target_times: list = ["20:00:00"]
+        target_times: list = ["20:09:00"]
 
         # 转换为datetime对象并生成时间范围（前后3秒）
         time_ranges = []
@@ -52,7 +52,7 @@ class MyFightXJ(QThread):
                 month=current_time.month,
                 day=current_time.day
             )
-            time_ranges.append((target - datetime.timedelta(seconds=3), target + datetime.timedelta(seconds=590)))  # 8点到8点59分59秒
+            time_ranges.append((target - datetime.timedelta(seconds=3), target + datetime.timedelta(seconds=59)))  # 8点到8点59分59秒
 
         # 判断当前时间是否落入任一区间
         match_flag: bool = False
@@ -85,7 +85,7 @@ class MyFightXJ(QThread):
 
         self.sin_run_status.emit(True)
 
-        self.sin_out.emit("任务开始时间为 20:00:00")
+        self.sin_out.emit("任务开始时间为 20:09:00")
 
         while 1:
             if self.working is False:
