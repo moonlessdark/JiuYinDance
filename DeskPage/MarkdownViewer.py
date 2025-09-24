@@ -1,3 +1,4 @@
+import os
 import sys
 from PySide6.QtWidgets import QApplication, QVBoxLayout, QTextBrowser, QWidget, QDialog
 from markdown import markdown as md_parser
@@ -16,8 +17,11 @@ class MarkdownViewer(QDialog):
 
         layout = QVBoxLayout(self)
         layout.addWidget(self.text_browser)
-        self.load_markdown('.\\_internal\\Resources\\Readme\\HelpManual.md')
-        #  self.load_markdown(r'D:\SoftWare\Developed\Projected\JiuYinDnaceRemake\HelpManual.md')
+        config_file: str = '.\\_internal\\Resources\\Readme\\HelpManual.md'
+        if not os.path.exists(config_file):
+            config_file = ".\\Resources\\Readme\\HelpManual.md"
+        # 背景图设置（需替换为实际图片路径）
+        self.load_markdown(config_file)
 
     def load_markdown(self, file_path):
         with open(file_path, 'r', encoding='utf-8') as f:
