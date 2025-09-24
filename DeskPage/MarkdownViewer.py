@@ -16,8 +16,8 @@ class MarkdownViewer(QDialog):
 
         layout = QVBoxLayout(self)
         layout.addWidget(self.text_browser)
-        self.load_markdown('.\\_internal\\README.md')
-        #  self.load_markdown(r'D:\SoftWare\Developed\Projected\JiuYinDnaceRemake\README.md')
+        self.load_markdown('.\\_internal\\Resources\\Readme\\HelpManual.md')
+        #  self.load_markdown(r'D:\SoftWare\Developed\Projected\JiuYinDnaceRemake\HelpManual.md')
 
     def load_markdown(self, file_path):
         with open(file_path, 'r', encoding='utf-8') as f:
