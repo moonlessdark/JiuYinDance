@@ -107,7 +107,7 @@
 
 ### 关于漠西-挖宝指引  
 <div align=center>
-<img src="./_internal/Resources/Readme/漠西挖宝.png">
+<img src="./_internal/Resources/Readme/漠西挖宝(帮助说明).png">
 </div>  
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;说明: 由于原来的地图是一张3500X3500分辨率的图片，为了映射到小地图(900X900)，势必会产生精度丢失。所以2条虚线相交并不一定代表挖宝的位置一定准确。  
