@@ -32,34 +32,36 @@ class MyFightXJ(QThread):
         self.find_my_f = FindMyFight()
         self.mouse = SetGhostMouse()
 
+        self.time_ranges = []  # 点击的时间段
+
     def __del__(self):
         # 线程状态改为和线程终止
         # self.wait()
         self.working = False
 
-    @staticmethod
-    def check_local_time() -> bool:
+    def check_local_time(self) -> bool:
         # 获取当前时间并去除微秒
         current_time = datetime.datetime.now().replace(microsecond=0)
         # 定义目标时间字符串列表
-        target_times: list = ["20:11:00"]
+        target_times: list = ["20:09:00"]
 
         # 转换为datetime对象并生成时间范围（前后3秒）
-        time_ranges = []
-        for t in target_times:
-            target = datetime.datetime.strptime(t, "%H:%M:%S").replace(
-                year=current_time.year,
-                month=current_time.month,
-                day=current_time.day
-            )
-            time_ranges.append((target - datetime.timedelta(seconds=3), target + datetime.timedelta(seconds=59)))  # 8点到8点59分59秒
+        if len(self.time_ranges) == 0:
+            for t in target_times:
+                target = datetime.datetime.strptime(t, "%H:%M:%S").replace(
+                    year=current_time.year,
+                    month=current_time.month,
+                    day=current_time.day
+                )
+                self.time_ranges.append((target - datetime.timedelta(seconds=3), target + datetime.timedelta(seconds=59)))  # 8点到8点59分59秒
 
         # 判断当前时间是否落入任一区间
         match_flag: bool = False
-        for start, end in time_ranges:
-            if start <= current_time <= end:
+        for start, end in self.time_ranges:
+            if start < current_time < end:
                 match_flag = True
                 break
+        print(match_flag)
         return match_flag
 
     def stop_execute_init(self):
@@ -101,10 +103,6 @@ class MyFightXJ(QThread):
             # 先把背包打开,并检查是否有礼卡，如果包裹里没有礼卡的花那就没啥意义了啊
             for hwnd_i in self.windows_handle_list:
 
-                if hwnd_i in _is_clicked_hwnd:
-                    # 已经执行过了
-                    continue
-
                 if not self.working:
                     break
 
@@ -115,32 +113,34 @@ class MyFightXJ(QThread):
                 if not self.find_my_f.find_my_fight(hwnd_i):
                     continue
 
-                time.sleep(0.1)
+                time.sleep(0.2)
                 SetGhostMouse().click_mouse_left_button()
                 time.sleep(0.5)
 
                 if not self.find_my_f.find_xuan_ji_mi_jing(hwnd_i):
                     continue
 
-                time.sleep(0.1)
+                time.sleep(0.2)
                 SetGhostMouse().click_mouse_left_button()
-                time.sleep(0.5)
+                time.sleep(1)
 
                 if not self.find_my_f.find_bao_ming(hwnd_i):
                     continue
 
                 self.sin_out.emit("开始报名")
-
+                _is_clicked: bool = False  # 是否报名成功
                 for xx in range(10):
                     SetGhostMouse().click_mouse_left_button()
                     time.sleep(0.3)
-                    if self.find_my_f.find_open_loading(hwnd_i) is False:
-                        continue
-                    else:
-                        self.sin_out.emit(f"窗口:{hwnd_i} 报名成功")
-                        _open_count += 1
-                        self.status_bar.emit(_open_count)
-                        break
+                    if self.find_my_f.find_open_loading(hwnd_i):
+                        _is_clicked = True
+                if _is_clicked:
+                    self.sin_out.emit(f"窗口:{hwnd_i} 报名成功")
+                    _open_count += 1
+                    self.status_bar.emit(_open_count)
+                else:
+                    self.sin_out.emit(f"窗口:{hwnd_i} 报名失败")
+
             self.working = False
         self.sin_out.emit("任务结束")
         self.mutex.unlock()
