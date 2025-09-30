@@ -42,7 +42,7 @@ class MyFightXJ(QThread):
         # 获取当前时间并去除微秒
         current_time = datetime.datetime.now().replace(microsecond=0)
         # 定义目标时间字符串列表
-        target_times: list = ["20:09:00"]
+        target_times: list = ["20:11:00"]
 
         # 转换为datetime对象并生成时间范围（前后3秒）
         time_ranges = []
@@ -88,11 +88,11 @@ class MyFightXJ(QThread):
         self.sin_out.emit("任务开始时间为 20:09:00")
 
         while 1:
-            if self.working is False:
+            if not self.working:
                 break
 
             # 计算到20点整还有多久
-            if self.check_local_time() is False:
+            if not self.check_local_time():
                 # 如果还没有到20点
                 time.sleep(1)
                 continue
@@ -105,28 +105,28 @@ class MyFightXJ(QThread):
                     # 已经执行过了
                     continue
 
-                if self.working is False:
+                if not self.working:
                     break
 
                 self.windows_opt.activate_windows(hwnd_i)
                 time.sleep(0.2)
 
                 # 点击我的战斗
-                if self.find_my_f.find_my_fight(hwnd_i) is False:
+                if not self.find_my_f.find_my_fight(hwnd_i):
                     continue
 
                 time.sleep(0.1)
                 SetGhostMouse().click_mouse_left_button()
                 time.sleep(0.5)
 
-                if self.find_my_f.find_xuan_ji_mi_jing(hwnd_i) is False:
+                if not self.find_my_f.find_xuan_ji_mi_jing(hwnd_i):
                     continue
 
                 time.sleep(0.1)
                 SetGhostMouse().click_mouse_left_button()
                 time.sleep(0.5)
 
-                if self.find_my_f.find_bao_ming(hwnd_i) is False:
+                if not self.find_my_f.find_bao_ming(hwnd_i):
                     continue
 
                 self.sin_out.emit("开始报名")
