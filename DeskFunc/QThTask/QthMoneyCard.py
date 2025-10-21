@@ -150,6 +150,8 @@ class OpenGiftCard(QThread):
 
                 for is_ok_h in _is_open_card_hwnd:
                     # 如果有“获取全部”的按钮的话，那么就全部关掉吧
+                    self.windows_opt.activate_windows(is_ok_h)
+                    time.sleep(0.5)
                     self.find_gift_card.click_ok(is_ok_h)
                 _is_open_card_hwnd.clear()  # 清理掉
 

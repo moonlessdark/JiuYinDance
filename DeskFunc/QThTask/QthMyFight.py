@@ -43,7 +43,7 @@ class MyFightXJ(QThread):
         # 获取当前时间并去除微秒
         current_time = datetime.datetime.now().replace(microsecond=0)
         # 定义目标时间字符串列表
-        target_times: list = ["20:09:00"]
+        target_times: list = ["19:59:55"]
 
         # 转换为datetime对象并生成时间范围（前后3秒）
         if len(self.time_ranges) == 0:
