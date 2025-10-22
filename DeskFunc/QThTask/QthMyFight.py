@@ -87,7 +87,7 @@ class MyFightXJ(QThread):
 
         self.sin_run_status.emit(True)
 
-        self.sin_out.emit("任务开始时间为 20:09:00")
+        self.sin_out.emit("任务开始时间为 20:00:00")
 
         while 1:
             if not self.working:
