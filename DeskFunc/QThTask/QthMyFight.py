@@ -129,7 +129,7 @@ class MyFightXJ(QThread):
 
                 self.sin_out.emit("开始报名")
                 _is_clicked: bool = False  # 是否报名成功
-                for xx in range(10):
+                for xx in range(50):
                     SetGhostMouse().click_mouse_left_button()
                     time.sleep(0.3)
                     if self.find_my_f.find_open_loading(hwnd_i):
