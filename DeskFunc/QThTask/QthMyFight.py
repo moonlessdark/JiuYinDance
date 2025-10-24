@@ -134,6 +134,7 @@ class MyFightXJ(QThread):
                     time.sleep(0.3)
                     if self.find_my_f.find_open_loading(hwnd_i):
                         _is_clicked = True
+                        break
                 if _is_clicked:
                     self.sin_out.emit(f"窗口:{hwnd_i} 报名成功")
                     _open_count += 1
