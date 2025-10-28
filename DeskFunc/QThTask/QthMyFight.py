@@ -133,6 +133,7 @@ class MyFightXJ(QThread):
                     SetGhostMouse().click_mouse_left_button()
                     time.sleep(0.3)
                     if self.find_my_f.find_open_loading(hwnd_i):
+                        self.sin_out.emit(f"窗口:{hwnd_i} 识别到加载中进度条")
                         _is_clicked = True
                         break
                 if _is_clicked:
