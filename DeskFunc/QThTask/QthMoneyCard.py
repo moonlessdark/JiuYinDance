@@ -86,45 +86,45 @@ class OpenGiftCard(QThread):
         self.sin_run_status.emit(True)
 
         while 1:
-            if self.working is False:
+            if not self.working:
                 break
 
             # 计算到21点整还有多久
-            if self.check_local_time() is False:
+            if not self.check_local_time():
                 # 如果还没有到21点
                 time.sleep(1)
                 continue
 
             # 先把背包打开,并检查是否有礼卡，如果包裹里没有礼卡的花那就没啥意义了啊
             for hwnd_i in self.windows_handle_list:
-                if self.find_gift_card.open_bag(hwnd_i) is False:
+                if not self.find_gift_card.open_bag(hwnd_i):
                     # 如果包裹里没有礼卡
                     continue
 
                 self.status_bar.emit(_open_card_count)
 
-                if self.working is False:
+                if not self.working:
                     break
 
                 self.windows_opt.activate_windows(hwnd_i)
                 time.sleep(0.5)
-                if self.find_gift_card.find_gift_card(hwnd_i) is False:
+                if not self.find_gift_card.find_gift_card(hwnd_i):
                     continue
 
                 _index_x, _index_y = 0, 0
                 for run_i in range(50):
 
-                    if self.working is False:
+                    if not self.working:
                         break
 
-                    # 检测一些鼠标的位置，如果人为移动的鼠标，那说明有突发情况，需要停止
-                    x, y = SetGhostMouse().get_mouse_x_y()
-                    if _index_x == 0 and _index_y == 0:
-                        _index_x, _index_y = x, y
-                    elif x != _index_x or y != _index_y:
-                        self.sin_out.emit(f"发现鼠标移动,或许有突发情况，停止开卡")
-                        self.working = False
-                        break
+                    # # 检测一些鼠标的位置，如果人为移动的鼠标，那说明有突发情况，需要停止
+                    # x, y = SetGhostMouse().get_mouse_x_y()
+                    # if _index_x == 0 and _index_y == 0:
+                    #     _index_x, _index_y = x, y
+                    # elif x != _index_x or y != _index_y:
+                    #     self.sin_out.emit(f"发现鼠标移动,或许有突发情况，停止开卡")
+                    #     self.working = False
+                    #     break
 
                     SetGhostMouse().click_mouse_right_button()
                     time.sleep(0.1)
