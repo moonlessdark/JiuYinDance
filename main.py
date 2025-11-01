@@ -11,9 +11,9 @@ if __name__ == '__main__':
     app.setStyle("Fusion")
     w = TaskConnect()
 
-    w.log_print("\n\n更新日期: 2025-10-21\n"
+    w.log_print("\n\n更新日期: 2025-11-01\n"
                 "更新内容: \n"
-                "新增内容: 修复多开开卡后没用成功获取丹药的问题")
+                "新增内容: 修复‘我的战斗’增加菜单后导致'玄机'菜单点击错位的问题")
 
     w.show()
     app.exec()

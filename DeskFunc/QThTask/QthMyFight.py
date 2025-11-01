@@ -61,7 +61,6 @@ class MyFightXJ(QThread):
             if start < current_time < end:
                 match_flag = True
                 break
-        print(match_flag)
         return match_flag
 
     def stop_execute_init(self):

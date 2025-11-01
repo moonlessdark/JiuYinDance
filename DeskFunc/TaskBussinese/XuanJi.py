@@ -61,6 +61,10 @@ class FindMyFight:
         """
         __rec_x_ji_mi_ji = self.windows_find.get_windows_image_rect(hwnd, read_image=self._x_ji_mi_ji)
         if __rec_x_ji_mi_ji is not None:
+            # 检测一些鼠标的位置，如果人为移动的鼠标，那说明有突发情况，需要停止
+            x, y = SetGhostMouse().get_mouse_x_y()
+            SetGhostMouse().move_mouse_to(x+150, y)
+            time.sleep(0.5)
             SetGhostMouse().move_mouse_to(__rec_x_ji_mi_ji[0], __rec_x_ji_mi_ji[1])
             return True
         return False
@@ -82,7 +86,8 @@ class FindMyFight:
         查询打开状态
         """
         __rec_goods_bag_open_loading = self.windows_find.get_windows_image_rect(hwnd,
-                                                                                read_image=_load_pic(self._status_config.open_loading))
+                                                                                read_image=_load_pic(
+                                                                                    self._status_config.open_loading), threshold=0.8)
         if __rec_goods_bag_open_loading is not None:
             return True
         return False
