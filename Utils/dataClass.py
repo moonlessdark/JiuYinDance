@@ -231,3 +231,63 @@ class MyFight:
     my_fight: str = dataclasses.field(default_factory=str)  # 我的战斗
     xuan_ji_mi_jing: str = dataclasses.field(default_factory=str)  # 玄机秘境
     registration_competition: str = dataclasses.field(default_factory=str)  # 玄机秘境-个人报名
+
+
+@dataclasses.dataclass
+class MarketPic:
+    # 世界竞拍
+    main_line: str = dataclasses.field(default_factory=str)  # 查询定位竞拍界面
+    follow_line: str = dataclasses.field(default_factory=str)  # 我的关注
+    ok: str = dataclasses.field(default_factory=str)  #  出价后的确认按钮
+    plus_price_10: str = dataclasses.field(default_factory=str)  # 加价10两
+    plus_price_100: str = dataclasses.field(default_factory=str)  # 加价100两
+    summit_price: str = dataclasses.field(default_factory=str)  # 确认出价
+
+    # 价格判断
+    price_one: str = dataclasses.field(default_factory=str)
+    price_two: str = dataclasses.field(default_factory=str)
+    price_three: str = dataclasses.field(default_factory=str)
+    price_four: str = dataclasses.field(default_factory=str)
+    price_five: str = dataclasses.field(default_factory=str)
+    price_six: str = dataclasses.field(default_factory=str)
+    price_seven: str = dataclasses.field(default_factory=str)
+    price_eight: str = dataclasses.field(default_factory=str)
+    price_nine: str = dataclasses.field(default_factory=str)
+    price_zero: str = dataclasses.field(default_factory=str)
+    price_tag: str = dataclasses.field(default_factory=str)  # 银两的小图标，后面跟着的就是价格了
+    price_ding: str = dataclasses.field(default_factory=str)  # 多少锭
+    price_liang: str = dataclasses.field(default_factory=str)  # 多少两
+    price_wen: str = dataclasses.field(default_factory=str)  # 多少文
+
+    # 商品列表
+    # 内功残卷
+    bing_xin_jue: str = dataclasses.field(default_factory=str)  # 冰心诀
+    du_ha_jing: str = dataclasses.field(default_factory=str)  # 毒哈经
+    han_xiao_jue: str = dataclasses.field(default_factory=str)  # 寒宵诀
+    hun_yuan_gong: str = dataclasses.field(default_factory=str)  # 混元功
+    ruo_shui_shen_dian: str = dataclasses.field(default_factory=str)  # 若水神典
+    wu_wang_shen_gong: str = dataclasses.field(default_factory=str)  # 无望神功
+    xin_zhai_mi_lu: str = dataclasses.field(default_factory=str)  # 心斋秘箓
+    xue_hai_dao_gang: str = dataclasses.field(default_factory=str)  # 血海刀罡
+    zui_xian_lu: str = dataclasses.field(default_factory=str)  # 醉仙箓
+
+    # 拓本碎片
+    ta_ben_ruo_shui_shen_dian: str = dataclasses.field(default_factory=str)  # 若水神典拓本碎片
+    ta_ben: str = dataclasses.field(default_factory=str)  # 拓本碎片
+
+    # 武学残卷
+    xing_he_jian_lv: str = dataclasses.field(default_factory=str)  # 星河剑律参悟星图
+    xing_he_jian_lv_can_po: str = dataclasses.field(default_factory=str)  # 残破的星河剑律参悟星图
+    da_gou_ba_jue: str = dataclasses.field(default_factory=str)  # 打狗棍法
+    fen_tian_ling: str = dataclasses.field(default_factory=str)  # 焚天令
+    mei_ying_jian_fa: str = dataclasses.field(default_factory=str)  # 魅影剑法
+    nian_hua_gong: str = dataclasses.field(default_factory=str)  # 拈花功
+    tai_ji_quan: str = dataclasses.field(default_factory=str)  # 太极拳
+    xue_hai_mo_dao_lu: str = dataclasses.field(default_factory=str)  # 血海魔刀
+
+    # 其他道具
+    wu_cai_huan: str = dataclasses.field(default_factory=str)  # 五彩环
+    ba_zhu_ling: str = dataclasses.field(default_factory=str)  # 霸主令
+    jin_yin_hua: str = dataclasses.field(default_factory=str)  # 金银花
+    gu_pu_can_juan_jue_shi_gao_shou: str = dataclasses.field(default_factory=str)  # 古朴残卷-绝世高手
+    jue_meng_dan: str = dataclasses.field(default_factory=str)  # 觉梦丹

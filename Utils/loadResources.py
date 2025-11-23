@@ -5,7 +5,8 @@ import os.path
 import yaml
 
 from Utils.dataClass import DancePicGrey, DancePicGreen, DmDll, GhostDll, DancePicWhz, BackpackItem, GoodsOptStatus, \
-    MapPic, TruckCarReceiveTask, TruckCarPic, FindTruckCarTaskNPC, Team, PersonStatusAndBuff, MapPointNum, MyFight
+    MapPic, TruckCarReceiveTask, TruckCarPic, FindTruckCarTaskNPC, Team, PersonStatusAndBuff, MapPointNum, MyFight, \
+    MarketPic
 from Utils.projectPath import PathUtil
 
 
@@ -344,3 +345,59 @@ class GetConfig:
         _my_fight.xuan_ji_mi_jing = self.project_dir + self.__datas["MyFight"]["xuan_ji_mi_jing"]
         _my_fight.registration_competition = self.project_dir + self.__datas["MyFight"]["registration"]  # 个人报名
         return _my_fight
+
+    def get_market_pic(self) -> MarketPic:
+        """
+        世界竞拍
+        """
+        __market_pic = MarketPic()
+        # 外框和竞拍
+        __market_pic.main_line = self.project_dir + self.__datas["MarketPic"]["main_line"]
+        __market_pic.follow_line = self.project_dir + self.__datas["MarketPic"]["follow_line"]
+        __market_pic.ok = self.project_dir + self.__datas["MarketPic"]["ok"]
+        __market_pic.plus_price_10 = self.project_dir + self.__datas["MarketPic"]["plus_price"]
+        __market_pic.plus_price_100 = self.project_dir + self.__datas["MarketPic"]["plus_price_100"]
+        __market_pic.summit_price = self.project_dir + self.__datas["MarketPic"]["summit_price"]
+        # 售价
+        __market_pic.price_one = self.project_dir + self.__datas["MarketPic"]["sell_price"]["zero"]
+        __market_pic.price_two = self.project_dir + self.__datas["MarketPic"]["sell_price"]["two"]
+        __market_pic.price_three = self.project_dir + self.__datas["MarketPic"]["sell_price"]["three"]
+        __market_pic.price_four = self.project_dir + self.__datas["MarketPic"]["sell_price"]["four"]
+        __market_pic.price_five = self.project_dir + self.__datas["MarketPic"]["sell_price"]["five"]
+        __market_pic.price_six = self.project_dir + self.__datas["MarketPic"]["sell_price"]["six"]
+        __market_pic.price_seven = self.project_dir + self.__datas["MarketPic"]["sell_price"]["eight"]
+        __market_pic.price_eight = self.project_dir + self.__datas["MarketPic"]["sell_price"]["zero"]
+        __market_pic.price_nine = self.project_dir + self.__datas["MarketPic"]["sell_price"]["nine"]
+        __market_pic.price_tag = self.project_dir + self.__datas["MarketPic"]["sell_price"]["money_tag"]
+        __market_pic.price_ding = self.project_dir + self.__datas["MarketPic"]["sell_price"]["ding"]
+        __market_pic.price_liang = self.project_dir + self.__datas["MarketPic"]["sell_price"]["liang"]
+        __market_pic.price_wen = self.project_dir + self.__datas["MarketPic"]["sell_price"]["wen"]
+        # 物品列表
+        # 残卷(内功、武学、拓本)
+        __market_pic.bing_xin_jue = self.project_dir + self.__datas["MarketPic"]["goods_list"]["book_fragments"]["bing_xin"]  # 冰心诀
+        __market_pic.gu_pu_can_juan_jue_shi_gao_shou = self.project_dir + self.__datas["MarketPic"]["goods_list"]["book_fragments"]["gu_pu_jue_shi_gao_shou"]  # 古朴残卷-绝世高手
+        __market_pic.tai_ji_quan = self.project_dir + self.__datas["MarketPic"]["goods_list"]["book_fragments"]["tai_ji_quan"]  # 太极拳
+        __market_pic.han_xiao_jue = self.project_dir + self.__datas["MarketPic"]["goods_list"]["book_fragments"]["han_xiao_jue"]  # 寒宵诀
+        __market_pic.xin_zhai_mi_lu = self.project_dir + self.__datas["MarketPic"]["goods_list"]["book_fragments"]["xin_zhai_mi_lu"]  # 心斋秘箓
+        __market_pic.da_gou_ba_jue = self.project_dir + self.__datas["MarketPic"]["goods_list"]["book_fragments"]["da_gou_gun_fa"]  # 打勾八绝
+        __market_pic.nian_hua_gong = self.project_dir + self.__datas["MarketPic"]["goods_list"]["book_fragments"]["long_zhua_shou"]  # 拈花功
+        __market_pic.ta_ben = self.project_dir + self.__datas["MarketPic"]["goods_list"]["book_fragments"]["ta_ben_sui_pian"]  # 拓本碎片
+        __market_pic.wu_wang_shen_gong  = self.project_dir + self.__datas["MarketPic"]["goods_list"]["book_fragments"]["wu_wang_shen_gong"]  # 无妄神功
+        __market_pic.xing_he_jian_lv  = self.project_dir + self.__datas["MarketPic"]["goods_list"]["book_fragments"]["xing_he_jian_lv"]  # 星河剑律参悟图
+        __market_pic.xing_he_jian_lv_can_po  = self.project_dir + self.__datas["MarketPic"]["goods_list"]["book_fragments"]["can_po_xing_tu"]  # 星河剑律残破星图
+        __market_pic.du_ha_jing  = self.project_dir + self.__datas["MarketPic"]["goods_list"]["book_fragments"]["ha_ma_gong"]  # 毒哈经
+        __market_pic.hun_yuan_gong  = self.project_dir + self.__datas["MarketPic"]["goods_list"]["book_fragments"]["hun_yuan_gong"]  # 混元功
+        __market_pic.fen_tian_ling  = self.project_dir + self.__datas["MarketPic"]["goods_list"]["book_fragments"]["fen_tian_ling"]  # 焚天令
+        __market_pic.ta_ben_ruo_shui_shen_dian  = self.project_dir + self.__datas["MarketPic"]["goods_list"]["book_fragments"]["ruo_shui_shen_dian_ta_ben"]  # 若水神点拓本
+        __market_pic.ruo_shui_shen_dian  = self.project_dir + self.__datas["MarketPic"]["goods_list"]["book_fragments"]["ruo_shui_shen_dian"]  # 若水神点
+        __market_pic.xue_hai_dao_gang  = self.project_dir + self.__datas["MarketPic"]["goods_list"]["book_fragments"]["xue_hai_dao_gang"]  # 血海刀罡
+        __market_pic.xue_hai_mo_dao_lu  = self.project_dir + self.__datas["MarketPic"]["goods_list"]["book_fragments"]["xue_hai_mo_dao"]  # 血海魔刀
+        __market_pic.zui_xian_lu  = self.project_dir + self.__datas["MarketPic"]["goods_list"]["book_fragments"]["zui_xian_lu"]  # 醉先箓
+        __market_pic.mei_ying_jian_fa  = self.project_dir + self.__datas["MarketPic"]["goods_list"]["book_fragments"]["mei_ying_jian_fa"]  # 魅影剑法
+        # 以下是道具
+        __market_pic.wu_cai_huan  = self.project_dir + self.__datas["MarketPic"]["goods_list"]["props"]["wu_cai_huan"]  # 五彩环
+        __market_pic.ba_zhu_ling  = self.project_dir + self.__datas["MarketPic"]["goods_list"]["props"]["ba_zhu_ling"]  # 霸主令
+        __market_pic.jin_yin_hua  = self.project_dir + self.__datas["MarketPic"]["goods_list"]["props"]["jin_yin_hua"]  # 金银花
+        __market_pic.jue_meng_dan  = self.project_dir + self.__datas["MarketPic"]["goods_list"]["props"]["jiao_meng_dan"]  # 觉梦丹
+
+        return __market_pic

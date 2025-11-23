@@ -143,6 +143,8 @@ PicTruckCar:
   receive_task_confirm: /Resources/ImageTemplate/PicTruckCar/receive_task_confirm.png
   receive_task_talk: /Resources/ImageTemplate/PicTruckCar/receive_task_talk.png
   break_npc_talk: /Resources/ImageTemplate/PicTruckCar/break_talk.png
+
+# 押镖战斗相关
 TruckCarPic:
   car_flag: /Resources/ImageTemplate/PicTruckCar/CarsFlag.png
   task_car_selected: /Resources/ImageTemplate/PicTruckCar/truck_car_selected.png
@@ -153,6 +155,8 @@ TruckCarPic:
   task_monster_target_skill: /Resources/ImageTemplate/PicTruckCar/car_monster_skill_1.png
   task_star_mode: /Resources/ImageTemplate/PicTruckCar/truck_type.png
   fight_other_truck_car: /Resources/ImageTemplate/PicTruckCar/镖车切磋.png
+
+# 右上角，地图坐标的数值
 PersonPoint:
   zero : /Resources/ImageTemplate/PicPointNum/0.png
   one : /Resources/ImageTemplate/PicPointNum/1.png
@@ -166,7 +170,66 @@ PersonPoint:
   nine : /Resources/ImageTemplate/PicPointNum/9.png
   d : /Resources/ImageTemplate/PicPointNum/点.png
   f : /Resources/ImageTemplate/PicPointNum/负数.png
+
+# 界面右下角，我的战斗
 MyFight:
   my_fight : /Resources/ImageTemplate/PicMyFight/我的战斗.png
   xuan_ji_mi_jing : /Resources/ImageTemplate/PicMyFight/玄机秘境.png
   registration : /Resources/ImageTemplate/PicMyFight/个人报名.png
+
+# 世界竞拍
+MarketPic:
+  follow_line: /Resources/ImageTemplate/PicWorldMarket/Border/my_follow_page.png
+  main_line: /Resources/ImageTemplate/PicWorldMarket/Border/main_line.png
+  ok: /Resources/ImageTemplate/PicWorldMarket/Border/ok.png
+  plus_price: /Resources/ImageTemplate/PicWorldMarket/Border/plus_10.png
+  plus_price_100: /Resources/ImageTemplate/PicWorldMarket/Border/plus_100.png
+  summit_price: /Resources/ImageTemplate/PicWorldMarket/Border/summit.png
+
+  # 售价判断
+  sell_price:
+    zero: /Resources/ImageTemplate/PicWorldMarket/SellPrice/0.png
+    one: /Resources/ImageTemplate/PicWorldMarket/SellPrice/1.png
+    two: /Resources/ImageTemplate/PicWorldMarket/SellPrice/2.png
+    three: /Resources/ImageTemplate/PicWorldMarket/SellPrice/3.png
+    four: /Resources/ImageTemplate/PicWorldMarket/SellPrice/4.png
+    five: /Resources/ImageTemplate/PicWorldMarket/SellPrice/5.png
+    six: /Resources/ImageTemplate/PicWorldMarket/SellPrice/6.png
+    seven: /Resources/ImageTemplate/PicWorldMarket/SellPrice/7.png
+    eight: /Resources/ImageTemplate/PicWorldMarket/SellPrice/8.png
+    nine: /Resources/ImageTemplate/PicWorldMarket/SellPrice/9.png
+    money_tag: /Resources/ImageTemplate/PicWorldMarket/SellPrice/银锭.png
+    ding: /Resources/ImageTemplate/PicWorldMarket/SellPrice/锭.png
+    liang: /Resources/ImageTemplate/PicWorldMarket/SellPrice/两.png
+    wen: /Resources/ImageTemplate/PicWorldMarket/SellPrice/文.png
+
+  # 商品列表
+  goods_list:
+    # 残卷
+    book_fragments:
+      bing_xin: /Resources/ImageTemplate/PicWorldMarket/BookFragments/冰心诀残卷.png
+      gu_pu_jue_shi_gao_shou: /Resources/ImageTemplate/PicWorldMarket/BookFragments/古朴残卷绝世高手.png
+      tai_ji_quan: /Resources/ImageTemplate/PicWorldMarket/BookFragments/太极拳残卷.png
+      han_xiao_jue: /Resources/ImageTemplate/PicWorldMarket/BookFragments/寒宵诀残卷.png
+      xin_zhai_mi_lu: /Resources/ImageTemplate/PicWorldMarket/BookFragments/心斋秘禄残卷.png
+      da_gou_gun_fa: /Resources/ImageTemplate/PicWorldMarket/BookFragments/打狗八绝残卷.png
+      long_zhua_shou: /Resources/ImageTemplate/PicWorldMarket/BookFragments/拈花功残卷.png
+      ta_ben_sui_pian: /Resources/ImageTemplate/PicWorldMarket/BookFragments/拓本碎片.png
+      wu_wang_shen_gong: /Resources/ImageTemplate/PicWorldMarket/BookFragments/无妄神功残卷.png
+      xing_he_jian_lv: /Resources/ImageTemplate/PicWorldMarket/BookFragments/星河剑律参悟星图.png
+      can_po_xing_tu: /Resources/ImageTemplate/PicWorldMarket/BookFragments/残破星图.png
+      ha_ma_gong: /Resources/ImageTemplate/PicWorldMarket/BookFragments/毒哈经残卷.png
+      hun_yuan_gong: /Resources/ImageTemplate/PicWorldMarket/BookFragments/混元功残卷.png
+      fen_tian_ling: /Resources/ImageTemplate/PicWorldMarket/BookFragments/焚天令残卷.png
+      ruo_shui_shen_dian_ta_ben: /Resources/ImageTemplate/PicWorldMarket/BookFragments/若水神典拓本碎片.png
+      ruo_shui_shen_dian: /Resources/ImageTemplate/PicWorldMarket/BookFragments/若水神典残卷.png
+      xue_hai_dao_gang: /Resources/ImageTemplate/PicWorldMarket/BookFragments/血海刀罡残卷.png
+      xue_hai_mo_dao: /Resources/ImageTemplate/PicWorldMarket/BookFragments/血海魔刀录残卷.png
+      zui_xian_lu: /Resources/ImageTemplate/PicWorldMarket/BookFragments/醉仙禄残卷.png
+      mei_ying_jian_fa: /Resources/ImageTemplate/PicWorldMarket/BookFragments/魅影减法残卷.png
+    # 物品
+    props:
+      wu_cai_huan: /Resources/ImageTemplate/PicWorldMarket/Props/五彩环.png
+      ba_zhu_ling: /Resources/ImageTemplate/PicWorldMarket/Props/咫尺烽烟-霸主令.png
+      jin_yin_hua: /Resources/ImageTemplate/PicWorldMarket/Props/金银花.png
+      jiao_meng_dan: /Resources/ImageTemplate/PicWorldMarket/BookFragments/觉梦丹礼包.png
