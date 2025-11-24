@@ -70,7 +70,7 @@ class WindowsCapture:
             return False
         return True
 
-    def capture(self, handle: int) -> PicCapture or None:
+    def capture(self, handle: int) -> PicCapture:
         """
         窗口区域显示在屏幕上的地方截图
         :param handle: 窗口句柄
@@ -78,7 +78,7 @@ class WindowsCapture:
         """
         handle = int(handle)
 
-        if self.windows_handle_visible(handle) is False:
+        if not self.windows_handle_visible(handle):
             return None
 
         r = wintypes.RECT()
@@ -244,7 +244,7 @@ class FindWindowsImageTemplate:
     def __init__(self):
         self._windows_cap = WindowsCapture()
 
-    def get_windows_image_rect(self, hwnd: int, read_image: np.ndarray, threshold: float = 0.7, edge: bool = False) -> ():
+    def get_windows_image_rect(self, hwnd: int, read_image: np.ndarray, threshold: float = 0.7, edge: bool = False) -> tuple:
         """
         查询图标模板在游戏窗口中的匹配度最高的坐标，并将坐标映射到Windows窗口中。
         此坐标可被鼠标直接使用
@@ -287,7 +287,7 @@ class FindWindowsImageTemplate:
 
     @staticmethod
     def get_image_all_rect(orign_image: np.ndarray, read_image: np.ndarray, threshold: float = 0.7, edge: bool = False,
-                           hwnd: int = None) -> []:
+                           hwnd: int = None) -> list:
         """
         查询所有相似度匹配的坐标，并映射到windows窗口中，此坐标可被鼠标直接使用
         :param hwnd: 窗口句柄，如果传了的话，那么就返回图片在桌面窗口中的坐标，不传就返回图片在游戏窗口中的坐标
@@ -335,3 +335,46 @@ class FindWindowsImageTemplate:
             else:
                 point_result = img_result
         return point_result
+
+    def find_area(self, bigger_img, smaller_pic, threshold=0.7, edge: bool = False) -> list:
+        """
+        大图中寻找小区的坐标区域
+        :param smaller_pic:
+        :param bigger_img:
+        :param threshold:
+        :param edge:
+        :return: [(左上角，右上角，左下角，右下角)， 相似度]
+        """
+        match_result = find_all_template(bigger_img, smaller_pic, threshold, edge=edge)
+        img_result = []
+        if len(match_result) > 0:
+            for mr in match_result:
+                rect = mr['rectangle']
+
+                # img_result = bigger_img.copy()
+                # cv2.rectangle(img_result, (rect[0][0], rect[0][1]), (rect[3][0], rect[3][1]), (0, 0, 220), 2)
+                # cv2.imshow('find_all_template_result.en.png', img_result)
+                # cv2.waitKey()
+
+                confidence: float = mr['confidence']
+                confidence = round(confidence, 2)  # 相似度保留2位小数
+                img_result.append(
+                    [(rect[0][0], rect[0][1]),  # 左上角
+                     (rect[1][0], rect[1][1]),  # 右上角
+                     (rect[2][0], rect[2][1]),  # 左下角
+                     (rect[3][0], rect[3][1]),  # 右上角
+                     confidence  # 相似度
+                     ]
+                )
+        img_result_check: list = []
+        if len(img_result) > 1:
+            # 如果找到了多个结果的时候,把匹配对最高的那个拿出来
+            confidence_check: float = 0
+            for area_li in img_result:
+                if area_li[4] > confidence_check:
+                    img_result_check = area_li
+                confidence_check = area_li[4]
+        elif len(img_result) == 1:
+            img_result_check: list = img_result[0]
+        img_result_check = [0, 0, 0, 0, 0] if len(img_result_check) == 0 else img_result_check
+        return img_result_check

@@ -93,6 +93,9 @@ class AutoWorldMarket(QWidget):
 
 
     def get_table_content(self) -> list:
+        """
+        获取表格中的内容
+        """
         _table_content: list = []
         for row in range(self.list_widget_market.rowCount()):
             item_name = self.get_cell_value(row, 0)
@@ -101,7 +104,6 @@ class AutoWorldMarket(QWidget):
             if None in [item_name, item_price]:
                 continue
             _table_content.append([item_name, item_price])
-        print(_table_content)
         return _table_content
 
     def get_cell_value(self, row, col):
@@ -118,6 +120,7 @@ class AutoWorldMarket(QWidget):
             return item.text()
         # 如果既不是组件也不是item，返回None
         return None
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
