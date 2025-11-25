@@ -7,7 +7,6 @@ from DeskPage.MarkdownViewer import MarkdownViewer
 from DeskPage.mapMoXiLine import QuadrantChart
 from DeskPage.menu_action_map_point_page import MapPointTable
 from DeskPage.skillSettingDialog import SkillSetting
-from DeskPage.worldMarket import AutoWorldMarket
 
 
 class MenuUI(QtWidgets.QMenuBar):
@@ -54,11 +53,6 @@ class MenuUI(QtWidgets.QMenuBar):
         tools_menu.addAction(action_func_mo_xi_find_goods_line)
         action_func_mo_xi_find_goods_line.triggered.connect(self.open_mo_xi_find_goods_line)
         self.widget_map_liene = None  # 挖宝指引的窗口
-
-        action_func_world_market = QtGui.QAction("世界竞拍", self)
-        tools_menu.addAction(action_func_world_market)
-        action_func_world_market.triggered.connect(self.open_world_market)
-        self.widget_world_market = None  # 世界竞拍的窗口
 
     def open_config_file(self):
         """
@@ -136,12 +130,3 @@ class MenuUI(QtWidgets.QMenuBar):
         self.widget_map_liene = QuadrantChart()
         self.widget_map_liene.raise_()  # 将窗口置于最前（如果需要）
         self.widget_map_liene.show()
-
-    def open_world_market(self):
-        """
-        世界竞拍
-        :return:
-        """
-        self.widget_world_market = AutoWorldMarket()
-        self.widget_world_market.raise_()  # 将窗口置于最前（如果需要）
-        self.widget_world_market.show()

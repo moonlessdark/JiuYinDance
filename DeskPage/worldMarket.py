@@ -35,13 +35,13 @@ class AutoWorldMarket(QWidget):
         self.setup_table_header_and_width()
 
         self.push_button_market_get_goods_list = QtWidgets.QPushButton("获取物品")
-        self.push_button_market_run_buy = QtWidgets.QPushButton("开始运行")
+        self.push_button_market_save_product_price = QtWidgets.QPushButton("保存价格")
 
-        self.push_button_market_run_buy.clicked.connect(self.get_table_content)
+        self.push_button_market_save_product_price.clicked.connect(self.get_table_content)
 
         layout_button = QHBoxLayout()
         layout_button.addWidget(self.push_button_market_get_goods_list)
-        layout_button.addWidget(self.push_button_market_run_buy)
+        layout_button.addWidget(self.push_button_market_save_product_price)
         layout_button.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight)
         layout = QVBoxLayout(self)
         layout.addLayout(layout_button)
@@ -82,7 +82,9 @@ class AutoWorldMarket(QWidget):
             self.list_widget_market.setRowCount(product_index+1)  # 加一列，便于放入内容
             # 把物品名放进去
             item = QTableWidgetItem(product_list[product_index])
+            item.setTextAlignment(QtCore.Qt.AlignCenter)
             self.list_widget_market.setItem(product_index, 0, item)
+            item.setFlags(item.flags() & ~QtCore.Qt.ItemIsEditable)  # 商品名称禁止编辑
 
             # 把产品最大价格放进去
             max_prince_input = QtWidgets.QLineEdit()

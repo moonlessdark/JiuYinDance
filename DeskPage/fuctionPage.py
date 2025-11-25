@@ -4,7 +4,7 @@ from enum import Enum
 from PySide6 import QtWidgets, QtCore
 from PySide6.QtGui import QIntValidator
 from PySide6.QtWidgets import QApplication
-
+from DeskPage.worldMarket import AutoWorldMarket
 from DeskPage.skillSettingDialog import SkillSetting
 from Utils.loadResources import get_map_goods_point_list, update_map_goods_point_list
 
@@ -17,6 +17,7 @@ class TaskEnum(Enum):
     map_goods_get = "地图采集"
     game_pic_screen = "游戏截图"
     xj_secret_scene = "玄机秘境报名"
+    world_market = "世界竞拍"
     none_selected = "未选择"
 
 
@@ -53,9 +54,8 @@ class TaskActivity(QtWidgets.QWidget):
         self.input_line_express_transportation.setText("1")
         self.input_line_express_transportation.setValidator(QIntValidator())  # 设置整数验证器
 
-        self.radio_express_transportation = QtWidgets.QRadioButton(TaskEnum.express_transportation.value, self)
-
         push_button_express_transportation = QtWidgets.QPushButton("编辑技能", self)
+        self.radio_express_transportation = QtWidgets.QRadioButton(TaskEnum.express_transportation.value, self)
 
         _lay_out_activity_widget = QtWidgets.QHBoxLayout(self)
         _lay_out_activity_widget.addWidget(_label_express_transportation_run_number)
@@ -74,7 +74,7 @@ class TaskActivity(QtWidgets.QWidget):
         :return:
         """
         _skill = SkillSetting(self)
-        if _skill.isVisible() is False:
+        if not _skill.isVisible():
             _skill.show()
             _skill.load_skill_table()
 
@@ -84,15 +84,31 @@ class TaskOther(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
 
+        self.widget_world_market = AutoWorldMarket()
+        self.widget_world_market.raise_()  # 将窗口置于最前（如果需要）
+
         self.radio_button_game_pic_screen = QtWidgets.QRadioButton(TaskEnum.game_pic_screen.value, self)
         self.radio_button_xj_secret_scene = QtWidgets.QRadioButton(TaskEnum.xj_secret_scene.value, self)
+
+        self.radio_express_auto_buy = QtWidgets.QRadioButton(TaskEnum.world_market.value, self)
 
         _lay_out_other_widget = QtWidgets.QHBoxLayout(self)
         _lay_out_other_widget.addWidget(self.radio_button_xj_secret_scene)
         _lay_out_other_widget.addWidget(self.radio_button_game_pic_screen)
+        _lay_out_other_widget.addWidget(self.radio_express_auto_buy)
 
         # 默认把第一个按钮勾上
         self.radio_button_xj_secret_scene.setChecked(True)
+        self.radio_express_auto_buy.toggled.connect(self.open_world_market)
+
+    def open_world_market(self):
+        """
+        打开世界竞拍
+        :return:
+        """
+
+        if self.radio_express_auto_buy.isChecked():
+            self.widget_world_market.show()
 
 
 class TaskLifeWork(QtWidgets.QWidget):
@@ -130,7 +146,7 @@ class TaskLifeWork(QtWidgets.QWidget):
             _line_name: str = point_dict.get("line_name")  # 路线名
             _line_selected: bool = point_dict.get("selected")
             _line_item.append(_line_name)
-            if _line_selected is True:
+            if _line_selected:
                 _line_selected_name = _line_name
         self.combo_box_goods_point_selected.addItems(_line_item)
         if _line_selected_name != "":

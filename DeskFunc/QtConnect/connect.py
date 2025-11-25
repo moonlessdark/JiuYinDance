@@ -1,5 +1,7 @@
 import time
 
+from PySide6.QtWidgets import QMessageBox
+
 from DeskFunc.QThTask.QthMapGoods import MapGoodsQth
 from DeskFunc.QThTask.QthMoneyCard import OpenGiftCard
 from DeskPage.fuctionPage import TaskEnum
@@ -9,11 +11,13 @@ from Utils.KeyMouseDriver.GhostSoft.get_driver_v3 import GetGhostDriver, SetGhos
 from Utils.dataClass import GhostDll
 from Utils.loadResources import GetConfig, get_map_goods_point_list_by_selected
 
+from DeskFunc.TaskBussinese.findAuctionMarket import FindAuctionMarket
+
 from DeskFunc.QThTask.QthDance import DanceThByFindPic
 from DeskFunc.QThTask.QthScreen import ScreenGameQth
 from DeskFunc.QThTask.QthTruck import TruckTaskFightMonsterQth, TruckCarTaskQth
 from DeskFunc.QThTask.QthMyFight import MyFightXJ
-
+from DeskFunc.QThTask.QthWorldMarket import WorldMarketGetGoodsQth
 
 _windows_hwnd_save: dict = {}
 _run_task_status: bool = False  # 任务执行状态
@@ -39,6 +43,7 @@ class TaskConnect(MainUI):
         self.qth_truck_fight_monster = TruckTaskFightMonsterQth()  # 运镖打怪
         self.qth_truck_find = TruckCarTaskQth()  # 接镖
         self.qht_my_fight = MyFightXJ()  # 我的战斗
+        self.qth_market = WorldMarketGetGoodsQth()  # 世界竞拍
 
         # 线程的信号槽连接
         # 团练授业
@@ -67,6 +72,11 @@ class TaskConnect(MainUI):
         self.qht_my_fight.sin_out.connect(self.log_print)
         self.qht_my_fight.status_bar.connect(self.status_bar.update_execute_num)
         self.qht_my_fight.sin_run_status.connect(self._update_task_run_status)
+        # 世界竞拍
+        self.qth_market.sin_out.connect(self.show_table_market)
+        self.qth_market.status_information.connect(self._information_print)
+
+        self.task_tab_windows.task_other.widget_world_market.push_button_market_get_goods_list.clicked.connect(self.market_get_product_price)  # 获取竞拍的商品列表
 
         # GUI的按钮的信号槽
         self.windows_get.push_button_run_windows.clicked.connect(self.run_task)  # 执行任务
@@ -130,6 +140,15 @@ class TaskConnect(MainUI):
         xx_hwnd_list: list = [_windows_hwnd_save.get(h) for h in _checked_hwnd_list]
         return xx_hwnd_list
 
+    def _information_print(self, information: str):
+        """
+        打印一下窗口
+        """
+        msg_box = QMessageBox(self)
+        msg_box.setText(information)
+        msg_box.setWindowTitle("信息")
+        msg_box.setIcon(QMessageBox.Information)
+
     def test_hwnd(self):
         """
         检测窗口是否存在
@@ -147,6 +166,7 @@ class TaskConnect(MainUI):
                 time.sleep(1)
             else:
                 self.log_print(f"{hwnd} 未显示，请检查")
+        return None
 
     def run_task(self):
         """
@@ -161,7 +181,7 @@ class TaskConnect(MainUI):
             return False
         # 获取一下当前勾选了哪个任务
         _widget_radio_enum: TaskEnum = self.task_tab_windows.get_task_active()
-        if _run_task_status is False:
+        if not _run_task_status:
             self.log_clear()
             self.log_print(f"任务 {_widget_radio_enum.value} 开始执行...")
 
@@ -219,6 +239,12 @@ class TaskConnect(MainUI):
                 """
                 self.qht_my_fight.get_param(_checked_hwnd_list)
                 self.qht_my_fight.start()
+            elif _widget_radio_enum == TaskEnum.world_market:
+                """
+                世界竞拍
+                """
+                pass
+
         else:
             self.log_print(f"任务 {_widget_radio_enum.value} 停止执行...")
             self.windows_get.push_button_run_windows.setText("停止中...")
@@ -232,6 +258,7 @@ class TaskConnect(MainUI):
             self.qht_open_gift.stop_execute_init()  # 9点开卡
             self.qth_map_get.stop_execute_init()  # 地图采集
             self.qht_my_fight.stop_execute_init()  # 我的战斗
+        return None
 
     def _update_task_run_status(self, task_status: bool):
         """
@@ -239,7 +266,7 @@ class TaskConnect(MainUI):
         :return:
         """
         global _run_task_status
-        if task_status is True:
+        if task_status:
             self.windows_get.push_button_run_windows.setText("停止执行")
             self.windows_get.push_button_run_windows.setEnabled(True)
             self.status_bar.run_status(True)
@@ -264,7 +291,7 @@ class TaskConnect(MainUI):
         windows_handle: int = self.__get_windows_hwnd_list()[0]
         if step == 1:
             # self.print_logs("开启线程:等待劫镖NPC...")
-            if self.qth_truck_fight_monster.isRunning() is False:
+            if not self.qth_truck_fight_monster.isRunning():
                 self.qth_truck_fight_monster.get_param(windows_handle, True)
                 self.qth_truck_fight_monster.start()
         elif step == 2:
@@ -285,3 +312,28 @@ class TaskConnect(MainUI):
             """
             # self.print_logs("本次押镖结束,即将关闭所有线程")
             self.qth_truck_fight_monster.get_param(windows_handle, False)  # 停止打怪
+
+    def market_get_product_price(self):
+        """
+        获取世界竞拍的商品
+        """
+        windows_handle_list: list = self.__get_windows_hwnd_list()
+        if len(windows_handle_list) != 1:
+            self.log_print("暂时只支持选中一个窗口")
+            return None
+
+        self.qth_market.get_param(windows_handle_list[0])
+        self.qth_market.run()
+        return None
+
+    def show_table_market(self, product_list: list) -> bool:
+        """
+        显示商品内容到表格
+        """
+        if len(product_list) == 0:
+            return False
+        p_list: list = []
+        for p in product_list:
+            p_list.append(p[1])
+        self.task_tab_windows.task_other.widget_world_market.add_table(p_list)
+        return True

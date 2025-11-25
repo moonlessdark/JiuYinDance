@@ -10,7 +10,7 @@ from numpy import fromfile
 
 from Utils.ImageUtils.FindImageOCR import FindPicOCR
 from Utils.loadResources import GetConfig
-from Utils.FindWindowsImage import FindWindowsImageTemplate
+from Utils.FindWindowsImage import FindWindowsImageTemplate, WindowsHandle, WindowsCapture
 
 
 def process_coordinates(data: list):
@@ -374,7 +374,7 @@ class FindAuctionMarket:
             # 使用cv2.fillPoly()填充多边形区域为白色，这里我们用四个点定义一个矩形区域
             # 注意：fillPoly的点列表必须是二维的，且每个点是一个列表的形式[[[x1, y1], [x2, y2], ...]] 点位顺序是 左上、右上、右下、左下
             cv2.fillConvexPoly(mask,
-                               np.array([l_t, r_t, (r_b[0], r_b[1] + 550), (l_b[0], l_b[1] + 550)], dtype=np.int32),
+                               np.array([(l_t[0], l_t[1]), (r_t[0], r_t[1]), (r_b[0], r_b[1] + 550), (l_b[0], l_b[1] + 550)], dtype=np.int32),
                                255)
 
             # 应用掩码到原图
@@ -387,7 +387,10 @@ class FindAuctionMarket:
                 _product_name: str = product[0]  # 物品名称
                 _product_image: np.ndarray = product[1]  # 物品图标
 
-                _product_rect: list = self.find_pic.get_image_all_rect(cap_pic_all, _product_image)
+                # cv2.imshow(_product_name, _product_image)
+                # cv2.waitKey()
+
+                _product_rect: list = self.find_pic.get_image_all_rect(cap_pic_all, _product_image, threshold=0.9, edge=False)
 
                 if _product_rect is None:
                     # 没有匹配到，跳过下一个
@@ -404,7 +407,7 @@ class FindAuctionMarket:
 
                     l_b_m: float = product_line[0]
                     r_b_m: float = product_line[1]
-                    print(f"{_product_name} : {l_b_m} * {r_b_m}")
+                    # print(f"{_product_name} : {l_b_m} * {r_b_m}")
                     cap_pic_all_new = cap_pic_all[int(r_b_m): int(r_b_m) + 30, int(l_b_m):]
 
                     # cv2.imshow("ss", cap_pic_all_new)
@@ -422,8 +425,8 @@ class FindAuctionMarket:
                             _money_obj.append([rect[0], num])
                     _price: float = process_coordinates(_money_obj)  # 算一下当前产品的价格
                     _prodict_list.append([int(product_line[1]), _product_name, _price, product_line])
-            print(f"识别列表：{_prodict_list}")
         _prodict_list.sort()
+        print(f"识别列表：{_prodict_list}")
         return _prodict_list
 
 
