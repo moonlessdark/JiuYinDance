@@ -109,7 +109,7 @@ class TaskOther(QtWidgets.QWidget):
 
         if self.radio_express_auto_buy.isChecked():
             self.widget_world_market.show()
-
+            self.widget_world_market.load_product_price()
 
 class TaskLifeWork(QtWidgets.QWidget):
     """

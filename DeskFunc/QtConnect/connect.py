@@ -73,10 +73,7 @@ class TaskConnect(MainUI):
         self.qht_my_fight.status_bar.connect(self.status_bar.update_execute_num)
         self.qht_my_fight.sin_run_status.connect(self._update_task_run_status)
         # 世界竞拍
-        self.qth_market.sin_out.connect(self.show_table_market)
         self.qth_market.status_information.connect(self._information_print)
-
-        self.task_tab_windows.task_other.widget_world_market.push_button_market_get_goods_list.clicked.connect(self.market_get_product_price)  # 获取竞拍的商品列表
 
         # GUI的按钮的信号槽
         self.windows_get.push_button_run_windows.clicked.connect(self.run_task)  # 执行任务
@@ -325,15 +322,3 @@ class TaskConnect(MainUI):
         self.qth_market.get_param(windows_handle_list[0])
         self.qth_market.run()
         return None
-
-    def show_table_market(self, product_list: list) -> bool:
-        """
-        显示商品内容到表格
-        """
-        if len(product_list) == 0:
-            return False
-        p_list: list = []
-        for p in product_list:
-            p_list.append(p[1])
-        self.task_tab_windows.task_other.widget_world_market.add_table(p_list)
-        return True
