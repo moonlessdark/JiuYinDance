@@ -11,9 +11,9 @@ if __name__ == '__main__':
     app.setStyle("Fusion")
     w = TaskConnect()
 
-    w.log_print("\n\n更新日期: 2025-11-01\n"
+    w.log_print("\n\n更新日期: 2025-11-29\n"
                 "更新内容: \n"
-                "新增内容: 修复‘我的战斗’增加菜单后导致'玄机'菜单点击错位的问题")
+                "新增内容: 世界竞拍功能")
 
     w.show()
     app.exec()
