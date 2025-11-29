@@ -156,7 +156,7 @@ class FindAuctionMarket:
         self.product_list: list = [
             # 拓本碎片
             ["拓本碎片", cv2.imdecode(fromfile(self.__market_pic.ta_ben, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
-            ["若水神点拓本碎片", cv2.imdecode(fromfile(self.__market_pic.ta_ben_ruo_shui_shen_dian, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
+            ["若水神典拓本碎片", cv2.imdecode(fromfile(self.__market_pic.ta_ben_ruo_shui_shen_dian, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
             # 内功残卷
             ["冰心诀", cv2.imdecode(fromfile(self.__market_pic.bing_xin_jue, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
             ["五行功法", cv2.imdecode(fromfile(self.__market_pic.wu_xing_xin_fa, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
@@ -166,7 +166,7 @@ class FindAuctionMarket:
             ["无妄神功", cv2.imdecode(fromfile(self.__market_pic.wu_wang_shen_gong, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
             ["毒哈经", cv2.imdecode(fromfile(self.__market_pic.du_ha_jing, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
             ["混元功", cv2.imdecode(fromfile(self.__market_pic.hun_yuan_gong, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
-            ["若水神点", cv2.imdecode(fromfile(self.__market_pic.ruo_shui_shen_dian, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
+            ["若水神典", cv2.imdecode(fromfile(self.__market_pic.ruo_shui_shen_dian, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
             ["血海刀罡", cv2.imdecode(fromfile(self.__market_pic.xue_hai_dao_gang, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
             ["醉仙箓", cv2.imdecode(fromfile(self.__market_pic.zui_xian_lu, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
             # 古朴武学残卷
@@ -263,7 +263,7 @@ class FindAuctionMarket:
         判断确认出价按钮是否可点击
         """
         __market_pic_summit_price = self.__market_pic_summit_price
-        __summit_price = self.find_pic.get_image_all_rect(image, __market_pic_summit_price)
+        __summit_price = self.find_pic.find_area(image, __market_pic_summit_price)
         __button_pic = image[int(__summit_price[0][1]):int(__summit_price[1][1]),
         int(__summit_price[1][0]):int(__summit_price[3][0])]
         if self.__check_summit_price_clicked(__button_pic):
@@ -276,11 +276,11 @@ class FindAuctionMarket:
         """
         __market_pic_re_summit_price = self.__market_pic_ok
         __summit_price = self.find_pic.get_image_all_rect(image, __market_pic_re_summit_price)
-        if __summit_price[-1] > 0:
+        if __summit_price is not None:
             return __summit_price
         return None
 
-    def find_goods_list(self, image: np.ndarray) -> list:
+    def find_goods_list(self, image: np.ndarray, scan_product_num: int = 7) -> list:
         """
         查询物品列表
         """
@@ -302,13 +302,13 @@ class FindAuctionMarket:
             r_b: tuple = res[3]  # 右下
             # cap_pic_all = bigger[int(l_b[1]): int(l_b[1]) + 550, int(l_b[0]): int(r_b[0])]
 
+            scan_product_heigh: int = int(73 * scan_product_num)  # 每个物品的宽度*物品数量，监控的越少速读越快
+
             # 创建一下掩码
             mask = np.zeros(image.shape[:2], dtype=np.uint8)
             # 使用cv2.fillPoly()填充多边形区域为白色，这里我们用四个点定义一个矩形区域
             # 注意：fillPoly的点列表必须是二维的，且每个点是一个列表的形式[[[x1, y1], [x2, y2], ...]] 点位顺序是 左上、右上、右下、左下
-            cv2.fillConvexPoly(mask,
-                               np.array([(l_t[0], l_t[1]), (r_t[0], r_t[1]), (r_b[0], r_b[1] + 550), (l_b[0], l_b[1] + 550)], dtype=np.int32),
-                               255)
+            cv2.fillConvexPoly(mask, np.array([(l_t[0], l_t[1]), (r_t[0], r_t[1]), (r_b[0], r_b[1] + scan_product_heigh), (l_b[0], l_b[1] + scan_product_heigh)], dtype=np.int32), 255)
 
             # 应用掩码到原图
             cap_pic_all = cv2.bitwise_and(image, image, mask=mask)
@@ -337,18 +337,15 @@ class FindAuctionMarket:
                     """
                     如果当前商品已经有成交人了，就跳过
                     """
-                    # _bidder_man_rect: list = self.find_pic.get_image_all_rect(cap_pic_product_line_content, self.__market_bidder_man, threshold=0.9)
-                    # if _bidder_man_rect is not None:
-                    #     continue
+                    _bidder_man_rect: list = self.find_pic.get_image_all_rect(cap_pic_product_line_content, self.__market_bidder_man, threshold=0.9)
+                    if _bidder_man_rect is not None:
+                        continue
 
                     """
                     如果当前竞拍人是自己的话，就跳过
                     """
                     if self.__check_person_self(cap_pic_product_line_content):
                         continue
-
-                    # cv2.imshow("sas", cap_pic_product_line_content)
-                    # cv2.waitKey()
 
                     """
                     既然都符合条件，那么把价格算一下
@@ -369,13 +366,13 @@ class FindAuctionMarket:
         _prodict_list = filter_taben(_prodict_list)
         _prodict_list.sort()
         end_time = time.time()
-        print(f"识别列表：{_prodict_list}，识别耗时: {end_time - start_time}秒")
+        # print(f"识别列表：{_prodict_list}，识别耗时: {end_time - start_time}秒")
         return _prodict_list
 
 
 if __name__ == '__main__':
     find = FindAuctionMarket()
     pic = cv2.imdecode(fromfile(
-        "D:\\SoftWare\\Developed\\Projected\\JiuYinDance\\dist\\JiuDancing\\JiuYinScreenPic\\21_42\\21_42_06.png",
+        "D:\\SoftWare\\Developed\\Projected\\JiuYinDance\\dist\\JiuDancing\\JiuYinScreenPic\\14_24\\14_24_39.png",
         dtype=np.uint8), cv2.IMREAD_UNCHANGED)
     find.find_goods_list(pic)

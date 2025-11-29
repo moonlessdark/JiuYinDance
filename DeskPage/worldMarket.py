@@ -4,10 +4,10 @@ import sys
 from uu import decode
 
 from PySide6 import QtWidgets, QtCore
-from PySide6.QtGui import QIntValidator
+from PySide6.QtGui import QIntValidator, QFont
 from PySide6.QtWidgets import (QWidget, QVBoxLayout,
                                QPushButton, QHBoxLayout, QMessageBox, QHeaderView, QApplication, QTableWidgetItem,
-                               QLineEdit)
+                               QLineEdit, QLabel, QDialog, QTextEdit)
 
 from DeskFunc.TaskBussinese.findAuctionMarket import FindAuctionMarket
 
@@ -22,23 +22,28 @@ class AutoWorldMarket(QWidget):
 
         super().__init__()
 
-        self.setWindowTitle("世界竞拍")
+        self.setWindowTitle("世界竞拍价格设置")
 
         self.list_widget_market = QtWidgets.QTableWidget(0, 3)
         self.list_widget_market.resizeColumnsToContents()  # 自适应列宽
-        # 设置水平表头标签
-        headers = ["物品名", "最大竞拍价格"]
-        self.list_widget_market.setHorizontalHeaderLabels(headers)
 
-        # self.resize(410, 300)
+        self.resize(375, 400)
         self.setFixedWidth(375)
-
 
         # header = self.list_widget_market.horizontalHeader()
         # header.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
 
         self.setup_table_header_and_width()
 
+        _scan_product_num = QtWidgets.QLabel("每次只扫描前")
+        self.scan_product_num_select = QtWidgets.QComboBox()
+        self.scan_product_num_select.addItems("1234567")
+        self.scan_product_num_select.setCurrentIndex(1)  # 默认选中数量 2
+        _scan_product_num_end_str = QtWidgets.QLabel("个物品")
+        layout_product_num_select = QHBoxLayout()
+        layout_product_num_select.addWidget(_scan_product_num)
+        layout_product_num_select.addWidget(self.scan_product_num_select)
+        layout_product_num_select.addWidget(_scan_product_num_end_str)
         self.push_button_market_reset_product_price = QtWidgets.QPushButton("重置价格")
         self.push_button_market_save_product_price = QtWidgets.QPushButton("保存价格")
 
@@ -49,8 +54,13 @@ class AutoWorldMarket(QWidget):
         layout_button.addWidget(self.push_button_market_reset_product_price)
         layout_button.addWidget(self.push_button_market_save_product_price)
         layout_button.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight)
+
+        _lay_out_top = QHBoxLayout()
+        _lay_out_top.addLayout(layout_product_num_select)
+        _lay_out_top.addLayout(layout_button)
+
         layout = QVBoxLayout(self)
-        layout.addLayout(layout_button)
+        layout.addLayout(_lay_out_top)
         layout.addWidget(self.list_widget_market)
         layout.setContentsMargins(5, 5, 5 , 5)
 
@@ -208,7 +218,10 @@ class AutoWorldMarket(QWidget):
         msg_box.setWindowTitle("信息")
         msg_box.setIcon(QMessageBox.Information)
 
-
+    def show_help(self):
+        """
+        显示帮助说明
+        """
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

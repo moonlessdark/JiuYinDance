@@ -11,8 +11,6 @@ from Utils.KeyMouseDriver.GhostSoft.get_driver_v3 import GetGhostDriver, SetGhos
 from Utils.dataClass import GhostDll
 from Utils.loadResources import GetConfig, get_map_goods_point_list_by_selected
 
-from DeskFunc.TaskBussinese.findAuctionMarket import FindAuctionMarket
-
 from DeskFunc.QThTask.QthDance import DanceThByFindPic
 from DeskFunc.QThTask.QthScreen import ScreenGameQth
 from DeskFunc.QThTask.QthTruck import TruckTaskFightMonsterQth, TruckCarTaskQth
@@ -73,8 +71,8 @@ class TaskConnect(MainUI):
         self.qht_my_fight.status_bar.connect(self.status_bar.update_execute_num)
         self.qht_my_fight.sin_run_status.connect(self._update_task_run_status)
         # 世界竞拍
-        self.qth_market.status_information.connect(self._information_print)
         self.qth_market.sin_run_status.connect(self._update_task_run_status)
+        self.qth_market.sin_out.connect(self.log_print)
         # GUI的按钮的信号槽
         self.windows_get.push_button_run_windows.clicked.connect(self.run_task)  # 执行任务
         self.windows_get.push_button_get_windows.clicked.connect(self.__init_game_windows_hwnd)  # 获取窗口
@@ -136,15 +134,6 @@ class TaskConnect(MainUI):
         _checked_hwnd_list: list = self.windows_get.get_windows_checked()
         xx_hwnd_list: list = [_windows_hwnd_save.get(h) for h in _checked_hwnd_list]
         return xx_hwnd_list
-
-    def _information_print(self, information: str):
-        """
-        打印一下窗口
-        """
-        msg_box = QMessageBox(self)
-        msg_box.setText(information)
-        msg_box.setWindowTitle("信息")
-        msg_box.setIcon(QMessageBox.Information)
 
     def test_hwnd(self):
         """
@@ -245,7 +234,8 @@ class TaskConnect(MainUI):
                     return None
                 # 获取一下表格中的价格
                 _product: list = self.task_tab_windows.task_other.widget_world_market.get_table_content()
-                self.qth_market.get_param(_checked_hwnd_list[0], product_price_list=_product)
+                _scan_product_num: int = int(self.task_tab_windows.task_other.widget_world_market.scan_product_num_select.currentText())
+                self.qth_market.get_param(_checked_hwnd_list[0], product_price_list=_product, scan_product_num=_scan_product_num)
                 self.qth_market.start()
 
         else:
