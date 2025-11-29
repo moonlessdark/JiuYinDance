@@ -100,7 +100,7 @@ class WorldMarketGetGoodsQth(QThread):
                 if not (_product_min_price <= _product_current_price <= _product_max_price - 10):
                     # 不在出价范围内，换下一个
                     continue
-
+                self.sin_out(f"{_product_name} 符合出价条件,当前价格:{_product_current_price}")
                 # 既然在出价返回内了，那么开始出价
                 if self.windows_handle == 0:
                     self.working = False
