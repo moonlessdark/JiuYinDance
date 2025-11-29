@@ -63,9 +63,6 @@ def display_windows_detection(hwnd) -> tuple:
     handle = int(hwnd)
     try:
         f = ctypes.windll.dwmapi.DwmGetWindowAttribute
-    except WindowsError as e:
-        f = None
-    if f:
         rect = ctypes.wintypes.RECT()
         DWMWA_EXTENDED_FRAME_BOUNDS = 9
         f(ctypes.wintypes.HWND(handle),
@@ -74,7 +71,8 @@ def display_windows_detection(hwnd) -> tuple:
           ctypes.sizeof(rect)
           )
         return (rect.left, rect.top), (rect.right, rect.bottom)
-
+    except WindowsError as e:
+        return None
 
 def display_windows_border_size(hwnd):
     """

@@ -242,6 +242,8 @@ class MarketPic:
     plus_price_10: str = dataclasses.field(default_factory=str)  # 加价10两
     plus_price_100: str = dataclasses.field(default_factory=str)  # 加价100两
     summit_price: str = dataclasses.field(default_factory=str)  # 确认出价
+    bidding_man: str = dataclasses.field(default_factory=str)  # 竞价人
+    bidder_man: str = dataclasses.field(default_factory=str)  # 成交人
 
     # 价格判断
     price_one: str = dataclasses.field(default_factory=str)
@@ -270,6 +272,8 @@ class MarketPic:
     xin_zhai_mi_lu: str = dataclasses.field(default_factory=str)  # 心斋秘箓
     xue_hai_dao_gang: str = dataclasses.field(default_factory=str)  # 血海刀罡
     zui_xian_lu: str = dataclasses.field(default_factory=str)  # 醉仙箓
+    wu_xing_xin_fa: str =  dataclasses.field(default_factory=str)  # 醉仙箓
+    can_yang: str =  dataclasses.field(default_factory=str)  # 残阳
 
     # 拓本碎片
     ta_ben_ruo_shui_shen_dian: str = dataclasses.field(default_factory=str)  # 若水神典拓本碎片
@@ -289,5 +293,6 @@ class MarketPic:
     wu_cai_huan: str = dataclasses.field(default_factory=str)  # 五彩环
     ba_zhu_ling: str = dataclasses.field(default_factory=str)  # 霸主令
     jin_yin_hua: str = dataclasses.field(default_factory=str)  # 金银花
+    jiao_hua_ji: str = dataclasses.field(default_factory=str)  # 叫花鸡
     gu_pu_can_juan_jue_shi_gao_shou: str = dataclasses.field(default_factory=str)  # 古朴残卷-绝世高手
     jue_meng_dan: str = dataclasses.field(default_factory=str)  # 觉梦丹

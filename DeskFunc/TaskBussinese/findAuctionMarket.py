@@ -13,6 +13,38 @@ from Utils.loadResources import GetConfig
 from Utils.FindWindowsImage import FindWindowsImageTemplate, WindowsHandle, WindowsCapture
 
 
+def filter_taben(data: list) -> list:
+    """
+    过滤一下拓本碎片
+    由于切图的原因，拓本碎片和 若水神典的拓本碎片会重复识别
+    """
+    result = []
+    i = 0
+
+    while i < len(data):
+        # 检查当前项和下一项是否满足移除条件
+        if (i + 1 < len(data) and
+                "拓本碎片" in data[i][1] and
+                "拓本碎片" in data[i + 1][1] and
+                abs(data[i][0] - data[i + 1][0]) < 60):
+
+            # 根据条件决定保留哪个项
+            if data[i + 1][1] == "拓本碎片":
+                result.append(data[i])
+                i += 2
+                continue
+            elif data[i][1] == "拓本碎片":
+                result.append(data[i + 1])
+                i += 2
+                continue
+
+        # 不满足移除条件，正常添加当前项
+        result.append(data[i])
+        i += 1
+
+    return result
+
+
 def process_coordinates(data: list):
     """
     处理坐标数组，根据'两'的X坐标分割数组
@@ -63,7 +95,7 @@ def process_coordinates(data: list):
     _wen_num: float = int(_wen_str) * 0.001 if _wen_str != "" else 0
 
     sell_price: float = _ding_num + _liang_num + _wen_num
-    print(f"当前售价: {sell_price} 两")
+    # print(f"当前售价: {sell_price} 两")
     return sell_price
 
 
@@ -91,6 +123,10 @@ class FindAuctionMarket:
                                                         cv2.IMREAD_UNCHANGED)
         self.__market_pic_summit_price = cv2.imdecode(fromfile(self.__market_pic.summit_price, dtype=np.uint8),
                                                       cv2.IMREAD_UNCHANGED)
+        self.__market_bidding_man = cv2.imdecode(fromfile(self.__market_pic.bidding_man, dtype=np.uint8),
+                                                      cv2.IMREAD_UNCHANGED)
+        self.__market_bidder_man = cv2.imdecode(fromfile(self.__market_pic.bidder_man, dtype=np.uint8),
+                                                 cv2.IMREAD_UNCHANGED)
 
         """
         判断钱
@@ -118,43 +154,37 @@ class FindAuctionMarket:
         物品列表
         """
         self.product_list: list = [
-            ["冰心诀", cv2.imdecode(fromfile(self.__market_pic.bing_xin_jue, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
-            ["古朴残卷(绝世高手)",
-             cv2.imdecode(fromfile(self.__market_pic.gu_pu_can_juan_jue_shi_gao_shou, dtype=np.uint8),
-                          cv2.IMREAD_UNCHANGED)],
-            ["太极拳", cv2.imdecode(fromfile(self.__market_pic.tai_ji_quan, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
-            ["寒宵诀", cv2.imdecode(fromfile(self.__market_pic.han_xiao_jue, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
-            ["心斋秘箓",
-             cv2.imdecode(fromfile(self.__market_pic.xin_zhai_mi_lu, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
-            ["打狗八绝", cv2.imdecode(fromfile(self.__market_pic.da_gou_ba_jue, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
-            ["拈花功", cv2.imdecode(fromfile(self.__market_pic.nian_hua_gong, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
+            # 拓本碎片
             ["拓本碎片", cv2.imdecode(fromfile(self.__market_pic.ta_ben, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
-            ["无妄神功",
-             cv2.imdecode(fromfile(self.__market_pic.wu_wang_shen_gong, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
-            ["星河剑律参悟图",
-             cv2.imdecode(fromfile(self.__market_pic.xing_he_jian_lv, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
-            ["残破星图",
-             cv2.imdecode(fromfile(self.__market_pic.xing_he_jian_lv_can_po, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
+            ["若水神点拓本碎片", cv2.imdecode(fromfile(self.__market_pic.ta_ben_ruo_shui_shen_dian, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
+            # 内功残卷
+            ["冰心诀", cv2.imdecode(fromfile(self.__market_pic.bing_xin_jue, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
+            ["五行功法", cv2.imdecode(fromfile(self.__market_pic.wu_xing_xin_fa, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
+            ["残阳功诀", cv2.imdecode(fromfile(self.__market_pic.can_yang, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
+            ["寒宵诀", cv2.imdecode(fromfile(self.__market_pic.han_xiao_jue, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
+            ["心斋秘箓", cv2.imdecode(fromfile(self.__market_pic.xin_zhai_mi_lu, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
+            ["无妄神功", cv2.imdecode(fromfile(self.__market_pic.wu_wang_shen_gong, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
             ["毒哈经", cv2.imdecode(fromfile(self.__market_pic.du_ha_jing, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
             ["混元功", cv2.imdecode(fromfile(self.__market_pic.hun_yuan_gong, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
-            ["焚天令", cv2.imdecode(fromfile(self.__market_pic.fen_tian_ling, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
-            ["若水神点拓本",
-             cv2.imdecode(fromfile(self.__market_pic.ta_ben_ruo_shui_shen_dian, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
-            ["若水神点",
-             cv2.imdecode(fromfile(self.__market_pic.ruo_shui_shen_dian, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
-            ["血海刀罡",
-             cv2.imdecode(fromfile(self.__market_pic.xue_hai_dao_gang, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
-            ["血海魔刀录",
-             cv2.imdecode(fromfile(self.__market_pic.da_gou_ba_jue, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
+            ["若水神点", cv2.imdecode(fromfile(self.__market_pic.ruo_shui_shen_dian, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
+            ["血海刀罡", cv2.imdecode(fromfile(self.__market_pic.xue_hai_dao_gang, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
             ["醉仙箓", cv2.imdecode(fromfile(self.__market_pic.zui_xian_lu, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
-            ["魅影剑法",
-             cv2.imdecode(fromfile(self.__market_pic.mei_ying_jian_fa, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
+            # 古朴武学残卷
+            ["魅影剑法", cv2.imdecode(fromfile(self.__market_pic.mei_ying_jian_fa, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
+            ["血海魔刀录", cv2.imdecode(fromfile(self.__market_pic.xue_hai_mo_dao_lu, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
+            ["焚天令", cv2.imdecode(fromfile(self.__market_pic.fen_tian_ling, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
+            ["星河剑律参悟图", cv2.imdecode(fromfile(self.__market_pic.xing_he_jian_lv, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
+            ["残破星图", cv2.imdecode(fromfile(self.__market_pic.xing_he_jian_lv_can_po, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
+            ["拈花功", cv2.imdecode(fromfile(self.__market_pic.nian_hua_gong, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
+            ["打狗八绝", cv2.imdecode(fromfile(self.__market_pic.da_gou_ba_jue, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
+            ["太极拳", cv2.imdecode(fromfile(self.__market_pic.tai_ji_quan, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
+            ["古朴残卷(绝世高手)", cv2.imdecode(fromfile(self.__market_pic.gu_pu_can_juan_jue_shi_gao_shou, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
+            # 道具
             ["五彩环", cv2.imdecode(fromfile(self.__market_pic.wu_cai_huan, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
             ["霸主令", cv2.imdecode(fromfile(self.__market_pic.ba_zhu_ling, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
             ["金银花", cv2.imdecode(fromfile(self.__market_pic.jin_yin_hua, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
-            ["觉梦丹礼包",
-             cv2.imdecode(fromfile(self.__market_pic.jue_meng_dan, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
-
+            ["叫花鸡", cv2.imdecode(fromfile(self.__market_pic.jiao_hua_ji, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
+            ["觉梦丹礼包", cv2.imdecode(fromfile(self.__market_pic.jue_meng_dan, dtype=np.uint8), cv2.IMREAD_UNCHANGED)],
         ]
 
     @staticmethod
@@ -250,110 +280,13 @@ class FindAuctionMarket:
             return __summit_price
         return None
 
-    def find_goods(self, image: np.ndarray) -> list:
-        """
-        查找物品
-        返回值： [[98, '星河剑律参悟图', 11], [24, '醉仙箓', 11.008]]
-        第一个值是Y轴坐标,可以用来作为排序id
-        第二个值是商品名称
-        第三个值是 价格
-        第四个值是在画面中的坐标，如果用于点击需要转换一下坐标
-        """
-        # small = cv2.imread(
-        #     "D:\\SoftWare\\Developed\\Projected\\JiuYinDance\\DeskPageV2\\Resources\\AuctionMarket\\main_line_v2.png")
-        __market_pic_main_line = self.__market_pic_main_line
-        bigger = image
-        start_time = time.time()
-        res = self.find_pic.get_image_all_rect(bigger, __market_pic_main_line)
-
-        __goods_find_res: dict = {}
-
-        if res[-1] > 0.8:
-            l_b: tuple = res[1]
-            r_b: tuple = res[3]
-            cap_pic_all = bigger[int(l_b[1]): int(l_b[1]) + 550, int(l_b[0]): int(r_b[0])]
-
-            tx = self.__f.find_ocr_all(cap_pic_all)
-            res_list: list = []  # 过滤一下
-            good_pic_pos: list = []  # 图片中的坐标，后续需要转为 桌面坐标
-
-            index_num: int = 0
-            # 处理小图的逻辑
-            for good_index in range(7):
-                good_list: list = []
-                for index in tx:
-                    g_h = index.box[0][1]
-                    if good_index * 75 < g_h < (good_index + 1) * 75:
-                        good_list.append(index)
-                cap_pic_pos = [(int(l_b[0]), int(l_b[1]) + index_num * 75),
-                               (int(l_b[0]), int(l_b[1]) + (index_num + 1) * 75),
-                               (int(r_b[0]), int(r_b[1]) + index_num * 75),
-                               (int(r_b[0]), int(r_b[1]) + (index_num + 1) * 75)]
-                index_num += 1
-                res_list.append(good_list)
-                good_pic_pos.append(cap_pic_pos)
-            if len(res_list) > 0:
-                get_numbers = lambda s: re.findall(r'\d+', s)
-                __goods_index: int = 1
-                for goods_content, goods_pic_pos in zip(res_list, good_pic_pos):
-
-                    if len(goods_content) == 0:
-                        break
-                    goods_name: str = goods_content[0].ocr_text
-                    __p: str = goods_content[-1].ocr_text
-
-                    if "成交者" in __p:
-                        break
-                    try:
-                        person: str = "无" if __p.split("竞价者：")[1] in ['一', ""] else __p.split("竞价者：")[1]
-                    except IndexError as e:
-                        break
-                    price_str: str = ""
-                    price: int = 0
-                    for price_index in goods_content[1:-1]:
-                        price_temp: str = price_index.ocr_text
-                        price_str += price_temp
-                        # print(f"遍历的价格：{price_str}")
-
-                    thousands_list: list = ["锭", "锁", "键"]
-                    for thousand_str in thousands_list:
-                        if thousand_str in price_str:
-                            res_price: list = price_str.split(thousand_str)
-                            thousand = int(''.join(map(str, get_numbers(res_price[0])))) * 1000
-                            hundred = 0
-                            if res_price[1] != "":
-                                hundred = int(''.join(map(str, get_numbers(res_price[1]))))
-                            price = thousand + hundred
-                    if price == 0:
-                        price = int(''.join(map(str, get_numbers(price_str))))
-
-                    # if price < 10:
-                    #     # 如果出现了价格小于10的，因为起拍价就是10L，小于10就说明是没有识别到“锭”，给他补一下
-                    #     price = price * 1000
-
-                    good_pos: numpy.ndarray = goods_content[-1].box  # 坐标
-                    person_pic = cap_pic_all[int(good_pos[0][1]): int(good_pos[3][1]),
-                    int(good_pos[0][0]): int(good_pos[1][0])]
-                    is_self = 1 if self.__check_person_self(person_pic) else 0
-                    # print(f"物品: {goods_name}, 价格: {price} 两, 竞拍人: {person}, 是否加价成功: {is_self}")
-                    __goods_find_res[f"goods_{__goods_index}"] = {"goods_pic_pos": goods_pic_pos,
-                                                                  "goods_name": goods_name,
-                                                                  "goods_price": price,
-                                                                  "goods_person": person,
-                                                                  "goods_person_is_self": is_self}
-                    __goods_index += 1
-            end_time = time.time()
-            elapsed_time = end_time - start_time
-            # print(f"本次识别耗时: {round(elapsed_time, 2)} 秒")
-            # cv2.imshow("ss", cap_pic_all)
-            # cv2.waitKey()
-            return __goods_find_res
-        return None
-
     def find_goods_list(self, image: np.ndarray) -> list:
         """
-        查询关注列表的物品
+        查询物品列表
         """
+
+        start_time = time.time()
+
         __market_pic_main_line = self.__market_pic_main_line
         bigger = image
         res = self.find_pic.find_area(bigger, __market_pic_main_line)
@@ -380,15 +313,9 @@ class FindAuctionMarket:
             # 应用掩码到原图
             cap_pic_all = cv2.bitwise_and(image, image, mask=mask)
 
-            # cv2.imshow("SSS", cap_pic_all)
-            # cv2.waitKey()
-
             for product in self.product_list:
                 _product_name: str = product[0]  # 物品名称
                 _product_image: np.ndarray = product[1]  # 物品图标
-
-                # cv2.imshow(_product_name, _product_image)
-                # cv2.waitKey()
 
                 _product_rect: list = self.find_pic.get_image_all_rect(cap_pic_all, _product_image, threshold=0.9, edge=False)
 
@@ -397,22 +324,36 @@ class FindAuctionMarket:
                     continue
 
                 """
-                既然已经查询到了，那么就可以把对应的当前出价查询出来
-                """
-
-                """
-                把金额那一行截图出来
+                把金额那一行截图出来,那么就可以把对应的当前出价查询出来
                 """
                 for product_line in _product_rect:
 
                     l_b_m: float = product_line[0]
                     r_b_m: float = product_line[1]
-                    # print(f"{_product_name} : {l_b_m} * {r_b_m}")
-                    cap_pic_all_new = cap_pic_all[int(r_b_m): int(r_b_m) + 30, int(l_b_m):]
 
-                    # cv2.imshow("ss", cap_pic_all_new)
+                    # 先把个产品的这一列内容都给截图出来
+                    cap_pic_product_line_content = cap_pic_all[int(r_b_m) + 5: int(r_b_m) + 50, int(l_b_m) - 150: int(l_b_m) + 300]
+
+                    """
+                    如果当前商品已经有成交人了，就跳过
+                    """
+                    # _bidder_man_rect: list = self.find_pic.get_image_all_rect(cap_pic_product_line_content, self.__market_bidder_man, threshold=0.9)
+                    # if _bidder_man_rect is not None:
+                    #     continue
+
+                    """
+                    如果当前竞拍人是自己的话，就跳过
+                    """
+                    if self.__check_person_self(cap_pic_product_line_content):
+                        continue
+
+                    # cv2.imshow("sas", cap_pic_product_line_content)
                     # cv2.waitKey()
 
+                    """
+                    既然都符合条件，那么把价格算一下
+                    """
+                    cap_pic_all_new = cap_pic_all[int(r_b_m): int(r_b_m) + 30, int(l_b_m):]
                     _money_obj: list = []
                     for m in self.number_list:
                         num: str = m[0]
@@ -425,8 +366,10 @@ class FindAuctionMarket:
                             _money_obj.append([rect[0], num])
                     _price: float = process_coordinates(_money_obj)  # 算一下当前产品的价格
                     _prodict_list.append([int(product_line[1]), _product_name, _price, product_line])
+        _prodict_list = filter_taben(_prodict_list)
         _prodict_list.sort()
-        print(f"识别列表：{_prodict_list}")
+        end_time = time.time()
+        print(f"识别列表：{_prodict_list}，识别耗时: {end_time - start_time}秒")
         return _prodict_list
 
 

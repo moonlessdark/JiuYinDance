@@ -74,7 +74,7 @@ class TaskConnect(MainUI):
         self.qht_my_fight.sin_run_status.connect(self._update_task_run_status)
         # 世界竞拍
         self.qth_market.status_information.connect(self._information_print)
-
+        self.qth_market.sin_run_status.connect(self._update_task_run_status)
         # GUI的按钮的信号槽
         self.windows_get.push_button_run_windows.clicked.connect(self.run_task)  # 执行任务
         self.windows_get.push_button_get_windows.clicked.connect(self.__init_game_windows_hwnd)  # 获取窗口
@@ -240,7 +240,13 @@ class TaskConnect(MainUI):
                 """
                 世界竞拍
                 """
-                pass
+                if len(_checked_hwnd_list) > 1:
+                    self.log_print("暂时只支持控制一个游戏窗口!")
+                    return None
+                # 获取一下表格中的价格
+                _product: list = self.task_tab_windows.task_other.widget_world_market.get_table_content()
+                self.qth_market.get_param(_checked_hwnd_list[0], product_price_list=_product)
+                self.qth_market.start()
 
         else:
             self.log_print(f"任务 {_widget_radio_enum.value} 停止执行...")
@@ -255,6 +261,7 @@ class TaskConnect(MainUI):
             self.qht_open_gift.stop_execute_init()  # 9点开卡
             self.qth_map_get.stop_execute_init()  # 地图采集
             self.qht_my_fight.stop_execute_init()  # 我的战斗
+            self.qth_market.stop_execute_init()  # 世界竞拍
         return None
 
     def _update_task_run_status(self, task_status: bool):

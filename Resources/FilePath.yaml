@@ -185,7 +185,8 @@ MarketPic:
   plus_price: /Resources/ImageTemplate/PicWorldMarket/Border/plus_10.png
   plus_price_100: /Resources/ImageTemplate/PicWorldMarket/Border/plus_100.png
   summit_price: /Resources/ImageTemplate/PicWorldMarket/Border/summit.png
-
+  bidding_man: /Resources/ImageTemplate/PicWorldMarket/Border/竞价者.png
+  bidder_man: /Resources/ImageTemplate/PicWorldMarket/Border/成交者.png
   # 售价判断
   sell_price:
     zero: /Resources/ImageTemplate/PicWorldMarket/SellPrice/0.png
@@ -227,9 +228,12 @@ MarketPic:
       xue_hai_mo_dao: /Resources/ImageTemplate/PicWorldMarket/BookFragments/血海魔刀录残卷.png
       zui_xian_lu: /Resources/ImageTemplate/PicWorldMarket/BookFragments/醉仙禄残卷.png
       mei_ying_jian_fa: /Resources/ImageTemplate/PicWorldMarket/BookFragments/魅影减法残卷.png
+      wu_xing_xin_fa: /Resources/ImageTemplate/PicWorldMarket/BookFragments/五行心法.png
+      can_yang: /Resources/ImageTemplate/PicWorldMarket/BookFragments/残阳残卷.png
     # 物品
     props:
       wu_cai_huan: /Resources/ImageTemplate/PicWorldMarket/Props/五彩环.png
       ba_zhu_ling: /Resources/ImageTemplate/PicWorldMarket/Props/咫尺烽烟-霸主令.png
       jin_yin_hua: /Resources/ImageTemplate/PicWorldMarket/Props/金银花.png
       jiao_meng_dan: /Resources/ImageTemplate/PicWorldMarket/Props/觉梦丹礼包.png
+      jiao_hua_ji: /Resources/ImageTemplate/PicWorldMarket/Props/叫花鸡.png
