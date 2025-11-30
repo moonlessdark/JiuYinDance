@@ -280,10 +280,13 @@ class FindAuctionMarket:
             return __summit_price
         return None
 
-    def find_goods_list(self, image: np.ndarray, scan_product_num: int = 7) -> list:
+    def find_goods_list(self, image: np.ndarray, scan_product_num: int = 7, pass_product_name=None) -> list:
         """
         查询物品列表
         """
+
+        if pass_product_name is None:
+            pass_product_name = []
 
         start_time = time.time()
 
@@ -316,6 +319,10 @@ class FindAuctionMarket:
             for product in self.product_list:
                 _product_name: str = product[0]  # 物品名称
                 _product_image: np.ndarray = product[1]  # 物品图标
+
+                if _product_name not in pass_product_name:
+                    # 如果当前扫描的产品不在表格设置了最大价格的列表内，就跳过
+                    continue
 
                 _product_rect: list = self.find_pic.get_image_all_rect(cap_pic_all, _product_image, threshold=0.9, edge=False)
 
@@ -373,6 +380,6 @@ class FindAuctionMarket:
 if __name__ == '__main__':
     find = FindAuctionMarket()
     pic = cv2.imdecode(fromfile(
-        "D:\\SoftWare\\Developed\\Projected\\JiuYinDance\\dist\\JiuDancing\\JiuYinScreenPic\\14_24\\14_24_39.png",
+        "D:\\SoftWare\\Developed\\Projected\\JiuYinDance\\14_24_39.png",
         dtype=np.uint8), cv2.IMREAD_UNCHANGED)
     find.find_goods_list(pic)

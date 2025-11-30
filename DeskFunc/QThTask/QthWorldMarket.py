@@ -20,6 +20,7 @@ class WorldMarketGetGoodsQth(QThread):
     def __init__(self):
         super().__init__()
 
+        self.product_pass_name_list = []
         self.scan_product_num: int = 2
         self.product_sell_price: list = []
         self.pic_save_path = None
@@ -51,8 +52,8 @@ class WorldMarketGetGoodsQth(QThread):
         self.cond.wakeAll()
         self.windows_handle = windows_handle
         self.product_sell_price = product_price_list
+        self.product_pass_name_list = [product['product_name'] for product in product_price_list if product.get('max_price') != ""]  # 过滤掉所有没有设置最大金额的物品,这个列表的物品才是我们需要检测的
         self.scan_product_num = scan_product_num
-
     def run(self):
         self.mutex.lock()  # 先加锁
         self.sin_run_status.emit(True)  # 发送消息，人物开始
@@ -68,7 +69,7 @@ class WorldMarketGetGoodsQth(QThread):
                 self.sin_out.emit("窗口句柄异常,请重新获取窗口")
                 break
 
-            _goods_list = self.func.find_goods_list(image=cap_img.pic_content, scan_product_num=self.scan_product_num)
+            _goods_list = self.func.find_goods_list(image=cap_img.pic_content, scan_product_num=self.scan_product_num, pass_product_name=self.product_pass_name_list)
             for product_line in _goods_list:
                 _product_name: str = product_line[1]  # 物品
                 _product_current_price: int = product_line[2]  # 当前出价
@@ -83,6 +84,7 @@ class WorldMarketGetGoodsQth(QThread):
                     # 如果没有匹配到产品，说明这个产品设置缺失了，就跳过
                     self.sin_out.emit(f"物品: {_product_name} 未收录到程序中,无法识别")
                     continue
+
                 product_dict: dict = result[0]
                 _product_max_price: int = 0 if product_dict.get('max_price') == "" else int(product_dict.get('max_price'))
                 _product_min_price: int = 0 if product_dict.get('min_price') == "" else int(product_dict.get('min_price'))
