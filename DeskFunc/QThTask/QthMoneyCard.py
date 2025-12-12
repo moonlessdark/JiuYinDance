@@ -97,7 +97,7 @@ class OpenGiftCard(QThread):
 
             # 先把背包打开,并检查是否有礼卡，如果包裹里没有礼卡的花那就没啥意义了啊
             for hwnd_i in self.windows_handle_list:
-                if not self.find_gift_card.open_bag(hwnd_i):
+                if not self.find_gift_card.find_backpack(hwnd_i):
                     # 如果包裹里没有礼卡
                     continue
 
@@ -106,10 +106,12 @@ class OpenGiftCard(QThread):
                 if not self.working:
                     break
 
-                self.windows_opt.activate_windows(hwnd_i)
-                time.sleep(0.5)
+                # 查询一下有没有礼卡
                 if not self.find_gift_card.find_gift_card(hwnd_i):
                     continue
+
+                self.windows_opt.activate_windows(hwnd_i)
+                time.sleep(0.6)
 
                 _index_x, _index_y = 0, 0
                 for run_i in range(50):
@@ -141,17 +143,13 @@ class OpenGiftCard(QThread):
 
                         if hwnd_i not in _is_open_card_hwnd:
                             _is_open_card_hwnd.append(hwnd_i)
-
                         break
 
             if len(_is_open_card_hwnd) > 0:
                 # 如果，所有的窗口都没有检测到礼卡，那么就可以跳出去了，没有意义
                 # 如果所有的窗口已经检测完成了，那么就可以跳出去了，没有意义
-
                 for is_ok_h in _is_open_card_hwnd:
                     # 如果有“获取全部”的按钮的话，那么就全部关掉吧
-                    self.windows_opt.activate_windows(is_ok_h)
-                    time.sleep(0.5)
                     self.find_gift_card.click_ok(is_ok_h)
                 _is_open_card_hwnd.clear()  # 清理掉
 

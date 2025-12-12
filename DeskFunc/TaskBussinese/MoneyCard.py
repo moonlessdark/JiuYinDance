@@ -47,6 +47,40 @@ class FindGiftCard:
         self._goods_pic_open_loading = _load_pic(self._opt_status.open_loading)
         self._button_ok = _load_pic(self._opt_status.get_all_goods)
 
+    def click_pos(self, hwnd: int, pos: tuple) -> bool:
+        """
+        点击一下坐标
+        """
+        if not self.windows_opt.activate_windows(hwnd):
+            return False
+        time.sleep(0.5)
+        SetGhostMouse().move_mouse_to(pos[0], pos[1])
+        SetGhostMouse().click_mouse_left_button()
+        time.sleep(0.5)
+        return True
+
+    def find_backpack(self, hwnd: int) -> bool:
+        """
+        查询物品背包是否已经打开
+        """
+        for i in range(3):
+            # 循环3次，避免出现被其他窗口遮挡的情况，最后一次可以显示出来
+            for pic in [self._goods_pic_bag_clicked, self._goods_pic_bag_unclick]:
+                pic_rec = self.windows_find.get_windows_image_rect(hwnd, read_image=pic)
+                if pic_rec is None:
+                    continue
+                if pic == self._goods_pic_bag_unclick:
+                    # 如果当前找到的是未打物品栏的图标,那就点击一下
+                    self.click_pos(hwnd, pic_rec)
+                return True
+            if not self.windows_opt.activate_windows(hwnd):
+                return False
+            time.sleep(0.5)
+            SetGhostBoards().click_press_and_release_by_key_code_hold_time(66, 0.3)  # 按B，打开背包
+            time.sleep(0.8)
+            break
+        return False
+
     def open_bag(self, hwnd: int) -> bool:
         """
         获取物品背包,看看有没有礼卡
@@ -91,12 +125,9 @@ class FindGiftCard:
         """
         点击确定按钮
         """
-        time.sleep(1)
         __rec_goods_bag_tag_clickable = self.windows_find.get_windows_image_rect(hwnd, read_image=self._button_ok)
         if __rec_goods_bag_tag_clickable is not None:
-            SetGhostMouse().move_mouse_to(__rec_goods_bag_tag_clickable[0], __rec_goods_bag_tag_clickable[1])
-            time.sleep(0.2)
-            SetGhostMouse().click_mouse_left_button()
+            self.click_pos(hwnd, __rec_goods_bag_tag_clickable)
             return True
         return False
 
