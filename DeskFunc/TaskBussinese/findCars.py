@@ -472,7 +472,7 @@ class TeamFunc(TruckCar):
         WindowsHandle().activate_windows(hwnd)
         time.sleep(0.5)
         SetGhostBoards().click_press_and_release_by_key_name("o")
-        time.sleep(1)
+        time.sleep(0.5)
 
         if self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(find_team.create_team)) is not None:
             """
@@ -487,11 +487,11 @@ class TeamFunc(TruckCar):
             """
             time.sleep(0.2)
             SetGhostMouse().move_mouse_to(__rec[0], __rec[1])
-            time.sleep(1)
+            time.sleep(0.5)
             SetGhostMouse().click_mouse_left_button()
-            time.sleep(1)
+            time.sleep(0.5)
             SetGhostBoards().click_press_and_release_by_key_name("o")
-            time.sleep(1)
+            time.sleep(0.5)
             return True
         return False
 

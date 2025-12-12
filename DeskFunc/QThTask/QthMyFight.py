@@ -5,8 +5,8 @@ import time
 from PySide6.QtCore import QThread, Signal, QWaitCondition, QMutex
 
 from DeskFunc.TaskBussinese.XuanJi import FindMyFight
-from Utils.FindWindowsImage import WindowsHandle
-from Utils.ImageUtils.MonitorDisplay import coordinate_change_from_windows
+from DeskFunc.TaskBussinese.findCars import TeamFunc
+from Utils.FindWindowsImage import WindowsHandle, WindowsCapture
 from Utils.KeyMouseDriver.GhostSoft.get_driver_v3 import SetGhostMouse
 
 
@@ -20,7 +20,7 @@ class MyFightXJ(QThread):
 
     def __init__(self):
         super().__init__()
-
+        self.cap = WindowsCapture()
         self.working = True
         self.cond = QWaitCondition()
 
@@ -31,6 +31,8 @@ class MyFightXJ(QThread):
 
         self.find_my_f = FindMyFight()
         self.mouse = SetGhostMouse()
+
+        self.team = TeamFunc()  # 创建队伍
 
         self.time_ranges = []  # 点击的时间段
 
@@ -43,7 +45,7 @@ class MyFightXJ(QThread):
         # 获取当前时间并去除微秒
         current_time = datetime.datetime.now().replace(microsecond=0)
         # 定义目标时间字符串列表
-        target_times: list = ["19:59:55"]
+        target_times: list = ["19:59:53"]
 
         # 转换为datetime对象并生成时间范围（前后3秒）
         if len(self.time_ranges) == 0:
@@ -92,6 +94,8 @@ class MyFightXJ(QThread):
             if not self.working:
                 break
 
+            _is_close_hwnd: list = []  # 已经失效的窗口句柄
+
             # 计算到20点整还有多久
             if not self.check_local_time():
                 # 如果还没有到20点
@@ -104,6 +108,18 @@ class MyFightXJ(QThread):
 
                 if not self.working:
                     break
+
+                if not self.cap.windows_handle_visible(hwnd_i):
+                    _is_close_hwnd.append(hwnd_i)
+
+                if len(_is_clicked_hwnd) == len(self.windows_handle_list):
+                    # 如果当前所有窗口就失效了，就可以结束了
+                    self.working = False
+                    self.sin_out.emit("所有窗口均无法识别,已经自动退出任务")
+                    break
+
+                # 检测一下当前是否是组队状态
+                self.team.close_team(hwnd_i)
 
                 self.windows_opt.activate_windows(hwnd_i)
                 time.sleep(0.2)
