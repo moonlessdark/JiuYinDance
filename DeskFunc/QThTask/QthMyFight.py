@@ -83,8 +83,8 @@ class MyFightXJ(QThread):
     def run(self):
         self.mutex.lock()  # 先加锁
 
-        _is_clicked_hwnd: list = []  # 成功开卡了的窗口
-        _open_count: int = 0  # 开了几次卡
+        _open_count: int = 0  # 报名次数
+        _is_close_hwnd: list = []  # 已经失效的窗口句柄
 
         self.sin_run_status.emit(True)
 
@@ -94,7 +94,6 @@ class MyFightXJ(QThread):
             if not self.working:
                 break
 
-            _is_close_hwnd: list = []  # 已经失效的窗口句柄
 
             # 计算到20点整还有多久
             if not self.check_local_time():
@@ -103,7 +102,6 @@ class MyFightXJ(QThread):
                 continue
             self.sin_out.emit("任务已到开始时间，开始报名")
 
-            # 先把背包打开,并检查是否有礼卡，如果包裹里没有礼卡的花那就没啥意义了啊
             for hwnd_i in self.windows_handle_list:
 
                 if not self.working:
@@ -112,7 +110,7 @@ class MyFightXJ(QThread):
                 if not self.cap.windows_handle_visible(hwnd_i):
                     _is_close_hwnd.append(hwnd_i)
 
-                if len(_is_clicked_hwnd) == len(self.windows_handle_list):
+                if len(_is_close_hwnd) == len(self.windows_handle_list):
                     # 如果当前所有窗口就失效了，就可以结束了
                     self.working = False
                     self.sin_out.emit("所有窗口均无法识别,已经自动退出任务")
