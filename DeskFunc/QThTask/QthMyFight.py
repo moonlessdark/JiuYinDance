@@ -10,6 +10,17 @@ from Utils.FindWindowsImage import WindowsHandle, WindowsCapture
 from Utils.KeyMouseDriver.GhostSoft.get_driver_v3 import SetGhostMouse
 
 
+def add_10_seconds():
+    """
+    调试方法，在当前时间上增加10秒
+    """
+    current_time = datetime.datetime.now()
+    new_time = current_time + datetime.timedelta(seconds=10)
+    formatted_time = new_time.strftime("%H:%M:%S")
+    return formatted_time
+
+
+
 class MyFightXJ(QThread):
     """
     我的战斗-玄机秘境报名

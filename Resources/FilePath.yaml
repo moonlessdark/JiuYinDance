@@ -93,7 +93,7 @@ team:
   create_team: /Resources/ImageTemplate/PicTeam/创建队伍.png
   flag_team: /Resources/ImageTemplate/PicTeam/team_mark.png
   flag_team_status: /Resources/ImageTemplate/PicTeam/队伍标志.png
-  leave_team: /Resources/ImageTemplate/PicTeam/解散队伍.png
+  leave_team: /Resources/ImageTemplate/PicTeam/离开队伍.png
 
 # 押镖
 PicTruckCar:

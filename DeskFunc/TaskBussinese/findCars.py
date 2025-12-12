@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import time
+from collections import namedtuple
 
 import cv2
 import numpy as np
@@ -420,36 +421,43 @@ class TeamFunc(TruckCar):
     def __init__(self):
         super().__init__()
 
+    def check_team_status(self, hwnd: int):
+        """
+        检测当前是否为组队
+        """
+        find_team: Team = self._get_pic_team()
+        button_create_team = find_team.create_team
+        button_leave_team = find_team.leave_team
+
+        for i in range(5):
+            WindowsHandle().activate_windows(hwnd)
+            time.sleep(0.2)
+            SetGhostBoards().click_press_and_release_by_key_name("o")
+            time.sleep(0.5)
+            for button in [button_create_team, button_leave_team]:
+                flag_status_rec = self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(button), threshold=0.85)
+                if flag_status_rec is None:
+                    continue
+                if button == button_create_team:
+                    return "Create", flag_status_rec
+                return "Leave", flag_status_rec
+        return None
+
     def create_team(self, hwnd: int) -> bool:
         """
         创建队伍
         """
-        find_team: Team = self._get_pic_team()
-        flag_status = find_team.flag_team_status
-
-        __flag_status_rec = self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(flag_status))
-        if __flag_status_rec is not None:
-            """
-            如果角色头像左侧有组队的标志
-            """
+        rec_create = self.check_team_status(hwnd)
+        if rec_create is None:
+            return False
+        _type, _rec = rec_create
+        if _type == "Leave":
+            # 找到了 Leave 按钮 表示为当前是组队状态
             return True
 
-        WindowsHandle().activate_windows(hwnd)
-        time.sleep(0.2)
-        SetGhostBoards().click_press_and_release_by_key_name("o")
-        time.sleep(1)
-
-        if self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(find_team.leave_team)) is not None:
-            """
-            如果有离开的按钮,说明当前已经是组队状态
-            """
-            SetGhostBoards().click_press_and_release_by_key_name("o")
-            return True
-
-        rec_create = self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(find_team.create_team))
-        if rec_create is not None:
-            SetGhostMouse().move_mouse_to(rec_create[0], rec_create[1])
-            time.sleep(1)
+        if _rec is not None:
+            SetGhostMouse().move_mouse_to(_rec[0], _rec[1])
+            time.sleep(0.2)
             SetGhostMouse().click_mouse_left_button()
             time.sleep(1)
             SetGhostBoards().click_press_and_release_by_key_name("o")
@@ -462,36 +470,24 @@ class TeamFunc(TruckCar):
         """
         pass
 
-    def close_team(self, hwnd):
+    def close_team(self, hwnd) -> bool:
         """
         解散队伍
         """
-        find_team: Team = self._get_pic_team()
-        flag_status = find_team.leave_team
-
-        WindowsHandle().activate_windows(hwnd)
-        time.sleep(0.5)
-        SetGhostBoards().click_press_and_release_by_key_name("o")
-        time.sleep(0.5)
-
-        if self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(find_team.create_team)) is not None:
-            """
-            如果有创建的按钮,说明当前已经是非组队状态
-            """
+        rec_leave = self.check_team_status(hwnd)
+        if rec_leave is None:
+            return False
+        _type, _rec = rec_leave
+        if _type == "Create":
+            # 找到了 Create 按钮 表示为当前是未组队状态
             return True
 
-        __rec = self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(flag_status))
-        if __rec is not None:
-            """
-            找到了解散队伍的按钮
-            """
-            time.sleep(0.2)
-            SetGhostMouse().move_mouse_to(__rec[0], __rec[1])
-            time.sleep(0.5)
+        if _rec is not None:
+            SetGhostMouse().move_mouse_to(_rec[0], _rec[1])
+            time.sleep(0.3)
             SetGhostMouse().click_mouse_left_button()
-            time.sleep(0.5)
+            time.sleep(1)
             SetGhostBoards().click_press_and_release_by_key_name("o")
-            time.sleep(0.5)
             return True
         return False
 
