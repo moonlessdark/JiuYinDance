@@ -163,7 +163,9 @@ class TruckCarPic:
     task_monster_target_skil: str = dataclasses.field(default_factory=str)  # 劫匪NPC的技能，此时需要格挡
     task_car_selected: str = dataclasses.field(default_factory=str)  # 已经选中了镖车
     fight_other_truck_car: str = dataclasses.field(default_factory=str)  # 镖车切磋
-
+    day_task_step_1:  str = dataclasses.field(default_factory=str)  # 每日任务，第一步
+    day_task_step_2:  str = dataclasses.field(default_factory=str)  # 每日任务，第二步
+    day_task_step_3:  str = dataclasses.field(default_factory=str)  # 每日任务，第三步
 
 @dataclasses.dataclass
 class FindTruckCarTaskNPC:

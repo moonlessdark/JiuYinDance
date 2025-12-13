@@ -263,7 +263,7 @@ class GetConfig:
         get_track_car.break_npc_talk = self.project_dir + self.__datas["PicTruckCar"]["break_npc_talk"]
         return get_track_car
 
-    def truck_task(self):
+    def truck_task(self) -> TruckCarPic:
         truck = TruckCarPic()
         truck.car_flag = self.project_dir + self.__datas["TruckCarPic"]["car_flag"]
         truck.task_flag_status = self.project_dir + self.__datas["TruckCarPic"]["task_flag_status"]
@@ -274,6 +274,11 @@ class GetConfig:
         truck.task_monster_target_skil = self.project_dir + self.__datas["TruckCarPic"]["task_monster_target_skill"]
         truck.task_car_selected = self.project_dir + self.__datas["TruckCarPic"]["task_car_selected"]
         truck.fight_other_truck_car = self.project_dir + self.__datas["TruckCarPic"]["fight_other_truck_car"]
+        # 每日任务
+        truck.day_task_step_1 = self.project_dir + self.__datas["PicTruckCar"]["day_task_step1"]
+        truck.day_task_step_2 = self.project_dir + self.__datas["PicTruckCar"]["day_task_step2"]
+        truck.day_task_step_3 = self.project_dir + self.__datas["PicTruckCar"]["day_task_step3"]
+
         return truck
 
     def find_track_car_task(self):

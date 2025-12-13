@@ -105,7 +105,7 @@ class TruckCar:
             self._receive_task = self._config.get_track_car()
         return self._receive_task
 
-    def _get_pic_truck_car(self):
+    def _get_pic_truck_car(self) -> TruckCarPic:
         """
         开始押镖了
         """
@@ -492,105 +492,305 @@ class TeamFunc(TruckCar):
         return False
 
 
+# class FindTaskNPCFunc(TruckCar):
+#     """
+#     寻找押镖的NPC。
+#     根据不同的城市自动寻找。
+#     """
+#
+#     def __init__(self):
+#         super().__init__()
+#
+#         self.city_npc = None
+#
+#     def find_truck_task_npc(self, hwnd: int):
+#         """
+#         打开勤修
+#         """
+#
+#         if self.city_npc is not None:
+#             # 表示这是第二次进来, 可以简单点
+#             __pic = self.windows_cap.capture(hwnd)
+#             __cap_pic = bitwise_and(__pic.pic_content, (0, 0, __pic.pic_width, int(__pic.pic_height * 0.4)))
+#
+#             qin_xiu_truck_point_npc = self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(self.city_npc))
+#             if qin_xiu_truck_point_npc is not None:
+#                 """
+#                 找到了押镖NPC
+#                 """
+#                 # print(f"FindTaskNpc: 找到 {self._area_map} 的NPC图标({qin_xiu_truck_point_npc[0]},{qin_xiu_truck_point_npc[1]})")
+#                 SetGhostMouse().move_mouse_to(qin_xiu_truck_point_npc[0], qin_xiu_truck_point_npc[1])
+#                 time.sleep(0.5)
+#                 SetGhostMouse().click_mouse_left_button()
+#                 # SetGhostBoards().click_press_and_release_by_code(27)  # 先去掉关闭寻路的窗口
+#                 return True
+#             else:
+#                 self.city_npc = None
+#                 return False
+#
+#         WindowsHandle().activate_windows(hwnd)
+#         find_npc: FindTruckCarTaskNPC = self._get_pic_find_task_npc()
+#         self.get_map_and_person(hwnd)
+#
+#         # time.sleep(0.2)
+#         # SetGhostBoards().click_press_and_release_by_key_name("N")
+#
+#         time.sleep(0.5)
+#         qin_xiu_rec = self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(find_npc.bang_hui))
+#         if qin_xiu_rec is None:
+#             time.sleep(0.2)
+#             SetGhostBoards().click_press_and_release_by_key_name("N")
+#
+#         time.sleep(1)
+#         qin_xiu_rec = self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(find_npc.bang_hui))
+#         if qin_xiu_rec is None:
+#             return False
+#
+#         SetGhostMouse().move_mouse_to(qin_xiu_rec[0], qin_xiu_rec[1])
+#         time.sleep(0.5)
+#         SetGhostMouse().click_mouse_left_button()
+#
+#         while 1:
+#
+#             time.sleep(0.5)
+#
+#             if self._area_map == "成都":
+#                 __image_city: str = find_npc.task_point_chengdu
+#             elif self._area_map == "燕京":
+#                 __image_city: str = find_npc.task_point_yanjing
+#             elif self._area_map == "金陵":
+#                 __image_city: str = find_npc.task_point_jinling
+#             elif self._area_map == "苏州":
+#                 __image_city: str = find_npc.task_point_suzhou
+#             elif self._area_map == "洛阳":
+#                 __image_city: str = find_npc.task_point_luoyang
+#             else:
+#                 __image_city: str = find_npc.task_point_chengdu
+#             # qin_xiu_truck_point = self.windows.find_windows_coordinate_rect(handle=hwnd,
+#             #                                                                 img=__image_city)
+#
+#             __pic = self.windows_cap.capture(hwnd)
+#             __cap_pic = bitwise_and(__pic.pic_content, (0, 0, __pic.pic_width, int(__pic.pic_height * 0.4)))
+#
+#             qin_xiu_truck_point = self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(__image_city))
+#
+#             if qin_xiu_truck_point is None:
+#                 continue
+#             else:
+#
+#                 if self._area_map == "成都":
+#                     # 界面打开后，默认就是成都，所以不需要再点击
+#                     break
+#                 # print(f"FindTaskNpc: 找到 {self._area_map} 图标({qin_xiu_truck_point[0]},{qin_xiu_truck_point[1]})")
+#                 SetGhostMouse().move_mouse_to(qin_xiu_truck_point[0], qin_xiu_truck_point[1])
+#                 time.sleep(1)
+#                 SetGhostMouse().click_mouse_left_button()
+#                 break
+#
+#         while 1:
+#
+#             time.sleep(0.5)
+#
+#             if self._area_map == "成都":
+#                 __image_city_npc: str = find_npc.task_point_chengdu_npc
+#             elif self._area_map == "燕京":
+#                 __image_city_npc: str = find_npc.task_point_yanjing_npc
+#             elif self._area_map == "金陵":
+#                 __image_city_npc: str = find_npc.task_point_jinling_npc
+#             elif self._area_map == "苏州":
+#                 __image_city_npc: str = find_npc.task_point_suzhou_npc
+#             elif self._area_map == "洛阳":
+#                 __image_city_npc: str = find_npc.task_point_luoyang_npc
+#             else:
+#                 __image_city_npc: str = find_npc.task_point_chengdu_npc
+#
+#             __pic = self.windows_cap.capture(hwnd)
+#             __cap_pic = bitwise_and(__pic.pic_content, (0, 0, __pic.pic_width, int(__pic.pic_height * 0.4)))
+#
+#             qin_xiu_truck_point_npc = self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(__image_city_npc))
+#             if qin_xiu_truck_point_npc is None:
+#                 continue
+#             else:
+#                 """
+#                 找到了押镖NPC
+#                 """
+#
+#                 self.city_npc = __image_city_npc
+#
+#                 # print(f"FindTaskNpc: 找到 {self._area_map} 的NPC图标({qin_xiu_truck_point_npc[0]},{qin_xiu_truck_point_npc[1]})")
+#                 SetGhostMouse().move_mouse_to(qin_xiu_truck_point_npc[0], qin_xiu_truck_point_npc[1])
+#                 time.sleep(0.5)
+#                 SetGhostMouse().click_mouse_left_button()
+#                 # SetGhostBoards().click_press_and_release_by_code(27)  # 先去掉关闭寻路的窗口
+#                 break
+#         return True
+
+
 class FindTaskNPCFunc(TruckCar):
     """
-    寻找押镖的NPC。
-    根据不同的城市自动寻找。
+    寻找押镖的NPC（优化版）。
+    根据不同的城市自动寻找，提升查找效率和稳定性。
     """
 
     def __init__(self):
         super().__init__()
+        self.city_npc = None
+        self.max_retry_attempts = 5  # 最大重试次数
+        self.city_name = ""
 
-    def find_truck_task_npc(self, hwnd: int, work_status: bool = True):
+    def find_truck_task_npc(self, hwnd: int, city_name: str) -> bool:
         """
-        打开勤修
+        查找并点击押镖任务NPC
+        优化点：
+        1. 添加超时控制，防止无限循环
+        2. 简化成都特殊处理逻辑
+        3. 统一错误处理
+        4. 清理无用代码
         """
-        WindowsHandle().activate_windows(hwnd)
-        find_npc: FindTruckCarTaskNPC = self._get_pic_find_task_npc()
-        self.get_map_and_person(hwnd)
+        try:
+            # 如果已有缓存的NPC图标路径，优先快速查找
+            if self.city_npc is not None:
+                if self._quick_find_npc(hwnd):
+                    return True
+                else:
+                    # 缓存失效，清除缓存
+                    self.city_npc = None
 
-        time.sleep(0.2)
-        SetGhostBoards().click_press_and_release_by_key_name("N")
+            # 激活窗口并获取地图信息
+            WindowsHandle().activate_windows(hwnd)
+            find_npc: FindTruckCarTaskNPC = self._get_pic_find_task_npc()
+            self.get_map_and_person(hwnd)
 
-        time.sleep(0.5)
-        qin_xiu_rec = self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(find_npc.bang_hui))
-        if qin_xiu_rec is None:
+            # 查找并点击帮会图标
+            if not self._click_bang_hui(hwnd, find_npc):
+                return False
+
+            self.city_name = city_name
+            # 查找城市任务点图标
+            city_image_path = self._get_city_image_path(find_npc, is_npc=False)
+            if not self._click_city_point(hwnd, city_image_path):
+                return False
+
+            # 查找并点击具体的押镖NPC图标
+            npc_image_path = self._get_city_image_path(find_npc, is_npc=True)
+            if self._click_npc_point(hwnd, npc_image_path):
+                # 缓存NPC图标路径
+                self.city_npc = npc_image_path
+                return True
+
             return False
 
-        SetGhostMouse().move_mouse_to(qin_xiu_rec[0], qin_xiu_rec[1])
-        time.sleep(0.5)
-        SetGhostMouse().click_mouse_left_button()
+        except Exception as e:
+            print(f"查找押镖NPC时发生错误: {e}")
+            return False
 
-        while 1:
-
-            time.sleep(0.5)
-
-            if self._area_map == "成都":
-                __image_city: str = find_npc.task_point_chengdu
-            elif self._area_map == "燕京":
-                __image_city: str = find_npc.task_point_yanjing
-            elif self._area_map == "金陵":
-                __image_city: str = find_npc.task_point_jinling
-            elif self._area_map == "苏州":
-                __image_city: str = find_npc.task_point_suzhou
-            elif self._area_map == "洛阳":
-                __image_city: str = find_npc.task_point_luoyang
-            else:
-                __image_city: str = find_npc.task_point_chengdu
-            # qin_xiu_truck_point = self.windows.find_windows_coordinate_rect(handle=hwnd,
-            #                                                                 img=__image_city)
-
-            __pic = self.windows_cap.capture(hwnd)
-            __cap_pic = bitwise_and(__pic.pic_content, (0, 0, __pic.pic_width, int(__pic.pic_height * 0.4)))
-
-            qin_xiu_truck_point = self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(__image_city))
-
-            if qin_xiu_truck_point is None:
-                continue
-            else:
-
-                if self._area_map == "成都":
-                    break
-                # print(f"FindTaskNpc: 找到 {self._area_map} 图标({qin_xiu_truck_point[0]},{qin_xiu_truck_point[1]})")
-                SetGhostMouse().move_mouse_to(qin_xiu_truck_point[0], qin_xiu_truck_point[1])
-                time.sleep(1)
-                SetGhostMouse().click_mouse_left_button()
-                break
-
-        while 1:
-
-            time.sleep(0.5)
-
-            if self._area_map == "成都":
-                __image_city_npc: str = find_npc.task_point_chengdu_npc
-            elif self._area_map == "燕京":
-                __image_city_npc: str = find_npc.task_point_yanjing_npc
-            elif self._area_map == "金陵":
-                __image_city_npc: str = find_npc.task_point_jinling_npc
-            elif self._area_map == "苏州":
-                __image_city_npc: str = find_npc.task_point_suzhou_npc
-            elif self._area_map == "洛阳":
-                __image_city_npc: str = find_npc.task_point_luoyang_npc
-            else:
-                __image_city_npc: str = find_npc.task_point_chengdu_npc
-
-            __pic = self.windows_cap.capture(hwnd)
-            __cap_pic = bitwise_and(__pic.pic_content, (0, 0, __pic.pic_width, int(__pic.pic_height * 0.4)))
-
-            qin_xiu_truck_point_npc = self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(__image_city_npc))
-            if qin_xiu_truck_point_npc is None:
-                continue
-            else:
-                """
-                找到了押镖NPC
-                """
-                # print(f"FindTaskNpc: 找到 {self._area_map} 的NPC图标({qin_xiu_truck_point_npc[0]},{qin_xiu_truck_point_npc[1]})")
+    def _quick_find_npc(self, hwnd: int) -> bool:
+        """快速查找已知NPC"""
+        try:
+            qin_xiu_truck_point_npc = self.windows_find.get_windows_image_rect(
+                hwnd,
+                read_image=self._load_pic(self.city_npc),
+                threshold=0.8
+            )
+            if qin_xiu_truck_point_npc is not None:
                 SetGhostMouse().move_mouse_to(qin_xiu_truck_point_npc[0], qin_xiu_truck_point_npc[1])
+                time.sleep(0.3)
+                SetGhostMouse().click_mouse_left_button()
+                return True
+            return False
+        except:
+            return False
+
+    def _click_bang_hui(self, hwnd: int, find_npc: FindTruckCarTaskNPC) -> bool:
+        """查找并点击帮会图标"""
+        attempts = 0
+        while attempts < self.max_retry_attempts:
+            qin_xiu_rec = self.windows_find.get_windows_image_rect(
+                hwnd,
+                read_image=self._load_pic(find_npc.bang_hui),
+                threshold=0.8
+            )
+
+            if qin_xiu_rec is not None:
+                SetGhostMouse().move_mouse_to(qin_xiu_rec[0], qin_xiu_rec[1])
+                time.sleep(0.3)
+                SetGhostMouse().click_mouse_left_button()
+                return True
+
+            # 如果没找到，按N键打开NPC面板
+            time.sleep(0.2)
+            SetGhostBoards().click_press_and_release_by_key_name("N")
+            time.sleep(0.5)
+            attempts += 1
+
+        return False
+
+    def _get_city_image_path(self, find_npc: FindTruckCarTaskNPC, is_npc: bool) -> str:
+        """根据当前地图获取对应城市图标路径"""
+        city_mappings = {
+            "成都": (find_npc.task_point_chengdu, find_npc.task_point_chengdu_npc),
+            "燕京": (find_npc.task_point_yanjing, find_npc.task_point_yanjing_npc),
+            "金陵": (find_npc.task_point_jinling, find_npc.task_point_jinling_npc),
+            "苏州": (find_npc.task_point_suzhou, find_npc.task_point_suzhou_npc),
+            "洛阳": (find_npc.task_point_luoyang, find_npc.task_point_luoyang_npc)
+        }
+
+        # 默认使用成都图标
+        default_mapping = (find_npc.task_point_chengdu, find_npc.task_point_chengdu_npc)
+        city_mapping = city_mappings.get(self.city_name, default_mapping)
+
+        return city_mapping[1] if is_npc else city_mapping[0]
+
+    def _click_city_point(self, hwnd: int, image_path: str) -> bool:
+        """点击城市任务点图标"""
+        # 成都特殊处理：界面默认打开成都，无需点击
+        if self.city_name == "成都":
+            return True
+
+        attempts = 0
+        while attempts < self.max_retry_attempts:
+            __pic = self.windows_cap.capture(hwnd)
+            point_rec = self.windows_find.get_windows_image_rect(
+                hwnd,
+                read_image=self._load_pic(image_path),
+                threshold=0.8
+            )
+
+            if point_rec is not None:
+                SetGhostMouse().move_mouse_to(point_rec[0], point_rec[1])
                 time.sleep(0.5)
                 SetGhostMouse().click_mouse_left_button()
-                SetGhostBoards().click_press_and_release_by_code(27)
-                break
-        return True
+                return True
+
+            time.sleep(0.5)
+            attempts += 1
+
+        return False
+
+    def _click_npc_point(self, hwnd: int, npc_image_path: str) -> bool:
+        """点击具体的押镖NPC图标"""
+        attempts = 0
+        while attempts < self.max_retry_attempts:
+            __pic = self.windows_cap.capture(hwnd)
+            bitwise_and(__pic.pic_content, (0, 0, __pic.pic_width, int(__pic.pic_height * 0.4)))
+
+            npc_rec = self.windows_find.get_windows_image_rect(
+                hwnd,
+                read_image=self._load_pic(npc_image_path),
+                threshold=0.8
+            )
+
+            if npc_rec is not None:
+                SetGhostMouse().move_mouse_to(npc_rec[0], npc_rec[1])
+                time.sleep(0.3)
+                SetGhostMouse().click_mouse_left_button()
+                return True
+
+            time.sleep(0.5)
+            attempts += 1
+
+        return False
+
 
 
 class ReceiveTruckTask(TruckCar):
@@ -600,19 +800,55 @@ class ReceiveTruckTask(TruckCar):
 
     def __init__(self):
         super().__init__()
+        self.find_task: TruckCarReceiveTask = self._get_pic_receive_task()
 
-    def receive_task(self, hwnd: int, map_name: str) -> bool:
+
+    def is_talk_npc(self, hwnd: int):
+        """
+        是否已经与NPC对话
+        """
+
+        time.sleep(1)
+        truck_npc_receive_task_talk = self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(self.find_task.receive_task_talk),  threshold=0.85)
+        if truck_npc_receive_task_talk is None:
+            return None
+        return truck_npc_receive_task_talk
+
+    def day_task(self, hwnd: int) -> int:
+        """
+        尝试接取每日任务
+        """
+
+        # 看看是否已经与NPC对话
+        truck_npc_receive_task_talk = self.is_talk_npc(hwnd)
+        if truck_npc_receive_task_talk is None:
+            return -1
+
+        find_day_task = self._get_pic_truck_car()
+        step_1 = find_day_task.day_task_step_1
+        step_2 = find_day_task.day_task_step_2
+        step_3 = find_day_task.day_task_step_3
+
+        for pic in [step_1, step_2, step_3]:
+            pic_rec = self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(pic), threshold=0.85)
+            if pic_rec is None:
+                # print(f"没有找到 {pic}")
+                return 0
+            WindowsHandle().activate_windows(hwnd)
+            SetGhostMouse().move_mouse_to(pic_rec[0], pic_rec[1])
+            time.sleep(0.2)
+            SetGhostMouse().click_mouse_left_button()
+            time.sleep(1.5)
+        return 1
+
+    def receive_task(self, hwnd: int, npc_city: str) -> bool:
         """
         接取任务,
         暂时只实现了成都和燕京
         """
 
-        self._area_map = map_name
-
-        find_task: TruckCarReceiveTask = self._get_pic_receive_task()
-
-        time.sleep(1)
-        truck_npc_receive_task_talk = self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(find_task.receive_task_talk))
+        # 看看是否已经与NPC对话
+        truck_npc_receive_task_talk = self.is_talk_npc(hwnd)
         if truck_npc_receive_task_talk is None:
             return False
         else:
@@ -624,25 +860,28 @@ class ReceiveTruckTask(TruckCar):
             time.sleep(0.2)
             SetGhostMouse().click_mouse_left_button()
 
+        find_task: TruckCarReceiveTask = self._get_pic_receive_task()
         while 1:
             time.sleep(1)
 
-            if self._area_map == "成都":
+            if npc_city == "成都":
                 __image_city_npc: str = find_task.task_chengdu_NanGongShiJia
-            elif self._area_map == "燕京":
+            elif npc_city == "燕京":
                 __image_city_npc: str = find_task.task_yanjing_JunMaChang
-            elif self._area_map == "金陵":
+            elif npc_city == "金陵":
                 __image_city_npc: str = find_task.task_jinlin_HuangJiaLieChang
-            elif self._area_map == "苏州":
+            elif npc_city == "苏州":
                 __image_city_npc: str = find_task.task_suzhou_CaiShiChang
-            elif self._area_map == "洛阳":
+            elif npc_city == "洛阳":
                 __image_city_npc: str = find_task.task_luoyang_YanMenShiJia
             else:
                 __image_city_npc: str = find_task.task_chengdu_NanGongShiJia
 
+            print(f"当前押镖地点为 {__image_city_npc}")
             truck_npc_receive_task_address = self.windows_find.get_windows_image_rect(hwnd,
                                                                                       read_image=self._load_pic(__image_city_npc))
             if truck_npc_receive_task_address is None:
+                # print(f"没有找到 {__image_city_npc}")
                 continue
             else:
                 """
@@ -798,16 +1037,16 @@ class TransportTaskFunc(TruckCar):
         :param map_name: 地图名称，用于判断要不要走2步
         """
         if map_name in ["金陵", "洛阳", "燕京"]:
-            if self.driver_truck_car_v3(hwnd, map_name) is False:
+            if not self.driver_truck_car_v3(hwnd, map_name):
                 return False
-        if self.transport_truck(hwnd) is False:
+        if not self.transport_truck(hwnd):
             return False
         return True
 
     def driver_truck_car_v2(self, hwnd: int, car_area_type: int) -> bool:
 
         time.sleep(2)
-        if self.transport_truck(hwnd) is True:
+        if self.transport_truck(hwnd):
             # 找到车了
             return True
 

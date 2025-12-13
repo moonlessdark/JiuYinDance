@@ -143,6 +143,9 @@ PicTruckCar:
   receive_task_confirm: /Resources/ImageTemplate/PicTruckCar/receive_task_confirm.png
   receive_task_talk: /Resources/ImageTemplate/PicTruckCar/receive_task_talk.png
   break_npc_talk: /Resources/ImageTemplate/PicTruckCar/break_talk.png
+  day_task_step1: /Resources/ImageTemplate/PicTruckCar/押镖每日任务.png
+  day_task_step2: /Resources/ImageTemplate/PicTruckCar/我该怎么办.png
+  day_task_step3: /Resources/ImageTemplate/PicTruckCar/接受任务.png
 
 # 押镖战斗相关
 TruckCarPic:
