@@ -480,6 +480,7 @@ class TeamFunc(TruckCar):
         _type, _rec = rec_leave
         if _type == "Create":
             # 找到了 Create 按钮 表示为当前是未组队状态
+            SetGhostBoards().click_press_and_release_by_key_name("o")
             return True
 
         if _rec is not None:
