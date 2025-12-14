@@ -125,7 +125,7 @@ class FindGiftCard:
         """
         点击确定按钮
         """
-        __rec_goods_bag_tag_clickable = self.windows_find.get_windows_image_rect(hwnd, read_image=self._button_ok)
+        __rec_goods_bag_tag_clickable = self.windows_find.get_windows_image_rect(hwnd, read_image=self._button_ok, threshold=0.85)
         if __rec_goods_bag_tag_clickable is not None:
             self.click_pos(hwnd, __rec_goods_bag_tag_clickable)
             return True
