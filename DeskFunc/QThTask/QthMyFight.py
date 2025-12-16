@@ -119,6 +119,7 @@ class MyFightXJ(QThread):
                     break
 
                 if not self.cap.windows_handle_visible(hwnd_i):
+                    self.sin_out.emit(f"窗口:{hwnd_i}失效,请自行检查")
                     _is_close_hwnd.append(hwnd_i)
 
                 if len(_is_close_hwnd) == len(self.windows_handle_list):
@@ -128,30 +129,35 @@ class MyFightXJ(QThread):
                     break
 
                 # 检测一下当前是否是组队状态
-                self.team.close_team(hwnd_i)
+                if self.team.close_team(hwnd_i):
+                    self.sin_out.emit(f"窗口:{hwnd_i}检测组队状态")
 
                 self.windows_opt.activate_windows(hwnd_i)
                 time.sleep(0.2)
 
                 # 点击我的战斗
                 if not self.find_my_f.find_my_fight(hwnd_i):
+                    self.sin_out.emit(f"窗口id:{hwnd_i} 未找到我的战斗入口")
                     continue
+                self.sin_out.emit(f"窗口id:{hwnd_i}点击我的战斗")
 
                 time.sleep(0.2)
                 SetGhostMouse().click_mouse_left_button()
                 time.sleep(0.5)
 
                 if not self.find_my_f.find_xuan_ji_mi_jing(hwnd_i):
+                    self.sin_out.emit(f"窗口id:{hwnd_i}未找到玄机秘境入口")
                     continue
+                self.sin_out.emit(f"窗口id:{hwnd_i}点击玄机秘境")
 
                 time.sleep(0.2)
                 SetGhostMouse().click_mouse_left_button()
                 time.sleep(1)
 
                 if not self.find_my_f.find_bao_ming(hwnd_i):
+                    self.sin_out.emit(f"窗口id:{hwnd_i} 未找到报名按钮")
                     continue
-
-                self.sin_out.emit("开始报名")
+                self.sin_out.emit(f"窗口id:{hwnd_i} 开始报名")
                 _is_clicked: bool = False  # 是否报名成功
                 for xx in range(50):
                     SetGhostMouse().click_mouse_left_button()

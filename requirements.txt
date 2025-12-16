@@ -9,3 +9,4 @@ psutil
 screeninfo
 ppocr-onnx
 markdown
+winrt

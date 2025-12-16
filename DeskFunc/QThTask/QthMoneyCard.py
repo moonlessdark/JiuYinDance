@@ -95,21 +95,21 @@ class OpenGiftCard(QThread):
                 time.sleep(1)
                 continue
 
+            self.sin_out.emit("已经21:00:00,开始执行开卡任务")
             # 先把背包打开,并检查是否有礼卡，如果包裹里没有礼卡的花那就没啥意义了啊
             for hwnd_i in self.windows_handle_list:
 
                 if len(_is_open_card_hwnd) == len(self.windows_handle_list):
+                    self.sin_out.emit("本轮开卡结束...")
                     break
 
                 if hwnd_i in _is_open_card_hwnd:
                     continue
 
                 if not self.find_gift_card.find_backpack(hwnd_i):
-                    # 如果包裹里没有礼卡
-
+                    self.sin_out.emit(f"窗口id:{hwnd_i} 未成功打开背包")
                     if hwnd_i not in _is_open_card_hwnd:
                         _is_open_card_hwnd.append(hwnd_i)
-
                     continue
 
                 self.status_bar.emit(_open_card_count)
@@ -119,6 +119,10 @@ class OpenGiftCard(QThread):
 
                 # 查询一下有没有礼卡
                 if not self.find_gift_card.find_gift_card(hwnd_i):
+                    self.sin_out.emit(f"窗口id:{hwnd_i}未找到礼卡")
+                    if hwnd_i not in _is_open_card_hwnd:
+                        _is_open_card_hwnd.append(hwnd_i)
+                    # 如果没有礼卡，
                     continue
 
                 self.windows_opt.activate_windows(hwnd_i)
@@ -163,7 +167,8 @@ class OpenGiftCard(QThread):
                     self.windows_opt.activate_windows(is_ok_h)
                     time.sleep(0.5)
                     # 如果有“获取全部”的按钮的话，那么就全部关掉吧
-                    self.find_gift_card.click_ok(is_ok_h)
+                    if self.find_gift_card.click_ok(is_ok_h):
+                        self.sin_out.emit(f"窗口id:{is_ok_h}的丹药已全部领取")
                 _is_open_card_hwnd.clear()  # 清理掉
 
         self.mutex.unlock()
