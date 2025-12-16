@@ -26,6 +26,33 @@ PicCapture = namedtuple("PicCapture", ["pic_content", "pic_width", "pic_height"]
 class WindowsCapture:
     """
     窗口截图
+
+    针对网络游戏截图，四种技术的效果对比如下：
+
+    1. Windows.Graphics.Capture (WGC)
+        ‌效果‌：最佳，专为现代应用设计，支持DirectX渲染的游戏。
+        ‌优点‌：高效、低CPU占用，支持动态捕获。
+        ‌缺点‌：仅限Windows 10及以上版本，需用户授权。
+    2. DXGI Desktop Duplication
+        ‌效果‌：极佳，直接捕获GPU渲染内容。
+        ‌优点‌：性能高，支持DirectX游戏，无内容丢失。
+        ‌缺点‌：仅限Windows 8及以上，实现复杂。
+    3. PrintWindow
+        ‌效果‌：一般，可能无法捕获全屏游戏内容。
+        ‌优点‌：兼容性好，支持旧系统。
+        ‌缺点‌：性能差，可能无法捕获DirectX渲染的游戏。
+    4. BitBlt
+        ‌效果‌：最差，不适合现代游戏。
+        ‌优点‌：兼容性最好，支持旧系统。
+        ‌缺点‌：性能极低，无法捕获DirectX/Vulkan渲染的游戏。
+        针对不同游戏引擎的优缺点
+        DirectX/Vulkan游戏‌：WGC和DXGI效果最好，BitBlt和PrintWindow无效。
+        ‌旧引擎（如GDI）‌：BitBlt和PrintWindow可用，但性能差。
+    总结
+        ‌现代游戏‌：优先使用WGC或DXGI。
+        ‌旧游戏‌：可考虑PrintWindow或BitBlt，但需注意性能问题。
+
+
     """
     def __init__(self):
         self.GetDC = windll.user32.GetDC
@@ -70,11 +97,11 @@ class WindowsCapture:
             return False
         return True
 
-    def capture(self, handle: int) -> PicCapture:
+    def capture_bitblt(self, handle: int) -> PicCapture:
         """
-        窗口区域显示在屏幕上的地方截图
+        使用BitBlt方法截图窗口（原capture方法）
         :param handle: 窗口句柄
-        :return: 截图数据 numpy.ndarray格式 和 图片宽度, 图片高度
+        :return: 截图数据
         """
         handle = int(handle)
 
@@ -84,28 +111,172 @@ class WindowsCapture:
         r = wintypes.RECT()
         self.GetClientRect(handle, byref(r))
         width, height = r.right, r.bottom
+
         # 开始截图
         dc = self.GetDC(handle)
         cdc = self.CreateCompatibleDC(dc)
         bitmap = self.CreateCompatibleBitmap(dc, width, height)
         self.SelectObject(cdc, bitmap)
         self.BitBlt(cdc, 0, 0, width, height, dc, 0, 0, self.SRCCOPY)
+
         # 截图是BGRA排列，因此总元素个数需要乘以4
         total_bytes = width * height * 4
         buffer = bytearray(total_bytes)
         byte_array = c_ubyte * total_bytes
         self.GetBitmapBits(bitmap, total_bytes, byte_array.from_buffer(buffer))
+
         # 清理资源
         self.DeleteObject(bitmap)
         self.DeleteObject(cdc)
         self.ReleaseDC(handle, dc)
+
         # 返回截图数据为numpy.ndarray
-        # cap_pic = PicCapture(frombuffer(buffer, dtype=uint8).reshape(height, width, 4)[:, :, :3], width, height)
-        cap_pic = PicCapture(frombuffer(buffer, dtype=uint8).reshape(height, width, 4), width, height)
+        cap_pic = PicCapture(np.frombuffer(buffer, dtype=np.uint8).reshape(height, width, 4), width, height)
 
         if not self.__check_capture_width_height(cap_pic):
             return None
         return cap_pic
+
+    def capture_print_window(self, handle: int) -> PicCapture:
+        """
+        使用PrintWindow API截图窗口
+        :param handle: 窗口句柄
+        :return: 截图数据
+        """
+        handle = int(handle)
+
+        if not self.windows_handle_visible(handle):
+            return None
+
+        # 获取窗口尺寸
+        left, top, right, bottom = win32gui.GetWindowRect(handle)
+        width = right - left
+        height = bottom - top
+
+        # 创建设备上下文
+        hwnd_dc = win32gui.GetWindowDC(handle)
+        mfc_dc = win32ui.CreateDCFromHandle(hwnd_dc)
+        save_dc = mfc_dc.CreateCompatibleDC()
+
+        # 创建位图
+        save_bitmap = win32ui.CreateBitmap()
+        save_bitmap.CreateCompatibleBitmap(mfc_dc, width, height)
+        save_dc.SelectObject(save_bitmap)
+
+        # 使用PrintWindow API截图
+        # 尝试使用PW_RENDERFULLCONTENT标志以获得更好的效果
+        try:
+            PW_RENDERFULLCONTENT = 0x2
+            result = windll.user32.PrintWindow(handle, save_dc.GetSafeHdc(), PW_RENDERFULLCONTENT)
+            if not result:
+                # 回退到普通PrintWindow
+                result = windll.user32.PrintWindow(handle, save_dc.GetSafeHdc(), 0)
+        except:
+            # 在旧版本Windows上可能不支持PW_RENDERFULLCONTENT
+            result = windll.user32.PrintWindow(handle, save_dc.GetSafeHdc(), 0)
+
+        if not result:
+            # 清理资源
+            win32gui.DeleteObject(save_bitmap.GetHandle())
+            save_dc.DeleteDC()
+            mfc_dc.DeleteDC()
+            win32gui.ReleaseDC(handle, hwnd_dc)
+            return None
+
+        # 转换为OpenCV格式
+        bmp_info = save_bitmap.GetInfo()
+        bmp_array = np.frombuffer(save_bitmap.GetBitmapBits(True), dtype=np.uint8)
+        img = bmp_array.reshape((bmp_info['bmHeight'], bmp_info['bmWidth'], 4))
+
+        # 资源释放
+        win32gui.DeleteObject(save_bitmap.GetHandle())
+        save_dc.DeleteDC()
+        mfc_dc.DeleteDC()
+        win32gui.ReleaseDC(handle, hwnd_dc)
+
+        cap_pic = PicCapture(img, width, height)
+        if not self.__check_capture_width_height(cap_pic):
+            return None
+        return cap_pic
+
+    def capture_client_area(self, handle: int) -> PicCapture:
+        """
+        使用GetClientRect截图客户端区域
+        :param handle: 窗口句柄
+        :return: 截图数据
+        """
+        handle = int(handle)
+
+        if not self.windows_handle_visible(handle):
+            return None
+
+        # 获取客户端区域尺寸
+        r = wintypes.RECT()
+        self.GetClientRect(handle, byref(r))
+        width, height = r.right, r.bottom
+
+        # 获取窗口位置
+        left, top, right, bottom = win32gui.GetWindowRect(handle)
+        window_width = right - left
+        window_height = bottom - top
+
+        # 获取客户区尺寸（不含边框）
+        client_rect = win32gui.GetClientRect(handle)
+        client_width = client_rect[2] - client_rect[0]
+        client_height = client_rect[3] - client_rect[1]
+
+        # 计算边框和标题栏尺寸
+        border_width = (window_width - client_width) // 2
+        title_height = window_height - client_height - border_width
+
+        # 创建设备上下文
+        hwnd_dc = win32gui.GetWindowDC(handle)
+        mfc_dc = win32ui.CreateDCFromHandle(hwnd_dc)
+        save_dc = mfc_dc.CreateCompatibleDC()
+
+        # 创建位图
+        save_bitmap = win32ui.CreateBitmap()
+        save_bitmap.CreateCompatibleBitmap(mfc_dc, client_width, client_height)
+        save_dc.SelectObject(save_bitmap)
+
+        # 执行复制操作（从客户区开始复制）
+        save_dc.BitBlt((0, 0), (client_width, client_height), mfc_dc, (border_width, title_height), win32con.SRCCOPY)
+
+        # 转换为OpenCV格式
+        bmp_info = save_bitmap.GetInfo()
+        bmp_array = np.frombuffer(save_bitmap.GetBitmapBits(True), dtype=np.uint8)
+        img = bmp_array.reshape((bmp_info['bmHeight'], bmp_info['bmWidth'], 4))
+
+        # 资源释放
+        win32gui.DeleteObject(save_bitmap.GetHandle())
+        save_dc.DeleteDC()
+        mfc_dc.DeleteDC()
+        win32gui.ReleaseDC(handle, hwnd_dc)
+
+        cap_pic = PicCapture(img, client_width, client_height)
+        if not self.__check_capture_width_height(cap_pic):
+            return None
+        return cap_pic
+
+    def capture(self, handle: int) -> PicCapture:
+        """
+        主截图方法，按优先级尝试不同截图方式
+        :param handle: 窗口句柄
+        :return: 截图数据
+        """
+        # 首先尝试PrintWindow方法（最可靠）
+        result = self.capture_print_window(handle)
+        if result is not None:
+            return result
+
+        # 其次尝试BitBlt方法
+        result = self.capture_bitblt(handle)
+        if result is not None:
+            return result
+
+        # 最后尝试客户端区域截图
+        result = self.capture_client_area(handle)
+        return result
 
     def capture_window_region(self, hwnd: int, x: int, y: int, width: int, height: int) -> PicCapture:
         """
@@ -128,7 +299,7 @@ class WindowsCapture:
 
         hwnd = int(hwnd)
 
-        if self.windows_handle_visible(hwnd) is False:
+        if not self.windows_handle_visible(hwnd):
             return None
 
         left, top, right, bottom = win32gui.GetWindowRect(hwnd)
