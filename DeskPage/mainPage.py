@@ -37,6 +37,9 @@ class MainUI(QtWidgets.QMainWindow):
 
         _lay_out_main.setContentsMargins(10, 30, 10, 25)
 
+        # 让任务栏的高度大一些，不然任务放不下
+        self.task_tab_windows.setMinimumHeight(120)  # 示例值，可根据需要调整
+
         self.status_bar = StatusBarProcess()
         self.setStatusBar(self.status_bar)
 

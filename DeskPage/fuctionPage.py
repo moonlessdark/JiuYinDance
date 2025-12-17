@@ -18,6 +18,7 @@ class TaskEnum(Enum):
     game_pic_screen = "游戏截图"
     xj_secret_scene = "玄机秘境报名"
     world_market = "世界竞拍"
+    day_study_skill = "每日演练"
     none_selected = "未选择"
 
 
@@ -31,11 +32,21 @@ class TaskDayWork(QtWidgets.QWidget):
         self.radio_button_dance_grey = QtWidgets.QRadioButton(TaskEnum.dance_grey.value, self)
         self.radio_button_dance_green = QtWidgets.QRadioButton(TaskEnum.dance_green.value, self)
         self.radio_button_open_gift_card = QtWidgets.QRadioButton(TaskEnum.open_gift.value, self)
+        self.radio_button_xj_secret_scene = QtWidgets.QRadioButton(TaskEnum.xj_secret_scene.value, self)
 
-        _lay_out_dance_widget = QtWidgets.QHBoxLayout(self)
+        # 第一行
+        _lay_out_dance_widget = QtWidgets.QHBoxLayout()
         _lay_out_dance_widget.addWidget(self.radio_button_dance_grey)
         _lay_out_dance_widget.addWidget(self.radio_button_dance_green)
         _lay_out_dance_widget.addWidget(self.radio_button_open_gift_card)
+
+        # 第二行
+        _lay_out_dance_widget_2 = QtWidgets.QHBoxLayout()
+        _lay_out_dance_widget_2.addWidget(self.radio_button_xj_secret_scene)
+
+        _lay_out_day_task = QtWidgets.QVBoxLayout(self)
+        _lay_out_day_task.addLayout(_lay_out_dance_widget)
+        _lay_out_day_task.addLayout(_lay_out_dance_widget_2)
 
         # 默认把第一个选项勾上
         self.radio_button_dance_grey.setChecked(True)
@@ -88,17 +99,16 @@ class TaskOther(QtWidgets.QWidget):
         self.widget_world_market.raise_()  # 将窗口置于最前（如果需要）
 
         self.radio_button_game_pic_screen = QtWidgets.QRadioButton(TaskEnum.game_pic_screen.value, self)
-        self.radio_button_xj_secret_scene = QtWidgets.QRadioButton(TaskEnum.xj_secret_scene.value, self)
-
         self.radio_express_auto_buy = QtWidgets.QRadioButton(TaskEnum.world_market.value, self)
+        self.radio_day_study_skill = QtWidgets.QRadioButton(TaskEnum.day_study_skill.value, self)
 
         _lay_out_other_widget = QtWidgets.QHBoxLayout(self)
-        _lay_out_other_widget.addWidget(self.radio_button_xj_secret_scene)
+        _lay_out_other_widget.addWidget(self.radio_day_study_skill)
         _lay_out_other_widget.addWidget(self.radio_button_game_pic_screen)
         _lay_out_other_widget.addWidget(self.radio_express_auto_buy)
 
         # 默认把第一个按钮勾上
-        self.radio_button_xj_secret_scene.setChecked(True)
+        self.radio_day_study_skill.setChecked(True)
         self.radio_express_auto_buy.toggled.connect(self.open_world_market)
 
     def open_world_market(self):
@@ -224,7 +234,7 @@ class TaskFunc(QtWidgets.QTabWidget):
         :return:
         """
         for radio_w in self.findChildren(QtWidgets.QRadioButton):
-            if enable_status is False:
+            if not enable_status:
                 radio_w.setEnabled(False)
             else:
                 radio_w.setEnabled(True)
