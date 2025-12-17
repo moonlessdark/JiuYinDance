@@ -117,7 +117,7 @@ class OpenGiftCard(QThread):
 
                 # 查询一下有没有礼卡
                 if not self.find_gift_card.find_gift_card(hwnd_i):
-                    self.sin_out.emit(f"窗口id:{hwnd_i}未找到礼卡")
+                    self.sin_out.emit(f"窗口id:{hwnd_i} 未找到礼卡")
                     if hwnd_i not in _is_open_card_hwnd:
                         _is_open_card_hwnd.append(hwnd_i)
                     # 如果没有礼卡，
@@ -144,7 +144,7 @@ class OpenGiftCard(QThread):
                     SetGhostMouse().click_mouse_right_button()
                     time.sleep(0.1)
                     if self.find_gift_card.find_open_loading(hwnd_i):
-                        self.sin_out.emit(f"窗口id:{hwnd_i}已开卡,请结束后自行查看开卡记录")
+                        self.sin_out.emit(f"窗口id:{hwnd_i} 已开卡,请结束后自行查看开卡记录")
 
                         _open_card_count += 1
                         self.status_bar.emit(_open_card_count)
@@ -162,11 +162,14 @@ class OpenGiftCard(QThread):
                 # 如果，所有的窗口都没有检测到礼卡，那么就可以跳出去了，没有意义
                 # 如果所有的窗口已经检测完成了，那么就可以跳出去了，没有意义
                 for is_ok_h in _is_open_card_hwnd:
-                    self.windows_opt.activate_windows(is_ok_h)
+                    if not self.windows_opt.activate_windows(is_ok_h):
+                        self.sin_out.emit(f"窗口id:{is_ok_h} 未成功激活")
+                        continue
                     time.sleep(0.5)
                     # 如果有“获取全部”的按钮的话，那么就全部关掉吧
+                    self.sin_out.emit(f"窗口id:{is_ok_h} 没有开到钱...")
                     if self.find_gift_card.click_ok(is_ok_h):
-                        self.sin_out.emit(f"窗口id:{is_ok_h}的丹药已全部领取")
+                        self.sin_out.emit(f"窗口id:{is_ok_h} 的丹药已全部领取")
                 _is_open_card_hwnd.clear()  # 清理掉
 
         self.mutex.unlock()
