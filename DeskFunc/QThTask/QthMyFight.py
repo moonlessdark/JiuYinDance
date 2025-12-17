@@ -119,8 +119,9 @@ class MyFightXJ(QThread):
                     break
 
                 if not self.cap.windows_handle_visible(hwnd_i):
-                    self.sin_out.emit(f"窗口:{hwnd_i}失效,请自行检查")
-                    _is_close_hwnd.append(hwnd_i)
+                    self.sin_out.emit(f"窗口:{hwnd_i} 失效,请自行检查")
+                    if hwnd_i not in _is_close_hwnd:
+                        _is_close_hwnd.append(hwnd_i)
 
                 if len(_is_close_hwnd) == len(self.windows_handle_list):
                     # 如果当前所有窗口就失效了，就可以结束了
@@ -130,25 +131,27 @@ class MyFightXJ(QThread):
 
                 # 检测一下当前是否是组队状态
                 if self.team.close_team(hwnd_i):
-                    self.sin_out.emit(f"窗口:{hwnd_i}检测组队状态")
+                    self.sin_out.emit(f"窗口:{hwnd_i} 检测组队状态")
 
-                self.windows_opt.activate_windows(hwnd_i)
+                if not self.windows_opt.activate_windows(hwnd_i):
+                    self.sin_out.emit(f"窗口:{hwnd_i} 激活窗口失败")
+                    break
                 time.sleep(0.2)
 
                 # 点击我的战斗
                 if not self.find_my_f.find_my_fight(hwnd_i):
                     self.sin_out.emit(f"窗口id:{hwnd_i} 未找到我的战斗入口")
                     continue
-                self.sin_out.emit(f"窗口id:{hwnd_i}点击我的战斗")
+                self.sin_out.emit(f"窗口id:{hwnd_i} 点击我的战斗")
 
                 time.sleep(0.2)
                 SetGhostMouse().click_mouse_left_button()
                 time.sleep(0.5)
 
                 if not self.find_my_f.find_xuan_ji_mi_jing(hwnd_i):
-                    self.sin_out.emit(f"窗口id:{hwnd_i}未找到玄机秘境入口")
+                    self.sin_out.emit(f"窗口id:{hwnd_i} 未找到玄机秘境入口")
                     continue
-                self.sin_out.emit(f"窗口id:{hwnd_i}点击玄机秘境")
+                self.sin_out.emit(f"窗口id:{hwnd_i} 点击玄机秘境")
 
                 time.sleep(0.2)
                 SetGhostMouse().click_mouse_left_button()
