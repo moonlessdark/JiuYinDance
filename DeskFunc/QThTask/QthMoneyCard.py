@@ -108,8 +108,6 @@ class OpenGiftCard(QThread):
 
                 if not self.find_gift_card.find_backpack(hwnd_i):
                     self.sin_out.emit(f"窗口id:{hwnd_i} 未成功打开背包")
-                    if hwnd_i not in _is_open_card_hwnd:
-                        _is_open_card_hwnd.append(hwnd_i)
                     continue
 
                 self.status_bar.emit(_open_card_count)

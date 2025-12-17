@@ -53,10 +53,10 @@ class FindGiftCard:
         """
         if not self.windows_opt.activate_windows(hwnd):
             return False
-        time.sleep(0.5)
+        time.sleep(0.2)
         SetGhostMouse().move_mouse_to(pos[0], pos[1])
         SetGhostMouse().click_mouse_left_button()
-        time.sleep(0.5)
+        time.sleep(0.1)
         return True
 
     def find_backpack(self, hwnd: int) -> bool:
@@ -69,16 +69,17 @@ class FindGiftCard:
                 pic_rec = self.windows_find.get_windows_image_rect(hwnd, read_image=pic)
                 if pic_rec is None:
                     continue
-                if pic == self._goods_pic_bag_unclick:
+                else:
                     # 如果当前找到的是未打物品栏的图标,那就点击一下
                     self.click_pos(hwnd, pic_rec)
-                return True
+                    return True
+            # 按B，打开背包
             if not self.windows_opt.activate_windows(hwnd):
                 return False
-            time.sleep(0.5)
-            SetGhostBoards().click_press_and_release_by_key_code_hold_time(66, 0.3)  # 按B，打开背包
-            time.sleep(0.8)
-            break
+            time.sleep(0.2)
+            SetGhostBoards().click_press_and_release_by_key_code_hold_time(66, 0.3)
+            time.sleep(0.2)
+
         return False
 
     def open_bag(self, hwnd: int) -> bool:
@@ -95,7 +96,8 @@ class FindGiftCard:
                 time.sleep(0.5)
                 SetGhostBoards().click_press_and_release_by_key_code_hold_time(66, 0.3)  # 按B，打开背包
                 time.sleep(0.5)
-
+                continue
+            break
         _open_backpack = self.windows_find.get_windows_image_rect(hwnd, read_image=self._goods_pic_bag_clicked)
         if _open_backpack is None:
             _un_open_backpack = self.windows_find.get_windows_image_rect(hwnd, read_image=self._goods_pic_bag_unclick)
