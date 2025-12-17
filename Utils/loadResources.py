@@ -102,9 +102,8 @@ def update_skill_group_list(*args, **kwargs):
     :param kwargs: dance_threshold, whz_dance_threshold, is_debug
     :return:
     """
-    dict_skill: dict = {}
     with open(_get_dir_skill_group(), 'w', encoding="gbk") as file:
-        dict_skill["打怪套路"] = kwargs.get("_skill_dict")
+        dict_skill = kwargs.get("_skill_dict")
         json.dump(dict_skill, file, ensure_ascii=False, indent=4)
 
 
