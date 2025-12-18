@@ -56,7 +56,7 @@ class SkillDanceQth(QThread):
 
         all_skill_num: int = self.find.find_skill_num()  # 技能数量,数量相等就说明全部出招完毕，每个技能出招一次
         _is_dance_ok_hwnd_list: list = []  # 已经演练完成的窗口
-
+        _runed_skill_list: list = []
         _skill_dict: dict = self.find.get_skill_group_list()
         if _skill_dict is None:
             self.sin_out.emit(f"每日演练套路未设置")
@@ -78,17 +78,19 @@ class SkillDanceQth(QThread):
                         self.sin_out.emit(f"窗口id:{hwnd} 激活失败")
                         continue
                     key_str, key_name = key_str_tuple
+
+                    if key_str in _runed_skill_list:
+                        continue
+                    _runed_skill_list.append(key_str)
                     self.sin_out.emit(f"窗口id:{hwnd} 找到技能:{key_name}")
-                    for x in range(3):
-                        if not self.working:
-                            break
-                        SetGhostBoards().click_press_and_release_by_key_name(key_str)
-                        _run_count += 1
-                        self.status_bar.emit(_run_count)
-                        time.sleep(1)
+                    time.sleep(1)
+                    SetGhostBoards().click_press_and_release_by_key_name(key_str)
+                    _run_count += 1
+                    self.status_bar.emit(_run_count)
+                    time.sleep(1)
 
                 if _run_count >= all_skill_num:
-                    self.sin_out.emit(f"窗口id:{hwnd} 本套路所有技能已演练完毕")
+                    self.sin_out.emit(f"窗口id:{hwnd} 所有技能已演练")
                     if hwnd not in _is_dance_ok_hwnd_list:
                         _is_dance_ok_hwnd_list.append(hwnd)
 

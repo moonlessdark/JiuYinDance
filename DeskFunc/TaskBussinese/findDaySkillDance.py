@@ -24,11 +24,12 @@ class FindDaySkillDance:
         if pic_text_list is None:
             return None
         for pic_text_dict in pic_text_list:
-            text = pic_text_dict.get("ocr_text")
+            text = pic_text_dict.ocr_text
             skill_dict: dict = self._skill_obj.get(text)
             if skill_dict is None:
                 continue
             press_key: str = skill_dict.get("key")  # 拿到技能明此
+            # print(f"名称:{text}, 技能: {press_key}")
             return press_key, text
         return None
 
