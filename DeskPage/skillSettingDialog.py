@@ -31,6 +31,10 @@ class SkillSetting(QtWidgets.QDialog):
         self._button_edit_skill_group_name.setFixedWidth(35)
         self._button_del_skill_group_name.setFixedWidth(35)
 
+        self._button_add_skill_group_name.setVisible(False)
+        self._button_edit_skill_group_name.setVisible(False)
+        self._button_del_skill_group_name.setVisible(False)
+
         __lay_table_ui_button = QtWidgets.QHBoxLayout()
         __lay_table_ui_button.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight)
         __lay_table_ui_button.addWidget(self._button_add_skill_table_row)

@@ -1,7 +1,5 @@
 import time
 
-from PySide6.QtWidgets import QMessageBox
-
 from DeskFunc.QThTask.QthMapGoods import MapGoodsQth
 from DeskFunc.QThTask.QthMoneyCard import OpenGiftCard
 from DeskPage.fuctionPage import TaskEnum
@@ -16,6 +14,8 @@ from DeskFunc.QThTask.QthScreen import ScreenGameQth
 from DeskFunc.QThTask.QthTruck import TruckTaskFightMonsterQth, TruckCarTaskQth
 from DeskFunc.QThTask.QthMyFight import MyFightXJ
 from DeskFunc.QThTask.QthWorldMarket import WorldMarketGetGoodsQth
+from DeskFunc.QThTask.QthDaySkillDance import SkillDanceQth
+
 
 _windows_hwnd_save: dict = {}
 _run_task_status: bool = False  # 任务执行状态
@@ -42,6 +42,7 @@ class TaskConnect(MainUI):
         self.qth_truck_find = TruckCarTaskQth()  # 接镖
         self.qht_my_fight = MyFightXJ()  # 我的战斗
         self.qth_market = WorldMarketGetGoodsQth()  # 世界竞拍
+        self.qth_skill_dance = SkillDanceQth()  # 每日演练(跟着NPC出招)
 
         # 线程的信号槽连接
         # 团练授业
@@ -73,6 +74,12 @@ class TaskConnect(MainUI):
         # 世界竞拍
         self.qth_market.sin_run_status.connect(self._update_task_run_status)
         self.qth_market.sin_out.connect(self.log_print)
+
+        # 每日演练
+        self.qth_skill_dance.sin_out.connect(self.log_print)
+        self.qth_skill_dance.status_bar.connect(self.status_bar.update_execute_num)
+        self.qth_skill_dance.sin_run_status.connect(self._update_task_run_status)
+
         # GUI的按钮的信号槽
         self.windows_get.push_button_run_windows.clicked.connect(self.run_task)  # 执行任务
         self.windows_get.push_button_get_windows.clicked.connect(self.__init_game_windows_hwnd)  # 获取窗口
@@ -237,7 +244,15 @@ class TaskConnect(MainUI):
                 _scan_product_num: int = int(self.task_tab_windows.task_other.widget_world_market.scan_product_num_select.currentText())
                 self.qth_market.get_param(_checked_hwnd_list[0], product_price_list=_product, scan_product_num=_scan_product_num)
                 self.qth_market.start()
-
+            elif _widget_radio_enum == TaskEnum.day_study_skill:
+                """
+                每日演练
+                """
+                if len(_checked_hwnd_list) > 1:
+                    self.log_print("暂时只支持控制一个游戏窗口!")
+                    return None
+                self.qth_skill_dance.get_param(_checked_hwnd_list)
+                self.qth_skill_dance.start()
         else:
             self.log_print(f"任务 {_widget_radio_enum.value} 停止执行...")
             self.windows_get.push_button_run_windows.setText("停止中...")
@@ -252,6 +267,7 @@ class TaskConnect(MainUI):
             self.qth_map_get.stop_execute_init()  # 地图采集
             self.qht_my_fight.stop_execute_init()  # 我的战斗
             self.qth_market.stop_execute_init()  # 世界竞拍
+            self.qth_skill_dance.stop_execute_init()  # 每日演练(跟随NPC出招)
         return None
 
     def _update_task_run_status(self, task_status: bool):

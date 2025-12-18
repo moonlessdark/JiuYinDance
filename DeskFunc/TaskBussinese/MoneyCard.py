@@ -55,6 +55,7 @@ class FindGiftCard:
             return False
         time.sleep(0.2)
         SetGhostMouse().move_mouse_to(pos[0], pos[1])
+        time.sleep(0.1)
         SetGhostMouse().click_mouse_left_button()
         time.sleep(0.1)
         return True
@@ -127,9 +128,12 @@ class FindGiftCard:
         """
         点击确定按钮
         """
-        __rec_goods_bag_tag_clickable = self.windows_find.get_windows_image_rect(hwnd, read_image=self._button_ok, threshold=0.85)
+        __rec_goods_bag_tag_clickable = self.windows_find.get_windows_image_rect(hwnd, read_image=self._button_ok, threshold=0.65)
         if __rec_goods_bag_tag_clickable is not None:
-            self.click_pos(hwnd, __rec_goods_bag_tag_clickable)
+            self.windows_opt.activate_windows(hwnd)
+            time.sleep(0.5)
+            SetGhostMouse().move_mouse_to(__rec_goods_bag_tag_clickable[0], __rec_goods_bag_tag_clickable[1])
+            SetGhostMouse().click_mouse_left_button()
             return True
         return False
 
@@ -139,7 +143,7 @@ class FindGiftCard:
         """
         __rec_goods_bag_open_loading = self.windows_find.get_windows_image_rect(hwnd,
                                                                                 read_image=self._goods_pic_open_loading,
-                                                                                threshold=0.85)
+                                                                                threshold=0.65)
         if __rec_goods_bag_open_loading is not None:
             return True
         return False
