@@ -18,6 +18,7 @@ from numpy import fromfile, uint8
 
 from Utils.ImageUtils.FindImageTemplate import find_all_template
 from Utils.ImageUtils.MonitorDisplay import coordinate_change_from_windows
+from winrt.windows.graphics.capture import GraphicsCaptureItem
 
 import winrt.windows.graphics.capture as wgc
 import winrt.windows.graphics.directx.direct3d11 as dx
@@ -81,7 +82,6 @@ class WindowsCapture:
         :return: 截图数据
         """
         handle = int(handle)
-
         if not self.windows_handle_visible(handle):
             return None
 
@@ -235,82 +235,6 @@ class WindowsCapture:
             return None
         return cap_pic
 
-    def capture_windows_graphics_capture(self, handle: int) -> PicCapture:
-        """
-        使用Windows.Graphics.Capture API截图窗口
-        注意：此方法需要Windows 10 1903+版本
-        :param handle: 窗口句柄
-        :return: 截图数据
-        """
-        try:
-            # 检查Windows版本兼容性
-
-            if sys.getwindowsversion().build < 18362:  # Windows 10 1903
-                print("Windows.Graphics.Capture需要Windows 10 1903或更高版本")
-                return None
-
-            # 获取窗口的GraphicsCaptureItem
-            hwnd = int(handle)
-            item = wgc.GraphicsCaptureItem.CreateFromVisual(wgc.Visual.CreateFromHwnd(hwnd))
-
-            # 创建帧池
-            pixel_format = wgi.BitmapPixelFormat.BGRA8
-            size = item.Size
-            frame_pool = wgc.Direct3D11CaptureFramePool.Create(
-                dx.Direct3D11Device(),
-                pixel_format,
-                1,  # 缓冲区数量
-                size
-            )
-
-            # 创建会话
-            session = frame_pool.CreateCaptureSession(item)
-            session.IsCursorCaptureEnabled = False  # 不捕获光标
-
-            # 开始捕获
-            session.StartCapture()
-
-            # 获取一帧
-            frame = frame_pool.TryGetNextFrame()
-            if frame is None:
-                session.Close()
-                frame_pool.Close()
-                return None
-
-            # 获取帧内容
-            content = frame.Content
-            bitmap = content.CopyOutput()
-
-            # 转换为numpy数组
-            width, height = bitmap.PixelWidth, bitmap.PixelHeight
-            pixel_data = bitmap.LockBuffer(wss.BitmapBufferAccessMode.READ_ONLY)
-            pixel_region = pixel_data.GetPlaneDescription(0)
-
-            # 获取数据
-            data_reader = wss.DataReader.FromBuffer(pixel_data)
-            byte_count = data_reader.UnconsumedBufferLength
-            pixel_bytes = bytearray(byte_count)
-            data_reader.ReadBytes(pixel_bytes)
-
-            # 转换为OpenCV格式
-            img = np.frombuffer(pixel_bytes, dtype=np.uint8).reshape((height, width, 4))
-
-            # 清理资源
-            session.Close()
-            frame_pool.Close()
-
-            cap_pic = PicCapture(img, width, height)
-            if not self.check_capture_width_height_is_zero(cap_pic):
-                return None
-            return cap_pic
-
-        except ImportError:
-            print("需要安装winrt库: pip install winrt")
-            return None
-        except Exception as e:
-            print(f"Windows Graphics Capture截图失败: {e}")
-            return None
-
     def capture(self, handle: int) -> PicCapture:
         """
         主截图方法，按优先级尝试不同截图方式
@@ -343,11 +267,6 @@ class WindowsCapture:
         :param handle: 窗口句柄
         :return: 截图数据
         """
-        # 尝试使用Windows.Graphics.Capture API，对系统版本有要求
-        result = self.capture_windows_graphics_capture(handle)
-        if result is not None:
-            return result
-
         # 尝试PrintWindow方法（最可靠）
         result = self.capture_print_window(handle)
         if result is not None:

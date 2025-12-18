@@ -48,6 +48,7 @@ def update_map_goods_point_list(content_list: list):
         file.close()
     with open(_get_dir_map_goods_point_path(), 'w', encoding="gbk") as file:
         json.dump(content_list, file, ensure_ascii=False, indent=4)
+        return None
 
 
 def get_map_goods_point_list() -> list:

@@ -56,7 +56,8 @@ class MyFightXJ(QThread):
         # 获取当前时间并去除微秒
         current_time = datetime.datetime.now().replace(microsecond=0)
         # 定义目标时间字符串列表
-        target_times: list = ["19:59:53"]
+        # target_times: list = ["19:59:53"]
+        target_times: list = ["21:22:53"]
 
         # 转换为datetime对象并生成时间范围（前后3秒）
         if len(self.time_ranges) == 0:
@@ -119,7 +120,7 @@ class MyFightXJ(QThread):
                     break
 
                 if not self.cap.windows_handle_visible(hwnd_i):
-                    self.sin_out.emit(f"窗口:{hwnd_i} 失效,请自行检查")
+                    self.sin_out.emit(f"窗口id:{hwnd_i} 失效,请自行检查")
                     if hwnd_i not in _is_close_hwnd:
                         _is_close_hwnd.append(hwnd_i)
 
@@ -131,7 +132,7 @@ class MyFightXJ(QThread):
 
                 # 检测一下当前是否是组队状态
                 if self.team.close_team(hwnd_i):
-                    self.sin_out.emit(f"窗口:{hwnd_i} 检测组队状态")
+                    self.sin_out.emit(f"窗口id:{hwnd_i} 检测组队状态")
 
                 if not self.windows_opt.activate_windows(hwnd_i):
                     self.sin_out.emit(f"窗口:{hwnd_i} 激活窗口失败")
@@ -166,15 +167,15 @@ class MyFightXJ(QThread):
                     SetGhostMouse().click_mouse_left_button()
                     time.sleep(0.3)
                     if self.find_my_f.find_open_loading(hwnd_i):
-                        self.sin_out.emit(f"窗口:{hwnd_i} 识别到加载中进度条")
+                        self.sin_out.emit(f"窗口id:{hwnd_i} 识别到加载中进度条")
                         _is_clicked = True
                         break
                 if _is_clicked:
-                    self.sin_out.emit(f"窗口:{hwnd_i} 报名成功")
+                    self.sin_out.emit(f"窗口id:{hwnd_i} 报名成功")
                     _open_count += 1
                     self.status_bar.emit(_open_count)
                 else:
-                    self.sin_out.emit(f"窗口:{hwnd_i} 报名失败")
+                    self.sin_out.emit(f"窗口id:{hwnd_i} 报名失败")
 
             self.working = False
         self.sin_out.emit("任务结束")
