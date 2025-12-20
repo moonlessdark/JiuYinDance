@@ -322,7 +322,7 @@ class TruckTaskFightMonsterQth(QThread):
         self.sin_out.emit("线程:开始查找/检测劫匪NPC")
         self.mutex.lock()  # 先加锁
         while 1:
-            if self.working is False:
+            if not self.working:
                 # 结束了
                 self.quit()
                 self.wait()  # 等待线程结束

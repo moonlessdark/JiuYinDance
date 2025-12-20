@@ -1,3 +1,5 @@
+from typing import Optional, Tuple
+
 from Utils.FindWindowsImage import WindowsCapture, PicCapture
 from Utils.ImageUtils.FindImageOCR import FindPicOCR
 from Utils.loadResources import get_skill_group_list
@@ -13,9 +15,15 @@ class FindDaySkillDance:
         self._skill_obj: dict = get_skill_group_list().get("演练套路")  # 当前正在使用的技能组
         self.windows_cap = WindowsCapture()
 
-    def find_day_skill_dance(self, hwnd: int) -> tuple:
+    def find_day_skill_dance(self, hwnd: int) -> Optional[Tuple[str, str, bool]]:
         """
         看看图片中有没有技能名称
+
+        Returns:
+            tuple: 包含(press_key, text, need_ground)的三元组，如果未找到则返回None
+            - press_key (str): 技能按键
+            - text (str): 技能名称
+            - need_ground (bool): 是否需要选中地面
         """
         pic: PicCapture = self.windows_cap.capture(hwnd)
         if pic is None:
@@ -29,8 +37,8 @@ class FindDaySkillDance:
             if skill_dict is None:
                 continue
             press_key: str = skill_dict.get("key")  # 拿到技能明此
-            # print(f"名称:{text}, 技能: {press_key}")
-            return press_key, text
+            need_ground: bool = skill_dict.get("need_ground")
+            return press_key, text, need_ground
         return None
 
     def find_skill_num(self) -> int:

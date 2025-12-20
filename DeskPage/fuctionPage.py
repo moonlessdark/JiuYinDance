@@ -87,7 +87,7 @@ class TaskActivity(QtWidgets.QWidget):
         _skill = SkillSetting(self)
         if not _skill.isVisible():
             _skill.show()
-            _skill.load_skill_table()
+            _skill.load_skill_table("打怪套路")
 
 
 class TaskOther(QtWidgets.QWidget):
@@ -103,13 +103,26 @@ class TaskOther(QtWidgets.QWidget):
         self.radio_day_study_skill = QtWidgets.QRadioButton(TaskEnum.day_study_skill.value, self)
 
         _lay_out_other_widget = QtWidgets.QHBoxLayout(self)
-        _lay_out_other_widget.addWidget(self.radio_day_study_skill)
         _lay_out_other_widget.addWidget(self.radio_button_game_pic_screen)
+        _lay_out_other_widget.addWidget(self.radio_day_study_skill)
         _lay_out_other_widget.addWidget(self.radio_express_auto_buy)
 
         # 默认把第一个按钮勾上
-        self.radio_day_study_skill.setChecked(True)
+        self.radio_button_game_pic_screen.setChecked(True)
+        # 点击打开世界竞拍设置界面
         self.radio_express_auto_buy.toggled.connect(self.open_world_market)
+        # 点击打开技能编辑
+        self.radio_day_study_skill.toggled.connect(self.open_skill_setting)
+
+    def open_skill_setting(self):
+        """
+        打开技能编辑
+        :return:
+        """
+        _skill = SkillSetting(self)
+        if not _skill.isVisible() and self.radio_day_study_skill.isChecked():
+            _skill.show()
+            _skill.load_skill_table("演练套路")
 
     def open_world_market(self):
         """

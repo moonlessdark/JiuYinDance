@@ -4,31 +4,36 @@
             "CD": 2,
             "active_cd": 1.0,
             "level": 2,
-            "key": "Q"
+            "key": "Q",
+            "need_ground": false
         },
         "ÈýÑô¿ªÌ©": {
             "CD": 6,
             "active_cd": 1.8,
             "level": 1,
-            "key": "R"
+            "key": "R",
+            "need_ground": false
         },
         "ÎåÆø³ÊÏé": {
             "CD": 2,
             "active_cd": 1.0,
             "level": 2,
-            "key": "1"
+            "key": "1",
+            "need_ground": false
         },
         "î¸·çÍÆÔÆ": {
             "CD": 6,
             "active_cd": 1.0,
             "level": 3,
-            "key": "3"
+            "key": "3",
+            "need_ground": false
         },
         "Æø¹á³¤ºç": {
             "CD": 8,
             "active_cd": 1.0,
             "level": 2,
-            "key": "2"
+            "key": "2",
+            "need_ground": false
         }
     },
     "ÑÝÁ·Ì×Â·": {
@@ -36,43 +41,50 @@
             "CD": 2,
             "active_cd": 1.0,
             "level": 2,
-            "key": "1"
+            "key": "1",
+            "need_ground": false
         },
         "ÌôµÆÒ¹Ðå": {
             "CD": 6,
             "active_cd": 1.8,
             "level": 1,
-            "key": "2"
+            "key": "2",
+            "need_ground": false
         },
         "·ìÇî²¹ãÚ": {
             "CD": 10,
             "active_cd": 1.0,
             "level": 2,
-            "key": "3"
+            "key": "3",
+            "need_ground": false
         },
         "Ö¯ÍøÂÞÈ¸": {
             "CD": 12,
             "active_cd": 1.0,
             "level": 3,
-            "key": "4"
+            "key": "4",
+            "need_ground": true
         },
         "ÊÕÕëÂñÏß": {
             "CD": 12,
             "active_cd": 1.0,
             "level": 2,
-            "key": "5"
+            "key": "5",
+            "need_ground": false
         },
         "½õÀï²ØÕë": {
             "CD": 8,
             "active_cd": 1.0,
             "level": 2,
-            "key": "6"
+            "key": "6",
+            "need_ground": false
         },
         "´©ÕëÒýÏß": {
             "CD": 12,
             "active_cd": 1.0,
             "level": 2,
-            "key": "7"
+            "key": "7",
+            "need_ground": false
         }
     }
 }

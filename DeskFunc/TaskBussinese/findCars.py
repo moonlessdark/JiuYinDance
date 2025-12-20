@@ -375,7 +375,7 @@ class FightMonster(TruckCar):
                     # 表示放技能的图标已经消失了，
                     # time.sleep(0.5)
                     is_skill_tag_status = 0
-            if self.check_fight_status(hwnd) is False:
+            if not self.check_fight_status(hwnd):
                 """
                 如果怪消失了,右上角没有怪的buff了
                 """
@@ -383,10 +383,20 @@ class FightMonster(TruckCar):
             __skill_name: str = self._skill_func.get_skill(skill=self._skill_obj)
             if __skill_name is None:
                 continue
+
+            # 如果这个技能是需要选中地面的，那么就把鼠标移动的中心点
+            if self._skill_obj[__skill_name].get("need_ground", False):
+                pic = self.windows_cap.capture(hwnd)
+                pos_content: tuple = (int(pic.pic_width / 2), int(pic.pic_height / 2))
+                center_pos_in_screen: tuple = coordinate_change_from_windows(hwnd, pos_content)
+                SetGhostMouse().move_mouse_to(center_pos_in_screen[0], center_pos_in_screen[1])
+
             __skill_key: str = self._skill_obj[__skill_name]["key"]
             SetGhostBoards().click_press_and_release_by_key_name(__skill_key)
             self._skill_obj[__skill_name]["click_time"] = time.time()
             time.sleep(self._skill_obj[__skill_name]["active_cd"])  # 技能按下去后会有个动作，这个动作的持续时间
+
+
         if SetGhostMouse().is_mouse_button_pressed(3):
             # print("打怪结束当前是格挡状态，松开格挡")
             # 如果当前状态时格挡中

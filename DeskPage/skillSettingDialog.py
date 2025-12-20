@@ -13,10 +13,11 @@ class SkillSetting(QtWidgets.QDialog):
         self._skill_config = GetConfig()
 
         self.setWindowTitle("设置技能")
-        self.setFixedSize(530, 260)
+        self.resize(600, 260)
+        self.setFixedWidth(630)
         self._skill_table = QtWidgets.QTableWidget(self)
         self._skill_table.setRowCount(1)
-        self._skill_table.setColumnCount(5)
+        self._skill_table.setColumnCount(6)
         __widget = QtWidgets.QWidget()
         self._button_add_skill_table_row = QtWidgets.QPushButton("新增")
         self._button_del_skill_table_row = QtWidgets.QPushButton("删除")
@@ -112,15 +113,26 @@ class SkillSetting(QtWidgets.QDialog):
         if not self._skill_table.selectedItems():
             selected_row = self._skill_table.rowCount()
         self._skill_table.insertRow(selected_row)
+        # 插入新的一列时，最后一列默认是单选框
+        column_index: int = 5
+        checkbox_widget = QtWidgets.QWidget()
+        checkbox_layout = QtWidgets.QHBoxLayout(checkbox_widget)
+        checkbox_layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        checkbox_layout.setContentsMargins(0, 0, 0, 0)
+
+        checkbox = QtWidgets.QCheckBox()
+        checkbox.setChecked(False)  # 默认选不中
+        checkbox_layout.addWidget(checkbox)
+        self._skill_table.setCellWidget(selected_row, column_index, checkbox_widget)
 
     def _show_table(self, skill_group_name: str):
         """
         显示技能表格
         """
         _skill_obj: dict = get_skill_group_list().get(skill_group_name)  # 当前正在使用的技能组
-
+        self._skill_selected.setCurrentText(skill_group_name)
         self._skill_table.clear()
-        self._skill_table.setHorizontalHeaderLabels(['技能名', '技能冷却(秒)', '释放时间(秒)', '释放优先级', '键盘Key'])
+        self._skill_table.setHorizontalHeaderLabels(['技能名', '技能冷却(秒)', '释放时间(秒)', '释放优先级', '键盘Key', "是否需要选中地面"])
 
         row_index: int = 0
         for skill_name in _skill_obj:
@@ -157,15 +169,28 @@ class SkillSetting(QtWidgets.QDialog):
                 column_index: int = 4
                 item = QtWidgets.QTableWidgetItem(str(_skill.get("key")).format(row_index, column_index))
                 item.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-                self._skill_table.setItem(row_index, column_index, QtWidgets.QTableWidgetItem(item))
+                self._skill_table.setItem(row_index, column_index,  QtWidgets.QTableWidgetItem(item))
+            if _skill.get("need_ground") is not None:
+                # 添加启用复选框，是否需要选中地面
+                column_index: int = 5
+                checkbox_widget = QtWidgets.QWidget()
+                checkbox_layout = QtWidgets.QHBoxLayout(checkbox_widget)
+                checkbox_layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+                checkbox_layout.setContentsMargins(0, 0, 0, 0)
+
+                checkbox = QtWidgets.QCheckBox()
+                checkbox.setChecked(_skill.get("need_ground"))  # 默认选不中
+                checkbox_layout.addWidget(checkbox)
+                self._skill_table.setCellWidget(row_index, column_index, checkbox_widget)
             row_index += 1
 
-    def load_skill_table(self):
+    def load_skill_table(self, skill_group_name: str = None):
         """
         加载文件中的打怪套路设置
         :return:
         """
-        skill_group_name: str = self._skill_selected.currentText()
+        if skill_group_name is None:
+            skill_group_name = self._skill_selected.currentText()
         self._show_table(skill_group_name)
 
     def save_skill_table(self):
@@ -187,7 +212,7 @@ class SkillSetting(QtWidgets.QDialog):
             _skill_active_cd: float = 0.0
             _skill_level: int = 0
             _skill_key: str = ""
-
+            _skill_need_ground: bool = False
             for col in range(self._skill_table.columnCount()):
                 item = self._skill_table.item(row, col)
                 if item and item.text():  # 检查item是否存在且有文本
@@ -202,6 +227,11 @@ class SkillSetting(QtWidgets.QDialog):
                         _skill_level = int(__content)
                     elif col == 4:
                         _skill_key = __content
+                else:
+                    if col == 5:
+                        checkbox_widget = self._skill_table.cellWidget(row, col)
+                        checkbox: QtWidgets.QCheckBox = checkbox_widget.findChild(QtWidgets.QCheckBox)
+                        _skill_need_ground = checkbox.isChecked()
 
             # 只有当技能名称不为空时才添加
             if _skill_name:
@@ -209,7 +239,8 @@ class SkillSetting(QtWidgets.QDialog):
                     "CD": _skill_cd,
                     "active_cd": _skill_active_cd,
                     "level": _skill_level,
-                    "key": _skill_key
+                    "key": _skill_key,
+                    "need_ground": _skill_need_ground
                 }
 
         # 更新当前技能组的数据

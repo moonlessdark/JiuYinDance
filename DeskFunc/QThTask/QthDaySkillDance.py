@@ -4,6 +4,7 @@ from PySide6.QtCore import QThread, Signal, QWaitCondition, QMutex
 
 from Utils.FindWindowsImage import WindowsCapture, WindowsHandle
 from DeskFunc.TaskBussinese.findDaySkillDance import FindDaySkillDance
+from Utils.ImageUtils.MonitorDisplay import coordinate_change_from_windows
 from Utils.KeyMouseDriver.GhostSoft.get_driver_v3 import SetGhostBoards, SetGhostMouse
 
 
@@ -77,12 +78,19 @@ class SkillDanceQth(QThread):
                     if not self.windows_opt.activate_windows(hwnd):
                         self.sin_out.emit(f"窗口id:{hwnd} 激活失败")
                         continue
-                    key_str, key_name = key_str_tuple
+                    key_str, key_name, need_ground = key_str_tuple
 
                     if key_str in _runed_skill_list:
                         continue
                     _runed_skill_list.append(key_str)
                     self.sin_out.emit(f"窗口id:{hwnd} 找到技能:{key_name}")
+
+                    if need_ground:
+                        pic = self.windows_cap.capture(hwnd)
+                        pos_content: tuple = (int(pic.pic_width / 2), int(pic.pic_height / 2))
+                        center_pos_in_screen: tuple = coordinate_change_from_windows(hwnd, pos_content)
+                        SetGhostMouse().move_mouse_to(center_pos_in_screen[0], center_pos_in_screen[1])
+
                     time.sleep(1)
                     SetGhostBoards().click_press_and_release_by_key_name(key_str)
                     _run_count += 1
