@@ -61,9 +61,13 @@ class BackpackItem:
     """
     goods_bag_tag_clickable: str = dataclasses.field(default_factory=str)  # 未打开的背包
     goods_bag_tag_clicked: str = dataclasses.field(default_factory=str)  # 已经打开的背包
+    material_bag_tag_clickable: str = dataclasses.field(default_factory=str)  # 未打开的材料背包
+    material_bag_tag_clicked: str = dataclasses.field(default_factory=str)  # 已经打开的材料背包
     gift_card: str = dataclasses.field(default_factory=str)  # 9点开卡的礼卡
     run_goods: str = dataclasses.field(default_factory=str)  # 御风神水
 
+    seed: str = dataclasses.field(default_factory=str)  # 种子
+    fertilizer: str = dataclasses.field(default_factory=str)  # 肥料
 
 @dataclasses.dataclass
 class GoodsOptStatus:

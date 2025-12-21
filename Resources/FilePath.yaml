@@ -51,10 +51,18 @@ ItemBackpack:
   backPack_unclick_status: /Resources/ImageTemplate/PicItemBackpack/物品包02.png
   # 已经打开物品栏
   backPack_clicked_status: /Resources/ImageTemplate/PicItemBackpack/物品包01.png
+  # 未打开材料栏
+  backPack_cailiao_unclick_status: /Resources/ImageTemplate/PicItemBackpack/材料-未点击.png
+  # 已经打开材料栏
+  backPack_cailiao_clicked_status: /Resources/ImageTemplate/PicItemBackpack/材料-已点击.png
   # 御风神水
   yu_feng_shen_shui: /Resources/ImageTemplate/PicItemBackpack/御风神水.png
   # 礼卡(9点开卡的)
   gift_card: /Resources/ImageTemplate/PicItemBackpack/礼卡.png
+  # 种子
+  seed: /Resources/ImageTemplate/PicItemBackpack/种子.png
+  # 肥料
+  fei_liao: /Resources/ImageTemplate/PicItemBackpack/肥料.png
 
 # 人物状态，右上角的状态或者进度条
 PersonBuff:
