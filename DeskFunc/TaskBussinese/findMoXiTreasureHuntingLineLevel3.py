@@ -48,8 +48,10 @@ class MoXiMapLine:
             hwnd_img: PicCapture = self.windows_cap.capture_window_region(hwnd,  -43, 58, 126, 126)
             if hwnd_img is None:
                 continue
+            # cv2.imshow("ss", hwnd_img.pic_content)
+            # cv2.waitKey()
             # 分析以下指针
-            _min_point, _max_point = self.find_line(pic=hwnd_img.pic_content)
+            _min_point, _max_point = self.find_line_three_level(pic=hwnd_img.pic_content)
             if None in [_min_point, _max_point]:
                 continue
             _find_result.append([_min_point, _max_point])
@@ -75,8 +77,8 @@ class MoXiMapLine:
         _t_pic: np.ndarray = custom_image(x, xxs, xxs+1)  # 对图片进行二值化，把指针(箭头)高亮
         _min_point, _max_point = self._find_color_extremes_and_draw_line(_t_pic)
         # print(f"1:{_min_point},2:{_max_point}")
-        # cv2.imshow("ss", _t_pic)
-        # cv2.waitKey()
+        cv2.imshow("ss", _t_pic)
+        cv2.waitKey()
         # 画一下连线
         # targets_rgb = (240, 240, 240)  # 红色
         # tolerances = 20  # 容差范围
@@ -91,9 +93,9 @@ class MoXiMapLine:
         #         print(f"x坐标最小的点: {min_p}")
         #         print(f"x坐标最大的点: {max_p}")
         #
-        if None in [_min_point, _max_point]:
-            return None, None
-        return _min_point, _max_point
+        # if None in [_min_point, _max_point]:
+        #     return None, None
+        # return _min_point, _max_point
 
     def find_line_three_level(self, pic: np.ndarray) -> tuple:
         """
@@ -108,9 +110,6 @@ class MoXiMapLine:
         # cv2.imshow("ss", _t_pic)
         # cv2.waitKey()
         # 画一下连线
-        if None in [_min_point, _max_point]:
-            return None, None
-        return _min_point, _max_point
 
     @staticmethod
     def _find_color_extremes_and_draw_line(image: np.ndarray) -> tuple:
