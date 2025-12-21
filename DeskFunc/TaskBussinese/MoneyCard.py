@@ -80,7 +80,6 @@ class FindGiftCard:
             time.sleep(0.2)
             SetGhostBoards().click_press_and_release_by_key_code_hold_time(66, 0.3)
             time.sleep(0.2)
-
         return False
 
     def open_bag(self, hwnd: int) -> bool:
@@ -128,7 +127,7 @@ class FindGiftCard:
         """
         点击确定按钮
         """
-        __rec_goods_bag_tag_clickable = self.windows_find.get_windows_image_rect(hwnd, read_image=self._button_ok, threshold=0.65)
+        __rec_goods_bag_tag_clickable = self.windows_find.get_windows_image_rect(hwnd, read_image=self._button_ok, threshold=0.65, edge=True)
         if __rec_goods_bag_tag_clickable is not None:
             self.windows_opt.activate_windows(hwnd)
             time.sleep(0.5)

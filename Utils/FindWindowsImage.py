@@ -4,7 +4,7 @@
 import sys
 from collections import namedtuple
 from ctypes import windll, c_ubyte, wintypes, byref
-from typing import List
+from typing import List, Union, Tuple
 
 import cv2
 import numpy as np
@@ -510,7 +510,24 @@ class FindWindowsImageTemplate:
                 point_result = img_result
         return point_result
 
-    def find_area(self, bigger_img, smaller_pic, threshold=0.7, edge: bool = False) -> list:
+    def get_windows_image_rect_first_pos(self, hwnd: int, read_image: np.ndarray, threshold: float = 0.7,edge: bool = False) -> tuple:
+        """
+        返回查询到的坐标在左上位置的第一个坐标
+        从左往右查询
+        从上往下寻找
+        """
+        _windows_cap: PicCapture = self._windows_cap.capture(hwnd)
+        if _windows_cap is  None:
+            return None
+        pic_result = self.get_image_all_rect(_windows_cap.pic_content, read_image, threshold, edge)
+        if pic_result is None:
+            return None
+        pic_result.sort()
+        pos: tuple = coordinate_change_from_windows(hwnd=hwnd, coordinate=pic_result[0])
+        return pos  # 获取排序后的第一个结果
+
+    @staticmethod
+    def find_area(bigger_img, smaller_pic, threshold=0.7, edge: bool = False) -> list:
         """
         大图中寻找小区的坐标区域
         :param smaller_pic:

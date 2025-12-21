@@ -15,7 +15,7 @@ from DeskFunc.QThTask.QthTruck import TruckTaskFightMonsterQth, TruckCarTaskQth
 from DeskFunc.QThTask.QthMyFight import MyFightXJ
 from DeskFunc.QThTask.QthWorldMarket import WorldMarketGetGoodsQth
 from DeskFunc.QThTask.QthDaySkillDance import SkillDanceQth
-
+from DeskFunc.QThTask.QthFarmerPickingCrops import FarmerPickingCropsQth
 
 _windows_hwnd_save: dict = {}
 _run_task_status: bool = False  # 任务执行状态
@@ -43,6 +43,7 @@ class TaskConnect(MainUI):
         self.qht_my_fight = MyFightXJ()  # 我的战斗
         self.qth_market = WorldMarketGetGoodsQth()  # 世界竞拍
         self.qth_skill_dance = SkillDanceQth()  # 每日演练(跟着NPC出招)
+        self.qth_farmer_picking_crops = FarmerPickingCropsQth()
 
         # 线程的信号槽连接
         # 团练授业
@@ -79,6 +80,10 @@ class TaskConnect(MainUI):
         self.qth_skill_dance.sin_out.connect(self.log_print)
         self.qth_skill_dance.status_bar.connect(self.status_bar.update_execute_num)
         self.qth_skill_dance.sin_run_status.connect(self._update_task_run_status)
+        # 农作物种植
+        self.qth_farmer_picking_crops.sin_out.connect(self.log_print)
+        self.qth_farmer_picking_crops.status_bar.connect(self.status_bar.update_execute_num)
+        self.qth_farmer_picking_crops.sin_run_status.connect(self._update_task_run_status)
 
         # GUI的按钮的信号槽
         self.windows_get.push_button_run_windows.clicked.connect(self.run_task)  # 执行任务
@@ -253,6 +258,15 @@ class TaskConnect(MainUI):
                     return None
                 self.qth_skill_dance.get_param(_checked_hwnd_list)
                 self.qth_skill_dance.start()
+            elif _widget_radio_enum == TaskEnum.farmer_task:
+                """
+                农夫任务
+                """
+                if len(_checked_hwnd_list) > 1:
+                    self.log_print("暂时只支持控制一个游戏窗口!")
+                    return None
+                self.qth_farmer_picking_crops.get_param(_checked_hwnd_list[0])
+                self.qth_farmer_picking_crops.start()
         else:
             self.log_print(f"任务 {_widget_radio_enum.value} 停止执行...")
             self.windows_get.push_button_run_windows.setText("停止中...")
@@ -268,6 +282,7 @@ class TaskConnect(MainUI):
             self.qht_my_fight.stop_execute_init()  # 我的战斗
             self.qth_market.stop_execute_init()  # 世界竞拍
             self.qth_skill_dance.stop_execute_init()  # 每日演练(跟随NPC出招)
+            self.qth_farmer_picking_crops.stop_execute_init()
         return None
 
     def _update_task_run_status(self, task_status: bool):
