@@ -186,6 +186,11 @@ class GetConfig:
         _back_item.goods_bag_tag_clicked = self.project_dir + self.__datas["ItemBackpack"]["backPack_clicked_status"]
         _back_item.gift_card = self.project_dir + self.__datas["ItemBackpack"]["gift_card"]
         _back_item.run_goods = self.project_dir + self.__datas["ItemBackpack"]["yu_feng_shen_shui"]
+        _back_item.material_bag_tag_clickable = self.project_dir + self.__datas["ItemBackpack"]["backPack_cailiao_unclick_status"]
+        _back_item.material_bag_tag_clicked = self.project_dir + self.__datas["ItemBackpack"]["backPack_cailiao_clicked_status"]
+        _back_item.seed = self.project_dir + self.__datas["ItemBackpack"]["seed"]  # 种子
+        _back_item.fertilizer = self.project_dir + self.__datas["ItemBackpack"]["fei_liao"]  # 肥料
+
         return _back_item
 
     def get_goods_opt_status(self) -> GoodsOptStatus:
