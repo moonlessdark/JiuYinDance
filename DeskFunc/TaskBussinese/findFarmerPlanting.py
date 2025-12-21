@@ -207,24 +207,14 @@ class FindFarmerPlanting:
         pic = self.windows_capture.capture(hwnd)
         if pic is None:
             return False
-        # 创建掩码
-        # mask = np.zeros((pic.pic_height, pic.pic_width), dtype=np.uint8)
-        #
-        # # 计算左右边界
-        # left_boundary = int(pic.pic_width * 0.3)  # 左侧30%
-        # right_boundary = int(pic.pic_height * 0.7)  # 右侧70%
-        #
-        # # 在掩码上标记需要掩盖的区域（左侧0%-30% 和 右侧70%-100%）
-        # mask[:, :left_boundary] = 255  # 左侧区域
-        # mask[:, right_boundary:] = 255  # 右侧区域
-        #
-        # # 应用掩码（将掩盖区域设为黑色）
-        # img_masked = pic.pic_content.copy()
-        # # img_masked[mask == 255] = [0, 0, 0]  # 设置为黑色
-        # black_pixel = np.full((img_masked.shape[2],), 0, dtype=np.uint8)
-        # img_masked[mask == 255] = black_pixel
+        # 计算左侧和右侧边界
+        left_boundary = int(pic.pic_height * 0.3)  # 左侧30%
+        right_boundary = int(pic.pic_width * 0.7)  # 右侧70%
 
-        pic_text_list: list = self.ocr.find_ocr_all(pic.pic_content)
+        # 切除左侧30%和右侧30%区域，只保留中间40%的区域
+        img_cropped = pic.pic_content[:, left_boundary:right_boundary]
+
+        pic_text_list: list = self.ocr.find_ocr_all(img_cropped)
         for pic_text_box in pic_text_list:
             line_text: str = pic_text_box.ocr_text
             if "距离" in line_text and "米" in line_text:
@@ -239,23 +229,14 @@ class FindFarmerPlanting:
         if pic is None:
             return False
 
-        # # 创建掩码
-        # mask = np.zeros((pic.pic_height, pic.pic_width), dtype=np.uint8)
-        #
-        # # 计算左右边界
-        # left_boundary = int(pic.pic_width * 0.3)  # 左侧30%
-        # right_boundary = int(pic.pic_height * 0.7)  # 右侧70%
-        #
-        # # 在掩码上标记需要掩盖的区域（左侧0%-30% 和 右侧70%-100%）
-        # mask[:, :left_boundary] = 255  # 左侧区域
-        # mask[:, right_boundary:] = 255  # 右侧区域
-        #
-        # # 应用掩码（将掩盖区域设为黑色）
-        # img_masked = pic.pic_content.copy()
-        # black_pixel = np.full((img_masked.shape[2],), 0, dtype=np.uint8)
-        # img_masked[mask == 255] = black_pixel
+        # 计算左侧和右侧边界
+        left_boundary = int(pic.pic_height * 0.3)  # 左侧30%
+        right_boundary = int(pic.pic_width * 0.7)  # 右侧70%
 
-        pic_text_list: list = self.ocr.find_ocr_all(pic.pic_content)
+        # 切除左侧30%和右侧30%区域，只保留中间40%的区域
+        img_cropped = pic.pic_content[:, left_boundary:right_boundary]
+
+        pic_text_list: list = self.ocr.find_ocr_all(img_cropped)
         for pic_text_box in pic_text_list:
             line_text: str = pic_text_box.ocr_text
             if "种植的" in line_text and "成熟" in line_text:

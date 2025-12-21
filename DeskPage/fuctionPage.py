@@ -151,23 +151,15 @@ class TaskLifeWork(QtWidgets.QWidget):
         _lay_out_good_get_widget.addWidget(self.combo_box_goods_point_selected, QtCore.Qt.AlignmentFlag.AlignLeft)
         _lay_out_good_get_widget.addWidget(self.radio_button_map_goods_get)
 
-        _label_fertilizer_number = QtWidgets.QLabel("肥料数量")
-        self.input_line_fertilizer_number = QtWidgets.QLineEdit()
+        _label_farmer_number = QtWidgets.QLabel("种植次数(0：一直执行)")
+        self.input_line_farmer_number = QtWidgets.QSpinBox()
         # 设置整数验证器，范围为0-999
-        validator = QIntValidator(0, 999)
-        self.input_line_fertilizer_number.setValidator(validator)
-
-        _label_farmer_number = QtWidgets.QLabel("种植次数")
-        self.input_line_farmer_number = QtWidgets.QLineEdit()
-        self.input_line_farmer_number.setEnabled(False)
         self.radio_button_farmer_work = QtWidgets.QRadioButton(TaskEnum.farmer_task.value, self)
 
         _lay_out_farmer_widget = QtWidgets.QHBoxLayout()
-        _lay_out_farmer_widget.addWidget(_label_fertilizer_number)
-        _lay_out_farmer_widget.addWidget(self.input_line_fertilizer_number)
         _lay_out_farmer_widget.addWidget(_label_farmer_number)
-        _lay_out_farmer_widget.addWidget(self.input_line_farmer_number)
-        _lay_out_farmer_widget.addWidget(self.radio_button_farmer_work)
+        _lay_out_farmer_widget.addWidget(self.input_line_farmer_number, QtCore.Qt.AlignmentFlag.AlignRight)
+        _lay_out_farmer_widget.addWidget(self.radio_button_farmer_work, QtCore.Qt.AlignmentFlag.AlignRight)
 
         # 完整布局
         _lay_out_life_widget = QtWidgets.QVBoxLayout(self)
@@ -179,7 +171,6 @@ class TaskLifeWork(QtWidgets.QWidget):
         self._update_combox_map_goods_point()
 
         self.combo_box_goods_point_selected.currentTextChanged.connect(self._update_selected_line_name)
-        self.input_line_fertilizer_number.textChanged.connect(self.change_farmer_work_num)
 
     def _update_combox_map_goods_point(self):
         """
@@ -224,20 +215,6 @@ class TaskLifeWork(QtWidgets.QWidget):
                 new_line_dict['selected'] = True
             _new_point_list.append(new_line_dict)
         update_map_goods_point_list(_new_point_list)
-
-    def change_farmer_work_num(self):
-        """
-        根据肥料的数量计算可以执行多少次
-        :return:
-        """
-        _fertilizer_number_str: str = self.input_line_fertilizer_number.text()
-        if _fertilizer_number_str == "":
-            _fertilizer_number_str = "0"
-        _fertilizer_number: int = int(_fertilizer_number_str)
-        if _fertilizer_number != "":
-            self.input_line_farmer_number.setText(str(int(_fertilizer_number // 3)))
-        else:
-            self.input_line_farmer_number.setText("0")
 
 class TaskFunc(QtWidgets.QTabWidget):
 

@@ -265,7 +265,10 @@ class TaskConnect(MainUI):
                 if len(_checked_hwnd_list) > 1:
                     self.log_print("暂时只支持控制一个游戏窗口!")
                     return None
-                self.qth_farmer_picking_crops.get_param(_checked_hwnd_list[0])
+                _scan_product_num: int = (self.task_tab_windows.task_life_work.input_line_farmer_number.value())
+
+
+                self.qth_farmer_picking_crops.get_param(_checked_hwnd_list[0], _scan_product_num)
                 self.qth_farmer_picking_crops.start()
         else:
             self.log_print(f"任务 {_widget_radio_enum.value} 停止执行...")

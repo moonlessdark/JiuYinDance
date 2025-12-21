@@ -165,7 +165,7 @@ class OpenGiftCard(QThread):
             if len(_is_open_card_hwnd) != 0:
                 for is_ok_h in _is_open_card_hwnd:
                     # 如果有“获取全部”的按钮的话，那么就全部关掉吧
-                    if self.find_gift_card.click_ok(is_ok_h):
+                    if self.find_gift_card.click_get_all(is_ok_h):
                         self.sin_out.emit(f"窗口id:{is_ok_h} 没有开到钱。领取一些丹药")
                     else:
                         self.sin_out.emit(f"窗口id:{is_ok_h} 未成功点击“获取全部”按钮")

@@ -4,9 +4,11 @@ import cv2
 import numpy as np
 from numpy import fromfile
 
-from Utils.FindWindowsImage import WindowsHandle, FindWindowsImageTemplate
+from Utils.FindWindowsImage import WindowsHandle, FindWindowsImageTemplate, WindowsCapture
+from Utils.ImageUtils.MonitorDisplay import coordinate_change_from_windows
 from Utils.KeyMouseDriver.GhostSoft.get_driver_v3 import SetGhostBoards, SetGhostMouse
 from Utils.loadResources import GetConfig
+from Utils.ImageUtils.FindImageOCR import FindPicOCR
 
 
 def bitwise_and(image: np.ndarray):
@@ -46,6 +48,9 @@ class FindGiftCard:
 
         self._goods_pic_open_loading = _load_pic(self._opt_status.open_loading)
         self._button_ok = _load_pic(self._opt_status.get_all_goods)
+
+        self.ocr = FindPicOCR()
+        self.windows_cap = WindowsCapture()
 
     def click_pos(self, hwnd: int, pos: tuple) -> bool:
         """
@@ -127,7 +132,7 @@ class FindGiftCard:
         """
         点击确定按钮
         """
-        __rec_goods_bag_tag_clickable = self.windows_find.get_windows_image_rect(hwnd, read_image=self._button_ok, threshold=0.65, edge=True)
+        __rec_goods_bag_tag_clickable = self.windows_find.get_windows_image_rect(hwnd, read_image=self._button_ok, threshold=0.5, edge=True)
         if __rec_goods_bag_tag_clickable is not None:
             self.windows_opt.activate_windows(hwnd)
             time.sleep(0.5)
@@ -135,6 +140,22 @@ class FindGiftCard:
             SetGhostMouse().click_mouse_left_button()
             return True
         return False
+
+    def click_get_all(self, hwnd: int):
+        """
+        拾取所有操作
+        """
+        pic = self.windows_cap.capture(hwnd)
+        if pic is not None:
+            text_rec = self.ocr.find_ocr(pic.pic_content, "全部拾取")
+            if text_rec is not None:
+                self.windows_opt.activate_windows(hwnd)
+                time.sleep(0.5)
+                _p: tuple = coordinate_change_from_windows(hwnd=hwnd, coordinate=tuple(text_rec))
+                SetGhostMouse().move_mouse_to(_p[0], _p[1])
+                SetGhostMouse().click_mouse_left_button()
+                return True
+        return None
 
     def find_open_loading(self, hwnd: int):
         """

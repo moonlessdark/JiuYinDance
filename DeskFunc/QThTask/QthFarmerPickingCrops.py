@@ -1,5 +1,4 @@
 # coding: utf-8
-import datetime
 import time
 
 from PySide6.QtCore import QThread, Signal, QWaitCondition, QMutex
@@ -28,6 +27,7 @@ class FarmerPickingCropsQth(QThread):
         self.windows_cap = WindowsCapture()
         self.mutex = QMutex()
         self.windows_handle = 0
+        self.scan_product_num = 0
 
         self.find_farmer = FindFarmerPlanting()
         self.mouse = SetGhostMouse()
@@ -44,13 +44,14 @@ class FarmerPickingCropsQth(QThread):
         """
         self.working = False
 
-    def get_param(self, windows_handle: int):
+    def get_param(self, windows_handle: int, scan_product_num):
         """
         线程用到的参数初始化一下
         :return:
         """
         self.working = True
         self.windows_handle = windows_handle
+        self.scan_product_num = scan_product_num
 
     def mouse_move_to_center(self, hwnd: int) -> bool:
         pic = self.windows_cap.capture(hwnd)
@@ -83,7 +84,6 @@ class FarmerPickingCropsQth(QThread):
                     self.sin_out.emit("农作物已种植,等待施肥")
                     time.sleep(1)
                     return True
-
                 # self.sin_out.emit("未找到种植进度条,请人工检查一下")
                 time.sleep(1)
             else:
@@ -103,18 +103,21 @@ class FarmerPickingCropsQth(QThread):
                 return  _is_find_crops
         else:
             SetGhostMouse().move_mouse_to(crops_pos[0], crops_pos[1])
+        self.sin_out.emit("正在寻找农作物位置...")
         for x in range(5):
-
             if not self.working:
                 return False
-
-            time.sleep(1)
+            time.sleep(0.5)
             if not self.find_farmer.find_crops_pos(self.windows_handle):
                 self.sin_out.emit("屏幕正中间未找到农作物,鼠标上移20个像素")
                 x, y = SetGhostMouse().get_mouse_x_y()
                 SetGhostMouse().move_mouse_to(x, y - 20)
             else:
                 _is_find_crops = True
+        if not _is_find_crops:
+            self.sin_out.emit("未找到农作物位置,请人工检查一下")
+        else:
+            self.sin_out.emit("农作物位置已找到")
         return _is_find_crops
 
     def step_3(self):
@@ -127,6 +130,7 @@ class FarmerPickingCropsQth(QThread):
                 self.sin_out.emit("肥料用完了，请补充...")
                 return  False
             _use_num += 1
+            self.sin_out.emit(f"农作物已经成熟了，使用了{_use_num}次肥料")
             _loading_status_code: int = 0  # 初始化，未加载
             # 把鼠标移走，避免干扰
             _f_x, _f_y = coordinate_change_from_windows(self.windows_handle, (5, 5))
@@ -134,14 +138,13 @@ class FarmerPickingCropsQth(QThread):
             while 1:
 
                 if not self.working:
-                    return False
+                    break
 
                 if not self.find_farmer.find_open_loading(self.windows_handle):
                     if _loading_status_code == 1:
                         # 为没有找到进度条，但是上一个状态是加载中，那么就表示已经加载了
                         time.sleep(1)
                         if self.find_farmer.find_crops_mature(self.windows_handle):
-                            self.sin_out.emit(f"农作物已经成熟了，使用了{_use_num}次肥料")
                             return True
                         else:
                             # 完了一次施肥，但是还没有成熟，需要继续施肥
@@ -206,6 +209,10 @@ class FarmerPickingCropsQth(QThread):
                 break
             self.status_bar.emit(_pick_up_count)
 
+            if _pick_up_count >= self.scan_product_num > 0:
+                self.sin_out.emit(f"已经执行{_pick_up_count}, 程序停止")
+                break
+
             if not self.find_farmer.find_fertilizer_backpack(self.windows_handle):
                 self.sin_out.emit("打开背包失败,请人工检查一下")
                 time.sleep(1)
@@ -214,9 +221,9 @@ class FarmerPickingCropsQth(QThread):
             if not self.find_farmer.check_fertilizer_in_bag(self.windows_handle):
                 self.sin_out.emit("未找到肥料,请购买后再来种植:\n"
                                   "普通作物\n"
-                                  "种子 : 肥料 = 1 : 3\n"
+                                  "   种子 : 肥料 = 1 : 3\n"
                                   "高级作物\n"
-                                  "种子 : 肥料 = 1 : 6")
+                                  "   种子 : 肥料 = 1 : 6")
                 time.sleep(1)
                 break
 
