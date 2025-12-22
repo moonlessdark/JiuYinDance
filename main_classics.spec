@@ -26,7 +26,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='JiuDancing_classics',
+    name='JiuDancing',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

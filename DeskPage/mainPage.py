@@ -16,7 +16,6 @@ class MainUI(QtWidgets.QMainWindow):
 
         self.setFixedSize(300, 450)
 
-        self.setWindowTitle("九阴日常小助手")
         self.setWindowIcon(QtGui.QIcon("./_internal/Resources/logo/logo.ico"))
         # self.setWindowIcon(QtGui.QIcon("D:\\SoftWare\\Developed\\Projected\\JiuYinDnaceRemake\\Resources\\ImageTemplate\\PicDance\\pic_dance_K.png"))
 

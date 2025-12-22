@@ -196,10 +196,8 @@ def coordinate_change_from_windows(hwnd: int, coordinate: tuple or list):
     return rs
 
 
-
-
 if __name__ == '__main__':
-    # hwnds = 460560
+    hwnd = 197170
     # import ctypes
     # from ctypes import windll, c_ubyte, wintypes, pointer, byref, sizeof
     # print(display_detection(True))
@@ -212,4 +210,3 @@ if __name__ == '__main__':
     # # ss = [[rect.left, rect.top], [rect.left, rect.bottom], [rect.right, rect.top], [rect.right, rect.bottom]]
     # # print(ss)
     # # pyautogui.moveTo(rect.left, rect.top, duration=2)
-    pass

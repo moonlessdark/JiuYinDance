@@ -60,29 +60,24 @@ class ScreenGameQth(QThread):
 
         _cap_pic_count: int = 0  # 截图数量
 
-        while self.working:
+        while 1:
+            if not self.working:
+                break
 
-            for handle in range(len(self.windows_handle_list)):
+            for hi in self.windows_handle_list:
+                pic_content_obj: PicCapture = self.windows_cap.capture(hi)
+                if pic_content_obj is None:
+                    self.sin_out.emit("窗口截图失败")
+                    self.working = False
+                    break
 
-                self.status_bar.emit(_cap_pic_count)  # 打印下截图次数
-
-                if self.working is False:
-                    self.mutex.unlock()  # 解锁
-                    self.sin_out.emit("窗口停止截图")
-                    return None
-
-                try:
-                    pic_content_obj: PicCapture = self.windows_cap.capture(
-                        self.windows_handle_list[handle])
-                    if min(pic_content_obj.pic_height, pic_content_obj.pic_width) > 0:
-                        time_str_s = time.strftime("%H_%M_%S", time.localtime(int(time.time())))
-                        cv2.imwrite(f"{pic_file_path}{time_str_s}.png", pic_content_obj.pic_content)
-                        _cap_pic_count += 1
-
-                except Exception as e:
-                    self.sin_out.emit("%s" % str(e))
-                    self.mutex.unlock()
-                    return None
+                if min(pic_content_obj.pic_height, pic_content_obj.pic_width) > 0:
+                    time_str_s = time.strftime("%H_%M_%S", time.localtime(int(time.time())))
+                    cv2.imwrite(f"{pic_file_path}{time_str_s}.png", pic_content_obj.pic_content)
+                    _cap_pic_count += 1
+                    self.status_bar.emit(_cap_pic_count)
                 time.sleep(1)
+        self.sin_out.emit("窗口截图结束")
         self.sin_run_status.emit(False)  # 发送消息，任务结束了
         self.mutex.unlock()
+        return None

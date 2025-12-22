@@ -4,7 +4,7 @@ import subprocess
 from PySide6 import QtWidgets, QtGui, QtCore
 
 from DeskPage.MarkdownViewer import MarkdownViewer
-from DeskPage.mapMoXiLine import QuadrantChart
+from DeskPage.mapMoXiLine import QuadrantChart, QuadrantChart2
 from DeskPage.menu_action_map_point_page import MapPointTable
 from DeskPage.skillSettingDialog import SkillSetting
 
@@ -49,10 +49,15 @@ class MenuUI(QtWidgets.QMenuBar):
         about_menu.addAction(action_func_download_zip)
         action_func_download_zip.triggered.connect(self.open_func_download_widget)
 
-        action_func_mo_xi_find_goods_line = QtGui.QAction("漠西-挖宝指引", self)
+        action_func_mo_xi_find_goods_line = QtGui.QAction("漠西-挖宝(等级三)指引", self)
         tools_menu.addAction(action_func_mo_xi_find_goods_line)
         action_func_mo_xi_find_goods_line.triggered.connect(self.open_mo_xi_find_goods_line)
         self.widget_map_liene = None  # 挖宝指引的窗口
+
+        action_func_mo_xi_find_goods_line_2 = QtGui.QAction("漠西-挖宝(等级二)指引", self)
+        tools_menu.addAction(action_func_mo_xi_find_goods_line_2)
+        action_func_mo_xi_find_goods_line_2.triggered.connect(self.open_mo_xi_find_goods_line_2)
+        self.widget_map_liene_2 = None  # 挖宝指引的窗口
 
     def open_config_file(self):
         """
@@ -130,3 +135,12 @@ class MenuUI(QtWidgets.QMenuBar):
         self.widget_map_liene = QuadrantChart()
         self.widget_map_liene.raise_()  # 将窗口置于最前（如果需要）
         self.widget_map_liene.show()
+
+    def open_mo_xi_find_goods_line_2(self):
+        """
+        漠西挖宝-指引
+        :return:
+        """
+        self.widget_map_liene_2 = QuadrantChart2()
+        self.widget_map_liene_2.raise_()  # 将窗口置于最前（如果需要）
+        self.widget_map_liene_2.show()
