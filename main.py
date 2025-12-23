@@ -1,10 +1,8 @@
 import ctypes
 import sys
 
-from PySide6.QtGui import Qt
 from PySide6.QtWidgets import QApplication
 from DeskFunc.QtConnect.connect import TaskConnect
-from PySide6.QtWidgets import QMessageBox
 import configparser
 import os
 
@@ -26,41 +24,45 @@ def prompt_dpi_mode_selection():
     """使用tkinter弹窗提示用户选择DPI模式"""
     try:
         import tkinter as tk
-        from tkinter import font
+        import ttkbootstrap as ttk
+        from ttkbootstrap import Style
+
+        # 创建样式，但不使用会创建主窗口的 Style.master
+        root = tk.Tk()
+        root.withdraw()  # 隐藏主窗口
+        style = Style(theme='flatly')
 
         # 创建独立的对话框窗口
-        dialog = tk.Tk()
+        dialog = tk.Toplevel(root)
         dialog.title("DPI模式选择")
-        dialog.geometry("420x180")
+        dialog.geometry("420x200")
         dialog.resizable(False, False)
-        dialog.configure(bg='#f0f0f0')  # 设置背景色
+
+        # 设置窗口为模态
+        dialog.transient()
+        dialog.grab_set()
 
         # 居中显示对话框
         dialog.update_idletasks()
         x = (dialog.winfo_screenwidth() // 2) - (420 // 2)
-        y = (dialog.winfo_screenheight() // 2) - (180 // 2)
-        dialog.geometry(f"420x180+{x}+{y}")
+        y = (dialog.winfo_screenheight() // 2) - (200 // 2)
+        dialog.geometry(f"420x200+{x}+{y}")
 
-        # 设置窗口为模态
-        dialog.attributes('-topmost', True)
-        dialog.focus_force()
-
-        # 设置字体
-        default_font = font.Font(family="微软雅黑", size=10)
-        dialog.option_add("*Font", default_font)
-
+        # 主框架
+        main_frame = ttk.Frame(dialog, padding="20 20 20 10")
+        main_frame.pack(fill="both", expand=True)
         # 添加消息文本
-        label = tk.Label(dialog,
-                        text="此选择将影响截图功能的准确性\n游戏默认为'经典模式'\n具体情况请打开游戏启动界面，右下角的'游戏设置'中查看",
-                        wraplength=380,
-                        justify="left",
-                        bg='#f0f0f0',
-                        fg='#333333')
-        label.pack(pady=(20, 15))
+        message_text = "此选择将影响截图功能的准确性\n\n游戏默认为【经典模式】\n具体情况请打开游戏启动界面，右下角的'游戏设置'中查看"
+        label = ttk.Label(main_frame,
+                          text=message_text,
+                          wraplength=380,
+                          justify="center",
+                          font=("微软雅黑", 10))
+        label.pack(pady=(0, 20))
 
         # 按钮框架
-        button_frame = tk.Frame(dialog, bg='#f0f0f0')
-        button_frame.pack(pady=15)
+        button_frame = ttk.Frame(main_frame)
+        button_frame.pack(pady=10)
 
         # 返回值变量
         result = tk.IntVar(value=0)
@@ -68,51 +70,47 @@ def prompt_dpi_mode_selection():
         # 经典模式按钮
         def choose_classic():
             result.set(0)
-            dialog.quit()
-            dialog.destroy()
+            root.quit()
+            root.destroy()
 
         # 极致模式按钮
         def choose_extreme():
             result.set(2)
-            dialog.quit()
-            dialog.destroy()
+            root.quit()
+            root.destroy()
 
         # 创建样式化的按钮
-        classic_btn = tk.Button(button_frame,
-                               text="经典模式(默认)",
-                               command=choose_classic,
-                               width=12,
-                               height=1,
-                               bg='#4CAF50',
-                               fg='white',
-                               relief='raised',
-                               bd=2)
-        classic_btn.pack(side=tk.LEFT, padx=15)
-
-        extreme_btn = tk.Button(button_frame,
-                               text="极致模式",
-                               command=choose_extreme,
-                               width=12,
-                               height=1,
-                               bg='#2196F3',
-                               fg='white',
-                               relief='raised',
-                               bd=2)
-        extreme_btn.pack(side=tk.LEFT, padx=15)
-
+        classic_btn = ttk.Button(button_frame,
+                                 text="经典模式(默认)",
+                                 command=choose_classic,
+                                 width=15,
+                                 bootstyle="success")  # 绿色主题
+        classic_btn.pack(side="left", padx=10)
+        extreme_btn = ttk.Button(button_frame,
+                                 text="极致模式",
+                                 command=choose_extreme,
+                                 width=15,
+                                 bootstyle="primary")  # 蓝色主题
+        extreme_btn.pack(side="left", padx=10)
         # 处理窗口关闭事件
         def on_closing():
             result.set(0)  # 默认选择经典模式
-            dialog.quit()
-            dialog.destroy()
+            root.quit()
+            root.destroy()
 
         dialog.protocol("WM_DELETE_WINDOW", on_closing)
 
         # 启动事件循环
-        dialog.mainloop()
+        root.mainloop()
 
         # 获取用户选择的模式
         mode = result.get()
+
+        # 销毁根窗口
+        try:
+            root.destroy()
+        except tk.TclError:
+            pass  # 窗口可能已经销毁
 
         # 保存用户选择
         save_dpi_config(mode)
@@ -122,8 +120,6 @@ def prompt_dpi_mode_selection():
         print(f"创建选择对话框失败: {e}")
         save_dpi_config(0)
         return 0
-
-
 
 
 def save_dpi_config(mode):
@@ -169,7 +165,6 @@ def restart_application(self):
 
 
 if __name__ == '__main__':
-
 
     # 加载配置并设置DPI感知模式
     dpi_mode: int = load_dpi_config()

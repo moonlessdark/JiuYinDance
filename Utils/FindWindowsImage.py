@@ -1,10 +1,9 @@
 """
 查询游戏窗口中的图标
 """
-import sys
 from collections import namedtuple
 from ctypes import windll, c_ubyte, wintypes, byref
-from typing import List, Union, Tuple
+from typing import List, Optional
 
 import cv2
 import numpy as np
@@ -14,123 +13,12 @@ import win32con
 import win32gui
 import win32process
 import win32ui
-from PIL import Image
 from numpy import fromfile, uint8
 
 from Utils.ImageUtils.FindImageTemplate import find_all_template
 from Utils.ImageUtils.MonitorDisplay import coordinate_change_from_windows
 
 PicCapture = namedtuple("PicCapture", ["pic_content", "pic_width", "pic_height"])
-
-
-def is_window_dpi_aware(hwnd):
-    """检测窗口是否为DPI感知模式"""
-    try:
-        # 获取窗口DPI
-        window_dpi = windll.user32.GetDpiForWindow(hwnd)
-        # 获取系统DPI
-        hdc = win32gui.GetDC(0)
-        try:
-            system_dpi = windll.gdi32.GetDeviceCaps(hdc, win32con.LOGPIXELSX)
-        finally:
-            win32gui.ReleaseDC(0, hdc)
-
-        # 如果窗口DPI等于系统DPI，可能是DPI感知窗口
-        return window_dpi == system_dpi
-    except:
-        return False
-
-
-def get_appropriate_scaling_factor(hwnd):
-    """获取适当的缩放因子"""
-    if is_window_dpi_aware(hwnd):
-        # DPI感知窗口，使用1.0缩放因子
-        # print("DPI感知窗口，使用1.0缩放因子")
-        return 1.0
-    else:
-        # 非DPI感知窗口，使用系统缩放因子
-        # print("非DPI感知窗口，使用系统缩放因子")
-        return get_window_scaling_factor()
-
-
-def get_window_scaling_factor():
-    """获取系统缩放因子"""
-    # 获取主显示器的DPI
-    hdc = win32ui.CreateDCFromHandle(win32gui.GetDC(0))
-    dpi = hdc.GetDeviceCaps(win32con.LOGPIXELSX)
-    hdc.DeleteDC()
-
-    # 标准DPI是96，缩放因子 = 当前DPI / 96
-    scaling_factor = dpi / 96.0
-    # print("系统缩放因子:", scaling_factor)
-    return scaling_factor
-
-
-def capture_window_client_area(hwnd):
-    """根据窗口句柄对窗口客户区进行后台截图"""
-    try:
-        # 获取客户区尺寸和位置信息
-        left, top, right, bottom = win32gui.GetWindowRect(hwnd)
-        client_left, client_top, client_right, client_bottom = win32gui.GetClientRect(hwnd)
-
-        # 计算客户区在窗口中的偏移量
-        border_width = (right - left - (client_right - client_left)) // 2
-        caption_height = (bottom - top - (client_bottom - client_top)) - border_width
-
-        # 获取客户区尺寸
-        client_width = client_right - client_left
-        client_height = client_bottom - client_top
-
-        # 获取缩放因子
-        scaling_factor = get_appropriate_scaling_factor(hwnd)
-
-        # 应用缩放因子
-        width = int(client_width * scaling_factor)
-        height = int(client_height * scaling_factor)
-
-        if width <= 0 or height <= 0:
-            raise Exception("窗口尺寸无效")
-
-        # 创建设备上下文
-        hwndDC = win32gui.GetWindowDC(hwnd)
-        mfcDC = win32ui.CreateDCFromHandle(hwndDC)
-        saveDC = mfcDC.CreateCompatibleDC()
-
-        # 创建位图
-        saveBitMap = win32ui.CreateBitmap()
-        saveBitMap.CreateCompatibleBitmap(mfcDC, width, height)
-        saveDC.SelectObject(saveBitMap)
-
-        # 使用BitBlt截图客户区（从边框偏移位置开始截图）
-        src_x = border_width
-        src_y = caption_height
-        saveDC.BitBlt((0, 0), (width, height), mfcDC, (src_x, src_y), win32con.SRCCOPY)
-
-        # 转换为PIL图像
-        bmpinfo = saveBitMap.GetInfo()
-        bmpstr = saveBitMap.GetBitmapBits(True)
-        img = Image.frombuffer(
-            'RGB',
-            (bmpinfo['bmWidth'], bmpinfo['bmHeight']),
-            bmpstr, 'raw', 'BGRX', 0, 1
-        )
-
-        # 保存图像
-        # img.save(filename)
-
-        # 清理资源
-        win32gui.DeleteObject(saveBitMap.GetHandle())
-        saveDC.DeleteDC()
-        mfcDC.DeleteDC()
-        win32gui.ReleaseDC(hwnd, hwndDC)
-
-        # print(f"截图成功: {filename}")
-        # print(f"窗口分辨率: {width}x{height}")
-        return True, (width, height)
-
-    except Exception as e:
-        print(f"截图失败: {str(e)}")
-        return False, (0, 0)
 
 
 class WindowsCapture:
@@ -181,9 +69,17 @@ class WindowsCapture:
             return False
         return True
 
-    def capture_bitblt(self, handle: int) -> PicCapture:
+    def capture_bitblt(self, handle: int) -> Optional[PicCapture]:
         """
-        使用BitBlt方法截图窗口（原capture方法）
+        使用BitBlt方法截图窗口
+
+        GetWindowRect vs GetClientRect
+        GetWindowRect 返回包括边框和标题栏的整个窗口区域坐标
+        GetClientRect 返回不包括边框的客户区（实际内容区域）坐标，且左上角始终为(0,0)
+        坐标原点位置
+        对于窗口整体坐标：原点(0,0)位于窗口的左上角边框处
+        对于客户区坐标：原点(0,0)位于去除边框后的可绘制区域左上角
+
         :param handle: 窗口句柄
         :return: 截图数据
         """
@@ -218,17 +114,16 @@ class WindowsCapture:
 
         if not self.check_capture_width_height_is_zero(cap_pic):
             return None
-        print(f"{cap_pic.pic_width} x {cap_pic.pic_height}")
         return cap_pic
 
-    def capture(self, handle: int) -> PicCapture:
+    def capture(self, handle: int) -> Optional[PicCapture]:
         # 其次尝试BitBlt方法
         result = self.capture_bitblt(handle)
         if result is not None:
             return result
         return None
 
-    def capture_window_region(self, hwnd: int, x: int, y: int, width: int, height: int) -> PicCapture:
+    def capture_window_region(self, hwnd: int, x: int, y: int, width: int, height: int) -> Optional[PicCapture]:
         """
         根据坐标在窗口中截取一部分的画面。\n
         注意传的x和y别比实际窗口要大。\n
@@ -238,6 +133,13 @@ class WindowsCapture:
         2、截图右上角，宽高为100的画面: x=-0, y=0, width=100, height=100\n
         2、截图左下角，宽高为100的画面: x=0, y=-0, width=100, height=100\n
         2、截图右下角，宽高为100的画面: x=-0, y=-0, width=100, height=100\n
+
+        GetWindowRect vs GetClientRect
+        GetWindowRect 返回包括边框和标题栏的整个窗口区域坐标
+        GetClientRect 返回不包括边框的客户区（实际内容区域）坐标，且左上角始终为(0,0)
+        坐标原点位置
+        对于窗口整体坐标：原点(0,0)位于窗口的左上角边框处
+        对于客户区坐标：原点(0,0)位于去除边框后的可绘制区域左上角
 
         :param hwnd: 窗口句柄
         :param x: 截取区域的左上角 x 坐标，如果传负数，表示从右侧往左计算，计算规则与正数时相反
@@ -367,7 +269,7 @@ class FindWindowsImageTemplate:
         self._windows_cap = WindowsCapture()
 
     def get_windows_image_rect(self, hwnd: int, read_image: np.ndarray, threshold: float = 0.7,
-                               edge: bool = False) -> tuple:
+                               edge: bool = False) -> Optional[tuple]:
         """
         查询图标模板在游戏窗口中的匹配度最高的坐标，并将坐标映射到Windows窗口中。
         此坐标可被鼠标直接使用
@@ -410,7 +312,7 @@ class FindWindowsImageTemplate:
 
     @staticmethod
     def get_image_all_rect(orign_image: np.ndarray, read_image: np.ndarray, threshold: float = 0.7, edge: bool = False,
-                           hwnd: int = None) -> list:
+                           hwnd: int = None) -> Optional[list]:
         """
         查询所有相似度匹配的坐标，并映射到windows窗口中，此坐标可被鼠标直接使用
         :param hwnd: 窗口句柄，如果传了的话，那么就返回图片在桌面窗口中的坐标，不传就返回图片在游戏窗口中的坐标
@@ -460,7 +362,7 @@ class FindWindowsImageTemplate:
         return point_result
 
     def get_windows_image_rect_first_pos(self, hwnd: int, read_image: np.ndarray, threshold: float = 0.7,
-                                         edge: bool = False) -> tuple:
+                                         edge: bool = False) -> Optional[tuple]:
         """
         返回查询到的坐标在左上位置的第一个坐标
         从左往右查询
