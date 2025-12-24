@@ -10,8 +10,7 @@ import win32con
 import win32gui
 import win32print
 from screeninfo import get_monitors
-from typing import List
-
+from typing import List, Optional, Tuple, Any
 
 monitorSize = namedtuple("monitorSize", ["windows_desk_handle", "width", "height", "x", "y", "is_primary"])
 
@@ -53,7 +52,7 @@ def display_monitor_detection(scale: bool) -> List[monitorSize]:
     return monitor_size_list
 
 
-def display_windows_detection(hwnd) -> tuple:
+def display_windows_detection(hwnd) -> Optional[Tuple[Tuple[int, int], Tuple[int, int]]]:
     """
     检测窗口大小。
     如果该窗口是
@@ -104,7 +103,7 @@ def get_window_dpi_scale(hwnd: int) -> float:
         raise RuntimeError(f"Error getting DPI scale: {e}")
 
 
-def get_monitor_from_window(hwnd) -> int or None:
+def get_monitor_from_window(hwnd: int) -> int:
     """
     获取指定的窗口句柄所在的桌面handle。
     :param hwnd: 该桌面打开的程序的句柄，不能是窗口本身
@@ -117,18 +116,18 @@ def get_monitor_from_window(hwnd) -> int or None:
     return windows_desk_handle
 
 
-def get_monitor_from_point(x: int, y: int) -> int or None:
+def get_monitor_from_point(x: int, y: int) -> Optional[Any]:
     """
     获取指定坐标的是位于哪个显示器的handle
     :param x: x 坐标
     :param y: y 坐标
     :return:
     """
-    windows_desk_handle = None
     windows_desk = win32api.MonitorFromPoint((x, y))
     if windows_desk is not None:
         windows_desk_handle = windows_desk.handle
-    return windows_desk_handle
+        return windows_desk_handle
+    return None
 
 
 def coordinate_change_from_monitor(coordinate: tuple, old_monitor_size: tuple, new_monitor_size: tuple) -> tuple:
@@ -168,6 +167,16 @@ def coordinate_change_from_monitor(coordinate: tuple, old_monitor_size: tuple, n
 def coordinate_change_from_windows(hwnd: int, coordinate: tuple or list):
     """
     坐标映射，从游戏窗口中的某个坐标映射到屏幕显示器上，用于鼠标点击
+    特别说明：
+    in32gui.ClientToScreen 坐标转换确实会受到 SetProcessDpiAwareness 设置的影响，特别是在 DPI 缩放环境下。
+    详细说明
+    1. DPI感知级别差异
+    DPI模式1（系统DPI感知）：程序不感知高DPI，Windows自动进行缩放
+    DPI模式2（每监视器DPI感知）：程序感知每个显示器的DPI，需要自己处理缩放
+    2. 坐标系统差异
+    模式1：坐标基于系统缩放后的逻辑像素
+    模式2：坐标基于物理像素，但 ClientToScreen 仍返回逻辑坐标
+
     :param hwnd: 游戏窗口所句柄，用于获取桌面所在的尺寸
     :param coordinate: 在游戏窗口中获取的坐标（x, y）
     :return:
@@ -196,8 +205,12 @@ def coordinate_change_from_windows(hwnd: int, coordinate: tuple or list):
     return rs
 
 
-if __name__ == '__main__':
-    hwnd = 197170
+
+# if __name__ == '__main__':
+    # hwnd = 328958
+
+    # print(coordinate_change_from_windows_improved(hwnd, (1920, 1080)))
+
     # import ctypes
     # from ctypes import windll, c_ubyte, wintypes, pointer, byref, sizeof
     # print(display_detection(True))

@@ -100,13 +100,13 @@ class TaskConnect(MainUI):
         if GetGhostDriver.dll is not None:
             SetGhostBoards().open_device()  # 启动幽灵键鼠标
             if SetGhostBoards().check_usb_connect():
-                self.log_print("幽灵键鼠加载成功。\n如有疑问，请查看“帮助”-“功能说明”")
+                self.log_print("幽灵键鼠加载成功。\n如有疑问，请查看“帮助”-“功能说明”\n")
                 SetGhostMouse().set_mouse_movement_speed(8)  # 初始化鼠标移动速度
                 return True
             else:
-                self.log_print("未检测到usb设备,请检查后重试")
+                self.log_print("未检测到usb设备,请检查后重试\n")
         else:
-            self.log_print("幽灵键鼠驱动加载失败,请确认是否缺失了驱动文件,请检查后重试")
+            self.log_print("幽灵键鼠驱动加载失败,请确认是否缺失了驱动文件,请检查后重试\n")
         self.windows_get.push_button_run_windows.setEnabled(False)  # 未检测到驱动，把执行按钮禁用掉
         return False
 
