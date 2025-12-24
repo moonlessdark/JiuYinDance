@@ -83,7 +83,7 @@ class SkillDanceQth(QThread):
                     if key_str in _runed_skill_list:
                         continue
                     _runed_skill_list.append(key_str)
-                    self.sin_out.emit(f"窗口id:{hwnd} 找到技能:{key_name}")
+                    self.sin_out.emit(f"窗口id:{hwnd} 技能:{key_name}")
 
                     if need_ground:
                         pic = self.windows_cap.capture(hwnd)
@@ -93,6 +93,9 @@ class SkillDanceQth(QThread):
 
                     time.sleep(1)
                     SetGhostBoards().click_press_and_release_by_key_name(key_str)
+                    if need_ground:
+                        time.sleep(0.3)
+                        SetGhostMouse().click_mouse_left_button()
                     _run_count += 1
                     self.status_bar.emit(_run_count)
                     time.sleep(1)

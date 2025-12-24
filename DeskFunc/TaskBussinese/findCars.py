@@ -393,6 +393,11 @@ class FightMonster(TruckCar):
 
             __skill_key: str = self._skill_obj[__skill_name]["key"]
             SetGhostBoards().click_press_and_release_by_key_name(__skill_key)
+
+            if self._skill_obj[__skill_name].get("need_ground", False):
+                time.sleep(0.3)
+                SetGhostMouse().click_mouse_left_button()
+
             self._skill_obj[__skill_name]["click_time"] = time.time()
             time.sleep(self._skill_obj[__skill_name]["active_cd"])  # 技能按下去后会有个动作，这个动作的持续时间
 
