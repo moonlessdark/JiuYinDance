@@ -101,10 +101,14 @@ class MoXiMapLine:
         """
         三级挖宝的罗盘
         """
-        xxs: int = 225
+        xxs: int = 229
         x = self._apply_circular_mask(pic)
 
         _t_pic: np.ndarray = custom_image(x, xxs, xxs + 1)  # 对图片进行二值化，把指针(箭头)高亮
+
+        # cv2.imshow("s", _t_pic)
+        # cv2.waitKey()
+
         _min_point, _max_point = self._find_color_extremes_and_draw_line(_t_pic)
         if None in [_min_point, _max_point]:
             return None, None
@@ -214,8 +218,39 @@ class MoXiMapLine:
 if __name__ == '__main__':
     # 1:(28, 37),2:(58, 62)
     x = MoXiMapLine()
-    pics = cv2.imread(r"D:\XX.jpg")
-    x.find_line_three_level(pics)
+    pics = cv2.imread(r"D:\AAA.jpg")
+    # 检查图片是否成功加载
+    if pics is not None:
+        # 获取图片尺寸
+        height, width = pics.shape[:2]
+
+        # 计算起始坐标：x坐标 = 图片宽度 - 43，y坐标 = 58
+        start_x = width - 43
+        start_y = 58
+
+        # 定义框的尺寸
+        box_width = 126
+        box_height = 126
+
+        # 绘制矩形框（红色，线条粗细为2）
+        # cv2.rectangle(pics, (start_x, start_y), (start_x - box_width, start_y + box_height), (0, 0, 255), 2)
+
+        # 显示原图和框
+        # cv2.imshow("Image with Box", pics)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
+
+        # 如果需要提取该区域，可以这样做：
+        roi = pics[start_y:start_y + box_height, start_x - box_width: start_x]
+        # cv2.imshow("Extracted Region", roi)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
+        x.find_line_three_level(roi)
+    else:
+        print("无法加载图片，请检查路径是否正确")
+    # (hwnd, -43, 58, 126, 126)
+
+
     #
     # pics2 = cv2.imread(r"D:\SoftWare\Developed\Projected\JiuYinDnaceRemake\xx\ss2.png")
     # x.find_line(pics2)
