@@ -44,8 +44,7 @@
 ### 游戏设置
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;启动脚本前，一定要确认好客户端设置的游戏缩放模式是【经典模式】还是【极致模式】，如果游戏客户端缩放模式与启动的脚本不一致，会导致无法识别到图像的。  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Q: 如何确认自己游戏缩放设置?  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A: 游戏启动界面--左下角【游戏设置】-- 第一行【游戏缩放模式设置】，默认为【经典模式】  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;注意: releases 只打包了“经典模式”，如果需要"极致模式"请自行打包，打包文件为“main_ultimate.spec”，打包库为Pyinstaller  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A: 游戏启动界面--左下角【游戏设置】-- 第一行【游戏缩放模式设置】，默认为【经典模式】。此脚本只支持【经典模式】。  
 
 ### 游戏窗口分辨率  
 
@@ -70,6 +69,8 @@
  - 游戏自动截图  
  - 漠西风涛-挖宝指引,使用方法参考[此帖子](https://tieba.baidu.com/p/9124698712) ，此功能的入口在**菜单栏-小工具**中，不需要“幽灵键鼠”也可以使用。  
  - 世界竞拍  
+ - 每日演练(跟随NPC出招)  
+ - 自动种地 实现逻辑参考[此项目](https://github.com/HongwSun/JiuYinTool) 
 
 
 ### 关于团练授业，隐士势力的修炼  
