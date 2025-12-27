@@ -168,7 +168,7 @@ class OpenGiftCard(QThread):
                     if self.find_gift_card.click_get_all(is_ok_h):
                         self.sin_out.emit(f"窗口id:{is_ok_h} 没有开到钱。领取一些丹药")
                     else:
-                        self.sin_out.emit(f"窗口id:{is_ok_h} 未成功点击“获取全部”按钮")
+                        self.sin_out.emit(f"窗口id:{is_ok_h} 开到钱了")
                     time.sleep(1)
             _is_no_card_hwnd.clear()  # 清理掉
             _is_open_card_hwnd.clear()  # 清理掉
