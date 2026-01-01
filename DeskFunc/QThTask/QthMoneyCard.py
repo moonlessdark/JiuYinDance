@@ -101,7 +101,6 @@ class OpenGiftCard(QThread):
                 self.sleep(1)
                 continue
 
-            self.sin_out.emit("已经21:00:00,开始执行开卡任务")
             # 先把背包打开,并检查是否有礼卡，如果包裹里没有礼卡的花那就没啥意义了啊
             for hwnd_i in self.windows_handle_list:
 
@@ -109,6 +108,7 @@ class OpenGiftCard(QThread):
                     time.sleep(0.5)
                     continue
 
+                self.sin_out.emit(f"窗口:{hwnd_i} 执行开卡任务")
                 if not self.find_gift_card.find_backpack(hwnd_i):
                     self.sin_out.emit(f"窗口id:{hwnd_i} 未成功打开背包")
                     if hwnd_i not in _is_no_card_hwnd:
@@ -132,7 +132,7 @@ class OpenGiftCard(QThread):
                 time.sleep(0.6)
 
                 _index_x, _index_y = 0, 0
-                for run_i in range(50):
+                for run_i in range(30):
 
                     if not self.working:
                         break
@@ -147,7 +147,7 @@ class OpenGiftCard(QThread):
                     #     break
 
                     SetGhostMouse().click_mouse_right_button()
-                    time.sleep(0.5)
+                    time.sleep(0.8)
                     if self.find_gift_card.find_open_loading(hwnd_i):
                         self.sin_out.emit(f"窗口id:{hwnd_i} 已开卡,请结束后自行查看开卡记录")
 
@@ -163,6 +163,9 @@ class OpenGiftCard(QThread):
                             _is_open_card_hwnd.append(hwnd_i)
                         break
             if len(_is_open_card_hwnd) != 0:
+                if len(_is_open_card_hwnd) == 1:
+                    # 如果当前只有一个窗口进行了开卡，那么多等3秒，因为可能进度条还没结束
+                    time.sleep(3)
                 for is_ok_h in _is_open_card_hwnd:
                     # 如果有“获取全部”的按钮的话，那么就全部关掉吧
                     if self.find_gift_card.click_get_all(is_ok_h):

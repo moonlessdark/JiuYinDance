@@ -71,15 +71,33 @@ class FindGiftCard:
         """
         for i in range(3):
             # 循环3次，避免出现被其他窗口遮挡的情况，最后一次可以显示出来
-            for pic in [self._goods_pic_bag_clicked, self._goods_pic_bag_unclick]:
-                pic_rec = self.windows_find.get_windows_image_rect(hwnd, read_image=pic)
-                if pic_rec is None:
-                    continue
-                else:
-                    # 如果当前找到的是未打物品栏的图标,那就点击一下
-                    self.click_pos(hwnd, pic_rec)
-                    return True
-            # 按B，打开背包
+
+            clicked_pos = self.windows_find.get_windows_image_rect(
+                hwnd,
+                read_image=self._goods_pic_bag_clicked
+            )
+
+            unclick_pos = self.windows_find.get_windows_image_rect(
+                hwnd,
+                read_image=self._goods_pic_bag_unclick
+            )
+
+            if unclick_pos is not None and clicked_pos is not None:
+                # 如果当前2个状态都找到了，那么就说明是刚登录游戏，背包还是默认状态，所以此时我就认为你还没有点击背包，需要点一下
+                self.click_pos(hwnd, unclick_pos)
+                time.sleep(0.5)
+                return True
+
+            if clicked_pos is not None:
+                # 如果当前找到的是已打物品栏的图标,那就返回
+                return True
+
+            if unclick_pos is not None:
+                # 如果当前找到的是未打物品栏的图标,那就点击一下
+                self.click_pos(hwnd, unclick_pos)
+                return True
+
+            # 如果压根没有打开包裹，按B，打开背包
             if not self.windows_opt.activate_windows(hwnd):
                 return False
             time.sleep(0.2)
@@ -162,8 +180,7 @@ class FindGiftCard:
         查询打开状态
         """
         __rec_goods_bag_open_loading = self.windows_find.get_windows_image_rect(hwnd,
-                                                                                read_image=self._goods_pic_open_loading,
-                                                                                threshold=0.65)
+                                                                                read_image=self._goods_pic_open_loading)
         if __rec_goods_bag_open_loading is not None:
             return True
         return False
