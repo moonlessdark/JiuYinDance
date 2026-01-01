@@ -49,12 +49,14 @@ class MenuUI(QtWidgets.QMenuBar):
         about_menu.addAction(action_func_download_zip)
         action_func_download_zip.triggered.connect(self.open_func_download_widget)
 
-        action_func_mo_xi_find_goods_line = QtGui.QAction("漠西-挖宝(等级三)指引", self)
+        action_func_mo_xi_find_goods_line = QtGui.QAction("漠西挖宝指引(等级三)", self)
         tools_menu.addAction(action_func_mo_xi_find_goods_line)
         action_func_mo_xi_find_goods_line.triggered.connect(self.open_mo_xi_find_goods_line)
         self.widget_map_liene = None  # 挖宝指引的窗口
+        # 添加分割线
+        tools_menu.addSeparator()
 
-        action_func_mo_xi_find_goods_line_2 = QtGui.QAction("漠西-挖宝(等级二)指引", self)
+        action_func_mo_xi_find_goods_line_2 = QtGui.QAction("漠西挖宝指引(等级一和二)", self)
         tools_menu.addAction(action_func_mo_xi_find_goods_line_2)
         action_func_mo_xi_find_goods_line_2.triggered.connect(self.open_mo_xi_find_goods_line_2)
         self.widget_map_liene_2 = None  # 挖宝指引的窗口
