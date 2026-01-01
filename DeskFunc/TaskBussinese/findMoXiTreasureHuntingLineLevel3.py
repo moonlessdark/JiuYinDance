@@ -145,7 +145,7 @@ class MoXiMapLine:
         # mask = cv2.inRange(img, lower_bound, upper_bound)
 
         # 查找匹配像素的坐标(注意OpenCV的坐标顺序是(y,x))
-        matched_pixels = np.column_stack(np.where(img > 242))
+        matched_pixels = np.column_stack(np.where(img > 228))
 
         # 如果没有匹配像素，直接返回原图
         if len(matched_pixels) == 0:
