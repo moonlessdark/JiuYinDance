@@ -296,7 +296,6 @@ class FindWindowsImageTemplate:
                             {'result': (871.0, 770.0), 'rectangle': ((853, 752), (853, 788), (889, 752), (889, 788)), 'confidence': 0.90046226978302}, 
                             {'result': (831.0, 770.0), 'rectangle': ((813, 752), (813, 788), (849, 752), (849, 788)), 'confidence': 0.884774923324585}]
             """
-            print(match_result)
             max_confidence_match_point: tuple = ()
             check_confidence: float = -1
             for match_result_l in match_result:
@@ -307,7 +306,6 @@ class FindWindowsImageTemplate:
                     max_confidence_match_point = match_result_l['result']
             if len(max_confidence_match_point) != 0:
                 _p: tuple = coordinate_change_from_windows(hwnd=hwnd, coordinate=max_confidence_match_point)
-                print(f"最高的匹配度：{check_confidence}")
                 return _p
         return None
 

@@ -85,21 +85,28 @@ class FindGiftCard:
                 read_image=self._goods_pic_bag_unclick,
                 threshold=0.85,
             )
+
+            # print(f"已点击：{clicked_pos}, 未点击:{unclick_pos}")
+
             if unclick_pos is not None and clicked_pos is not None:
+                # print(1)
                 # 如果当前2个状态都找到了，那么就说明是刚登录游戏，背包还是默认状态，所以此时我就认为你还没有点击背包，需要点一下
+                # 根据实测，这个方法进不来，但是保险起见还是留着吧
                 self.click_pos(hwnd, unclick_pos)
                 time.sleep(0.5)
-                return True
+                return False
 
             if clicked_pos is not None:
+                # print(2)
                 # 如果当前找到的是已打物品栏的图标,那就返回
                 return True
 
             if unclick_pos is not None:
+                # print(3)
                 # 如果当前找到的是未打物品栏的图标,那就点击一下
                 self.click_pos(hwnd, unclick_pos)
                 return True
-
+            # print(4)
             # 如果压根没有打开包裹，按B，打开背包
             if not self.windows_opt.activate_windows(hwnd):
                 return False
