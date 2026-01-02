@@ -142,7 +142,7 @@ class FindFarmerPlanting:
         for i in range(3):
             # 循环3次，避免出现被其他窗口遮挡的情况，最后一次可以显示出来
             for pic in [self._material_pic_bag_unclick, self._material_pic_bag_clicked]:
-                pic_rec = self.windows_find.get_windows_image_rect(hwnd, read_image=pic)
+                pic_rec = self.windows_find.get_windows_image_rect(hwnd, read_image=pic, threshold=0.85)
                 if pic_rec is None:
                     continue
                 else:
