@@ -130,7 +130,7 @@ class FarmerPickingCropsQth(QThread):
                 self.sin_out.emit("肥料用完了，请补充...")
                 return  False
             _use_num += 1
-            self.sin_out.emit(f"农作物已经成熟了，使用了{_use_num}次肥料")
+            self.sin_out.emit(f"使用了{_use_num}次肥料")
             _loading_status_code: int = 0  # 初始化，未加载
             # 把鼠标移走，避免干扰
             _f_x, _f_y = coordinate_change_from_windows(self.windows_handle, (5, 5))
