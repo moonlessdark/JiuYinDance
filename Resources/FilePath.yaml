@@ -48,9 +48,9 @@ WhzDance:
 # 物品背包
 ItemBackpack:
   # 未点击物品栏
-  backPack_unclick_status: /Resources/ImageTemplate/PicItemBackpack/物品包02.png
+  backPack_unclick_status: /Resources/ImageTemplate/PicItemBackpack/物品-未点击.png
   # 已经打开物品栏
-  backPack_clicked_status: /Resources/ImageTemplate/PicItemBackpack/物品包01.png
+  backPack_clicked_status: /Resources/ImageTemplate/PicItemBackpack/物品-已点击.png
   # 未打开材料栏
   backPack_cailiao_unclick_status: /Resources/ImageTemplate/PicItemBackpack/材料-未点击.png
   # 已经打开材料栏
