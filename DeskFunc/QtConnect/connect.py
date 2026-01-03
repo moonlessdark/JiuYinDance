@@ -1,10 +1,15 @@
 import time
 
+from PySide6 import QtCore
+from PySide6.QtCore import QEvent, Qt
+from PySide6.QtGui import QMouseEvent
+
 from DeskFunc.QThTask.QthMapGoods import MapGoodsQth
 from DeskFunc.QThTask.QthMoneyCard import OpenGiftCard
 from DeskPage.fuctionPage import TaskEnum
 from DeskPage.mainPage import MainUI
 from Utils.FindWindowsImage import WindowsHandle, WindowsCapture
+from Utils.GlobalMouseListener import GlobalMouseListener
 from Utils.KeyMouseDriver.GhostSoft.get_driver_v3 import GetGhostDriver, SetGhostBoards, SetGhostMouse
 from Utils.dataClass import GhostDll
 from Utils.loadResources import GetConfig, get_map_goods_point_list_by_selected
@@ -32,6 +37,10 @@ class TaskConnect(MainUI):
         super().__init__()
         self.__init_driver()
         self.__init_game_windows_hwnd()
+
+        # 设置全局热键/鼠标监听开关
+        self.global_mouse_monitoring = False
+        self.global_mouse_listener = None
 
         # 把线程都加载进来
         self.qth_dance = DanceThByFindPic()  # 团练授业、势力修炼
@@ -109,6 +118,39 @@ class TaskConnect(MainUI):
             self.log_print("幽灵键鼠驱动加载失败,请确认是否缺失了驱动文件,请检查后重试\n")
         self.windows_get.push_button_run_windows.setEnabled(False)  # 未检测到驱动，把执行按钮禁用掉
         return False
+
+    """
+    监听一下鼠标中键，按下的话表示结束任务
+    """
+
+    def toggle_global_mouse_monitoring(self, enable: bool):
+        """切换全局鼠标监听状态"""
+        self.global_mouse_monitoring = enable
+
+        if enable:
+            if not hasattr(self, 'global_mouse_listener') or self.global_mouse_listener is None:
+                # 启动全局监听
+                self.global_mouse_listener = GlobalMouseListener()
+                # print("启动全局监听")
+                self.global_mouse_listener.middle_clicked.connect(self.listener_task_run_status)
+                self.global_mouse_listener.start()
+        else:
+            if hasattr(self, 'global_mouse_listener') and self.global_mouse_listener is not None:
+                # 停止全局监听
+                # print("停止全局监听")
+                self.global_mouse_listener.stop()
+                self.global_mouse_listener = None
+
+    def listener_task_run_status(self):
+        """
+        监听鼠标中间是否被按下，按下的话表示需要停止任务
+        :return:
+        """
+        global _run_task_status
+        if _run_task_status:
+            self.log_print("监听到鼠标中键被按下,当前任务结束")
+        _run_task_status = False
+        self._stop_run_task()
 
     def __init_game_windows_hwnd(self):
         """
@@ -270,23 +312,32 @@ class TaskConnect(MainUI):
 
                 self.qth_farmer_picking_crops.get_param(_checked_hwnd_list[0], _scan_product_num)
                 self.qth_farmer_picking_crops.start()
+
+            # 启用鼠标中键的全局监听
+            self.toggle_global_mouse_monitoring(True)
+
         else:
             self.log_print(f"任务 {_widget_radio_enum.value} 停止执行...")
             self.windows_get.push_button_run_windows.setText("停止中...")
             self.windows_get.push_button_run_windows.setEnabled(False)
 
-            """
-            将以下人物进程都更新为"停止"。
-            """
-            self.qth_dance.stop_stak()  # 团练授业，绿色的上下左右
-            self.qth_cap_pic.stop_execute_init()  # 截图
-            self.qht_open_gift.stop_execute_init()  # 9点开卡
-            self.qth_map_get.stop_execute_init()  # 地图采集
-            self.qht_my_fight.stop_execute_init()  # 我的战斗
-            self.qth_market.stop_execute_init()  # 世界竞拍
-            self.qth_skill_dance.stop_execute_init()  # 每日演练(跟随NPC出招)
-            self.qth_farmer_picking_crops.stop_execute_init()
+            # 停止鼠标的全局监听
+            self.toggle_global_mouse_monitoring(False)
+            self._stop_run_task()
         return None
+
+    def _stop_run_task(self):
+        """
+        将以下任务进程都更新为"停止"。
+        """
+        self.qth_dance.stop_stak()  # 团练授业，绿色的上下左右
+        self.qth_cap_pic.stop_execute_init()  # 截图
+        self.qht_open_gift.stop_execute_init()  # 9点开卡
+        self.qth_map_get.stop_execute_init()  # 地图采集
+        self.qht_my_fight.stop_execute_init()  # 我的战斗
+        self.qth_market.stop_execute_init()  # 世界竞拍
+        self.qth_skill_dance.stop_execute_init()  # 每日演练(跟随NPC出招)
+        self.qth_farmer_picking_crops.stop_execute_init()  # 自动种地
 
     def _update_task_run_status(self, task_status: bool):
         """

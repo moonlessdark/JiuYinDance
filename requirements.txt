@@ -1,3 +1,4 @@
+pynput
 numpy
 comtypes
 PySide6
