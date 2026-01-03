@@ -248,3 +248,13 @@ MarketPic:
       jin_yin_hua: /Resources/ImageTemplate/PicWorldMarket/Props/金银花.png
       jiao_meng_dan: /Resources/ImageTemplate/PicWorldMarket/Props/觉梦丹礼包.png
       jiao_hua_ji: /Resources/ImageTemplate/PicWorldMarket/Props/叫花鸡.png
+# 挑战点兑换幸运硬币
+LuckyMoney:
+  left_menu_skill_book: /Resources/ImageTemplate/PicLuckyMoney/夺魄勾心刺.png
+  left_menu_lucky_skill_page: /Resources/ImageTemplate/PicLuckyMoney/武学书页.png
+  button_exchange: /Resources/ImageTemplate/PicLuckyMoney/兑换.png
+  backpack_skill_page: /Resources/ImageTemplate/PicLuckyMoney/背包中的书页.png
+  middle_recycle_box: /Resources/ImageTemplate/PicLuckyMoney/回收物品存放栏.png
+  middle_recycle_box_result: /Resources/ImageTemplate/PicLuckyMoney/可获得的幸运硬币.png
+  button_exchange_ok: /Resources/ImageTemplate/PicLuckyMoney/确定兑换幸运硬币.png
+  button_exchange_re_ok: /Resources/ImageTemplate/PicLuckyMoney/兑换时的二次确认.png

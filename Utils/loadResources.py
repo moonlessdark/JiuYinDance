@@ -6,7 +6,7 @@ import yaml
 
 from Utils.dataClass import DancePicGrey, DancePicGreen, DmDll, GhostDll, DancePicWhz, BackpackItem, GoodsOptStatus, \
     MapPic, TruckCarReceiveTask, TruckCarPic, FindTruckCarTaskNPC, Team, PersonStatusAndBuff, MapPointNum, MyFight, \
-    MarketPic
+    MarketPic, ChallengePoint2LuckyMoney
 from Utils.projectPath import PathUtil
 
 
@@ -417,3 +417,18 @@ class GetConfig:
         __market_pic.jue_meng_dan  = self.project_dir + self.__datas["MarketPic"]["goods_list"]["props"]["jiao_meng_dan"]  # 觉梦丹
         __market_pic.jiao_hua_ji = self.project_dir + self.__datas["MarketPic"]["goods_list"]["props"]["jiao_hua_ji"]  # 觉梦丹
         return __market_pic
+
+    def get_change_2_lucky_money(self) -> ChallengePoint2LuckyMoney:
+        """
+        挑战点换幸运硬币
+        """
+        __change_pic = ChallengePoint2LuckyMoney()
+        __change_pic.challenge_point_shop_book = self.project_dir + self.__datas["LuckyMoney"]["left_menu_skill_book"]
+        __change_pic.challenge_point_book_page = self.project_dir + self.__datas["LuckyMoney"]["left_menu_lucky_skill_page"]
+        __change_pic.challenge_point_exchange_button = self.project_dir + self.__datas["LuckyMoney"]["button_exchange"]
+        __change_pic.backpack_item_pic = self.project_dir + self.__datas["LuckyMoney"]["backpack_skill_page"]
+        __change_pic.recycle_box = self.project_dir + self.__datas["LuckyMoney"]["middle_recycle_box"]
+        __change_pic.recycle_box_result = self.project_dir + self.__datas["LuckyMoney"]["middle_recycle_box_result"]
+        __change_pic.exchange_ok = self.project_dir + self.__datas["LuckyMoney"]["button_exchange_ok"]
+        __change_pic.exchange_re_ok = self.project_dir + self.__datas["LuckyMoney"]["button_exchange_re_ok"]
+        return __change_pic

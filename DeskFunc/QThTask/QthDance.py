@@ -94,12 +94,12 @@ class DanceThByFindPic(QThread):
         while self.working:
 
             self.status_bar.emit(find_button_count)  # 打印一下执行了几次按钮
-            if self.working is False:
+            if not self.working:
                 break
             for hwnd in self._hwnd_list:
                 # 2种模式都执行一次。先找团练授业，如果没有找到就去找绿色的上下左右
 
-                if self.working is False:
+                if not self.working:
                     break
                 # start_time = time.time()
 
@@ -122,7 +122,7 @@ class DanceThByFindPic(QThread):
                 # 将时间差转换为字符串并打印
                 # print("执行时间:" + str(time_diff) + str(_button_list))
 
-                if self.windows_opt.activate_windows(hwnd) is False:
+                if not self.windows_opt.activate_windows(hwnd):
                     self.sin_out.emit(f"窗口: {hwnd} 激活失败,任务停止执行")
                     self.working = False
                     break

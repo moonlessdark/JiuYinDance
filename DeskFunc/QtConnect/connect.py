@@ -21,6 +21,8 @@ from DeskFunc.QThTask.QthMyFight import MyFightXJ
 from DeskFunc.QThTask.QthWorldMarket import WorldMarketGetGoodsQth
 from DeskFunc.QThTask.QthDaySkillDance import SkillDanceQth
 from DeskFunc.QThTask.QthFarmerPickingCrops import FarmerPickingCropsQth
+from DeskFunc.QThTask.QthChallengePoint2LuckyMoney import ChallengePoint2LuckyMoney
+
 
 _windows_hwnd_save: dict = {}
 _run_task_status: bool = False  # 任务执行状态
@@ -52,7 +54,8 @@ class TaskConnect(MainUI):
         self.qht_my_fight = MyFightXJ()  # 我的战斗
         self.qth_market = WorldMarketGetGoodsQth()  # 世界竞拍
         self.qth_skill_dance = SkillDanceQth()  # 每日演练(跟着NPC出招)
-        self.qth_farmer_picking_crops = FarmerPickingCropsQth()
+        self.qth_farmer_picking_crops = FarmerPickingCropsQth()  # 自动种地
+        self.qth_change_2_book = ChallengePoint2LuckyMoney()  # 挑战点换书页
 
         # 线程的信号槽连接
         # 团练授业
@@ -93,6 +96,10 @@ class TaskConnect(MainUI):
         self.qth_farmer_picking_crops.sin_out.connect(self.log_print)
         self.qth_farmer_picking_crops.status_bar.connect(self.status_bar.update_execute_num)
         self.qth_farmer_picking_crops.sin_run_status.connect(self._update_task_run_status)
+        # 挑战点换书页
+        self.qth_change_2_book.sin_out.connect(self.log_print)
+        self.qth_change_2_book.status_bar.connect(self.status_bar.update_execute_num)
+        self.qth_change_2_book.sin_run_status.connect(self._update_task_run_status)
 
         # GUI的按钮的信号槽
         self.windows_get.push_button_run_windows.clicked.connect(self.run_task)  # 执行任务
@@ -312,6 +319,12 @@ class TaskConnect(MainUI):
 
                 self.qth_farmer_picking_crops.get_param(_checked_hwnd_list[0], _scan_product_num)
                 self.qth_farmer_picking_crops.start()
+            elif _widget_radio_enum == TaskEnum.challenge_point_2_book:
+                if len(_checked_hwnd_list) > 1:
+                    self.log_print("暂时只支持控制一个游戏窗口!")
+                    return None
+                self.qth_change_2_book.init_task_param(_checked_hwnd_list[0])
+                self.qth_change_2_book.start()
 
             # 启用鼠标中键的全局监听
             self.toggle_global_mouse_monitoring(True)
@@ -338,6 +351,7 @@ class TaskConnect(MainUI):
         self.qth_market.stop_execute_init()  # 世界竞拍
         self.qth_skill_dance.stop_execute_init()  # 每日演练(跟随NPC出招)
         self.qth_farmer_picking_crops.stop_execute_init()  # 自动种地
+        self.qth_change_2_book.stop_stak()
 
     def _update_task_run_status(self, task_status: bool):
         """

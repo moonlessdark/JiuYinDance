@@ -302,3 +302,16 @@ class MarketPic:
     jiao_hua_ji: str = dataclasses.field(default_factory=str)  # 叫花鸡
     gu_pu_can_juan_jue_shi_gao_shou: str = dataclasses.field(default_factory=str)  # 古朴残卷-绝世高手
     jue_meng_dan: str = dataclasses.field(default_factory=str)  # 觉梦丹
+
+
+@dataclasses.dataclass
+class ChallengePoint2LuckyMoney:
+    # 挑战点兑换幸运硬币
+    challenge_point_shop_book: str = dataclasses.field(default_factory=str)  # 页面左侧的夺魄勾心刺
+    challenge_point_book_page: str = dataclasses.field(default_factory=str)  # 页面左侧的夺魄勾心刺的具体的书页
+    challenge_point_exchange_button: str = dataclasses.field(default_factory=str)  # 挑战点兑换此书页
+    backpack_item_pic: str = dataclasses.field(default_factory=str)  # 背包物品图标
+    recycle_box: str = dataclasses.field(default_factory=str)  # 回收栏图标
+    recycle_box_result: str = dataclasses.field(default_factory=str)  # 回收结果预览
+    exchange_ok: str = dataclasses.field(default_factory=str)  # 确认回收
+    exchange_re_ok: str = dataclasses.field(default_factory=str)  # 二次确认回收
