@@ -23,6 +23,7 @@ from numpy import ndarray
 def find_template(im_source: ndarray, im_template: ndarray, threshold: float = 0.5,
                   auto_scale: tuple = None,
                   edge: bool = False,
+                  to_gray: bool = True,
                   debug: bool = False):
     """
     在im_source中查找im_template的匹配位置，返回最匹配的那个结果，内部调用find_all_template实现
@@ -92,13 +93,14 @@ def find_template(im_source: ndarray, im_template: ndarray, threshold: float = 0
         IOError, if read file failed.
 
     """
-    result = find_all_template(im_source, im_template, threshold, 1, auto_scale, edge, debug)
+    result = find_all_template(im_source, im_template, threshold, 1, auto_scale, edge, to_gray, debug)
     return result[0] if result else None
 
 
 def find_all_template(im_source: ndarray, im_template: ndarray, threshold: float = 0.5, maxcnt: int = 0,
                       auto_scale=None,
                       edge: bool = False,
+                      to_gray: bool = True,
                       debug: bool = False):
     """
     在im_source中查找im_template的匹配位置，返回最匹配的那个结果，内部调用find_all_template实现
@@ -138,7 +140,15 @@ def find_all_template(im_source: ndarray, im_template: ndarray, threshold: float
 
             Whether to perform edge extraction before finding, default is False.
             If given True, both source image and template image will be extracting edge by Canny Algorithm.
-
+        to_gray: 是否需要经过灰度处理，处理后能加快识别速度。
+            但是需要注意：
+            1 对比度小：原图中蓝色渐变区域与背景的对比度本身就较低
+            2 灰度化影响：转为灰度后，原本有细微颜色差异的区域会变得更接近，导致特征模糊
+            3 彩色匹配优势：保留RGB通道能利用颜色差异作为额外识别特征，提高匹配成功率
+            建议在处理这类低对比度模板时：
+            1 优先使用彩色匹配（如 cv2.TM_CCOEFF_NORMED）
+            2 可适当调整匹配阈值（如从0.8降低到0.7）
+            3 考虑对模板进行预处理增强对比度（如直方图均衡化）
         debug: 是否不输出中间处理步骤和处理时间
 
             Whether to export intermediate steps and performing time.
@@ -204,10 +214,16 @@ def find_all_template(im_source: ndarray, im_template: ndarray, threshold: float
             sw, sh, w, h)
 
     start_time = time.time()
-    gray_template = _to_gray(im_template)
 
     new_pic = cv2.cvtColor(np.array(im_source), cv2.COLOR_BGR2RGB)
-    gray_source = _to_gray(new_pic)
+
+    if to_gray:
+        gray_template = _to_gray(im_template)
+        gray_source = _to_gray(new_pic)
+    else:
+        gray_template = im_template
+        gray_source = new_pic
+
     if debug:
         print("to_gray time: {}".format(time.time() - start_time))
 
