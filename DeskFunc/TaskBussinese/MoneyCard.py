@@ -154,12 +154,53 @@ class FindGiftCard:
                 return True
         return None
 
+    @staticmethod
+    def find_progress_bar_by_color(roi):
+        """
+        检测颜色
+        """
+        hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
+        mask = cv2.inRange(hsv, np.array([100, 50, 50]), np.array([130, 255, 255]))
+
+        # 1. 检查是否存在连续长条
+        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        for cnt in contours:
+            x, y, w, h = cv2.boundingRect(cnt)
+            if w > h * 3 and w > 80:  # 长条且足够长
+                # print("长度 ", w)
+                return True
+        return  False
+
+    def find_progress_bar_by_template(self, roi):
+        """
+        使用模板匹配查找进度条
+        :param roi: 待检测区域
+        :return: 是否找到进度条
+        """
+        result = cv2.matchTemplate(roi, self._goods_pic_open_loading, cv2.TM_CCOEFF_NORMED)
+        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+        # print("max_val:", max_val)
+        if max_val > 0.8:
+            return True
+        return False
+
     def find_open_loading(self, hwnd: int):
         """
         查询打开状态
         """
-        __rec_goods_bag_open_loading = self.windows_find.get_windows_image_rect(hwnd,
-                                                                                read_image=self._goods_pic_open_loading)
-        if __rec_goods_bag_open_loading is not None:
+
+        cap = self.windows_cap.capture(hwnd)
+        cap_content = cap.pic_content[
+            int(cap.pic_height * 0.5):int(cap.pic_height * 0.9),  # 高度范围
+            int(cap.pic_width * 0.3):int(cap.pic_width * 0.7)  # 宽度范围
+        ]
+        # 方法1：结构特征（上下边框）
+        color_bool: bool = self.find_progress_bar_by_color(cap_content)
+        template_bool: bool = self.find_progress_bar_by_template(cap_content)
+        # 方法2：模板匹配（备用）
+        if color_bool and template_bool:
+            # print("正在打开中...")
+            # cv2.imshow("进度条", cap_content)
+            # cv2.waitKey(0)
             return True
         return False
