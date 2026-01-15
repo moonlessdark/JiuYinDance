@@ -11,7 +11,7 @@ There are several improvements and changes:
 
 *The API of this project is compatible with aircv*
 """
-__version__ = '0.2.0'
+__version__ = '0.2.1'
 
 import time
 
@@ -20,84 +20,7 @@ import numpy as np
 from numpy import ndarray
 
 
-def find_template(im_source: ndarray, im_template: ndarray, threshold: float = 0.5,
-                  auto_scale: tuple = None,
-                  edge: bool = False,
-                  to_gray: bool = True,
-                  debug: bool = False):
-    """
-    在im_source中查找im_template的匹配位置，返回最匹配的那个结果，内部调用find_all_template实现
-    To find im_template in im_source, returns the most matchable result.
-    This function calls find_all_template internally.
-    :arg:
-        im_source(string): 源图(大图)，opencv格式的图片
-
-            Source image, the bigger one, in opencv format
-
-        im_template(string): 需要查找的图片(小图)，opencv格式的图片
-
-            Template image, the smaller one, in opencv format
-
-        threshold: 阈值，当匹配度小于该阈值的时候，就忽略掉，是一个-1~1之间的值，通常小于0.5，匹配度就相当低了
-
-            Threshold of match confidence, should be between -1 to 1.
-            The result will be badly matchable if it's smaller than 0.5, generally.
-
-        auto_scale: 是否自动缩放im_template来查找匹配，如果为None表示不缩放，如果需要缩放，那么传一个tuple：(min_scale, max_scale, step)，
-            其中min_scale和max_scale分别是缩放倍数的下限和上限，都是小数，min_scale介于0~1之间，max_scale大于1, step表示从min尝试到max之间的步长,
-            默认为0.1。
-
-            Whether trying to scale the template image to find a match. Default is None, which means no scaling.
-            if given, should send a tuple formatted as: (min_scale, max_scale, step)
-            (min_scale, max_scale) means the lowest and highest limitation of scaling, they are all float numbers,
-            min_scale should be between 0 and 1, and max_scale should be greater than 1.
-            step indicates the granularity of the attempt from min to max,
-            for example, if given (0.5, 1.2, 0.1),
-            then the function will try up to 8 times to find match result from 0.5 to 1.2 times scaling
-
-        edge: 是否做边缘提取后再匹配，缺省为False，如果设置为True，会把源图和模板图，都基于Canny算法提取边缘，然后再做匹配
-
-            Whether to perform edge extraction before finding, default is False.
-            If given True, both source image and template image will be extracting edge by Canny Algorithm.
-
-        debug: 是否不输出中间处理步骤和处理时间
-
-            Whether to export intermediate steps and performing time.
-
-    :returns:
-        匹配结果对象,包含如下属性:
-
-        Matched results, including:
-
-        result:
-            匹配区域的中心点
-
-            The center point of matched area.
-
-        rectangle:
-            匹配区域的四角坐标
-
-            The 4 corners of matched area.
-
-        confidence:
-            匹配程度, 是一个-1~1之间的值, 约大表示匹配度越高
-
-            Matched confidence, a float number between -1 and 1, the greater, the more matchable.
-
-
-        如果没有找到符合条件的匹配结果, 返回None
-
-        if not found, returns None
-
-    :raise
-        IOError, if read file failed.
-
-    """
-    result = find_all_template(im_source, im_template, threshold, 1, auto_scale, edge, to_gray, debug)
-    return result[0] if result else None
-
-
-def find_all_template(im_source: ndarray, im_template: ndarray, threshold: float = 0.5, maxcnt: int = 0,
+def find_all_template(im_source: ndarray, im_template: ndarray, threshold: float = 0.5, max_cnt: int = 0,
                       auto_scale=None,
                       edge: bool = False,
                       to_gray: bool = True,
@@ -120,7 +43,7 @@ def find_all_template(im_source: ndarray, im_template: ndarray, threshold: float
             Threshold of match confidence, should be between -1 to 1.
             The result will be badly matchable if it's smaller than 0.5, generally.
 
-        maxcnt: 最大匹配数量, 缺省为0, 即不限
+        max_cnt: 最大匹配数量, 缺省为0, 即不限
 
             Maximum count of matched results, default is 0, means no limitation
 
@@ -239,7 +162,7 @@ def find_all_template(im_source: ndarray, im_template: ndarray, threshold: float
         if debug:
             print("Canny time: {}".format(time.time() - start_time))
 
-    result = _internal_find(gray_source, gray_template, maxcnt, threshold, debug)
+    result = _internal_find(gray_source, gray_template, max_cnt, threshold, debug)
 
     if len(result) == 0 and auto_scale is not None:
         scale_min = auto_scale[0]
@@ -250,7 +173,7 @@ def find_all_template(im_source: ndarray, im_template: ndarray, threshold: float
                                  interpolation=cv2.INTER_CUBIC)
             if debug:
                 print("try resize template in scale {} to find match".format(scale))
-            result = _internal_find(gray_source, resized, maxcnt, threshold, debug)
+            result = _internal_find(gray_source, resized, max_cnt, threshold, debug)
             if len(result) > 0:
                 break
     if debug:

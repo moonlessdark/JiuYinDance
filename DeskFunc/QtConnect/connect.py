@@ -302,9 +302,9 @@ class TaskConnect(MainUI):
                 """
                 每日演练
                 """
-                if len(_checked_hwnd_list) > 1:
-                    self.log_print("暂时只支持控制一个游戏窗口!")
-                    return None
+                # if len(_checked_hwnd_list) > 1:
+                #     self.log_print("暂时只支持控制一个游戏窗口!")
+                #     return None
                 self.qth_skill_dance.get_param(_checked_hwnd_list)
                 self.qth_skill_dance.start()
             elif _widget_radio_enum == TaskEnum.farmer_task:
