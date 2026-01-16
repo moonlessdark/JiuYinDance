@@ -135,12 +135,12 @@ def save_dpi_config(mode):
     with open("app_config.ini", "w") as f:
         config.write(f)
 
-def get_current_dpi_mode(self):
+def get_current_dpi_mode():
     """获取当前DPI模式"""
     return load_dpi_config()
 
 
-def restart_application(self):
+def restart_application():
     """重启应用程序"""
     import subprocess
     subprocess.Popen([sys.executable] + sys.argv)
@@ -168,7 +168,7 @@ if __name__ == '__main__':
 
     w.log_print(f"当前DPI模式: 【{mode_name}】\n请确保游戏游戏设置与此脚本的DPI缩放设置一致。\n")
 
-    w.log_print(f"更新日期: 2026-01-03\n"
+    w.log_print(f"更新日期: 2026-01-17\n"
                 "更新内容: \n"
                 "1、新增挑战点兑换幸运硬币\n"
                 "2、支持按鼠标中键停止任务(需以管理员权限运行脚本)")

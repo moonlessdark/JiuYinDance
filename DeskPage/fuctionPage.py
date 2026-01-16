@@ -160,9 +160,19 @@ class TaskLifeWork(QtWidgets.QWidget):
         _lay_out_good_get_widget.addWidget(self.combo_box_goods_point_selected, QtCore.Qt.AlignmentFlag.AlignLeft)
         _lay_out_good_get_widget.addWidget(self.radio_button_map_goods_get)
 
-        _label_farmer_number = QtWidgets.QLabel("种植次数(0：一直执行)")
+        _label_farmer_number = QtWidgets.QLabel("种植次数 (0:自动判断)")
         self.input_line_farmer_number = QtWidgets.QSpinBox()
-        # 设置整数验证器，范围为0-999
+        # 为 QSpinBox 添加工具提示说明
+        self.input_line_farmer_number.setToolTip(
+            "输入不同的数字有不同的效果：\n"
+            "• 0: 一直执行，直到没有种子或者肥料时自动停止\n"
+            "• 1-999: 指定具体的种植次数\n"
+            "• 数字越大，种植次数越多"
+        )
+        # 设置 QSpinBox 的范围
+        self.input_line_farmer_number.setRange(0, 999)  # 设置范围为0-999
+        self.input_line_farmer_number.setValue(0)  # 默认值设为0
+
         self.radio_button_farmer_work = QtWidgets.QRadioButton(TaskEnum.farmer_task.value, self)
 
         _lay_out_farmer_widget = QtWidgets.QHBoxLayout()

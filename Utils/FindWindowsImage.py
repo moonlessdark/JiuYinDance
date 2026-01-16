@@ -425,7 +425,7 @@ class FindWindowsImageTemplate:
                                edge: bool = False,
                                auto_scale: tuple[float, float, float] = None,
                                to_gray: bool = False,
-                               result_type: int = 0, ) -> Optional[tuple, int]:
+                               result_type: int = 0, ) -> Optional[tuple]:
         """
         通过模板匹配，返回匹配度最高的4个坐标(非圆心点)
         :param smaller_pic:
