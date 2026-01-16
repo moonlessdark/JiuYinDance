@@ -1,6 +1,6 @@
 from PySide6.QtCore import QThread, Signal
-from PySide6.QtWidgets import QApplication
 from pynput import mouse
+
 
 class GlobalMouseListener(QThread):
     middle_clicked = Signal()  # 信号，当检测到中键点击时发出

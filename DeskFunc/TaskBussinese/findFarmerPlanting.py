@@ -3,9 +3,11 @@ import time
 import cv2
 import numpy as np
 from numpy import fromfile
+
+from DeskFunc.TaskBussinese.commonOperations import CommonOperations
 from Utils.ImageUtils.FindImageOCR import FindPicOCR
 from Utils.FindWindowsImage import WindowsHandle, FindWindowsImageTemplate, WindowsCapture
-from Utils.KeyMouseDriver.GhostSoft.get_driver_v3 import SetGhostBoards, SetGhostMouse
+from Utils.KeyMouseDriver.GhostSoft.get_driver_v3 import SetGhostBoards
 from Utils.loadResources import GetConfig
 
 
@@ -109,31 +111,7 @@ class FindFarmerPlanting:
         self._goods_pic_open_loading = _load_pic(self._opt_status.open_loading)
         self._button_ok = _load_pic(self._opt_status.get_all_goods)
 
-    def click_pos_left_mouse(self, hwnd: int, pos: tuple) -> bool:
-        """
-        鼠标左键点击一下坐标
-        """
-        if not self.windows_opt.activate_windows(hwnd):
-            return False
-        time.sleep(0.2)
-        SetGhostMouse().move_mouse_to(pos[0], pos[1])
-        time.sleep(0.1)
-        SetGhostMouse().click_mouse_left_button()
-        time.sleep(0.1)
-        return True
-
-    def click_pos_right_mouse(self, hwnd: int, pos: tuple) -> bool:
-        """
-        鼠标右键点击一下坐标
-        """
-        if not self.windows_opt.activate_windows(hwnd):
-            return False
-        time.sleep(0.2)
-        SetGhostMouse().move_mouse_to(pos[0], pos[1])
-        time.sleep(0.1)
-        SetGhostMouse().click_mouse_right_button()
-        time.sleep(0.1)
-        return True
+        self._common_options = CommonOperations()  # 通用操作
 
     def find_fertilizer_backpack(self, hwnd: int) -> bool:
         """
@@ -142,12 +120,12 @@ class FindFarmerPlanting:
         for i in range(3):
             # 循环3次，避免出现被其他窗口遮挡的情况，最后一次可以显示出来
             for pic in [self._material_pic_bag_unclick, self._material_pic_bag_clicked]:
-                pic_rec = self.windows_find.get_windows_image_rect(hwnd, read_image=pic, threshold=0.85)
+                pic_rec = self.windows_find.get_windows_image_rect(hwnd, template_image=pic, threshold=0.85)
                 if pic_rec is None:
                     continue
                 else:
                     # 如果当前找到的是未打物品栏的图标,那就点击一下
-                    self.click_pos_left_mouse(hwnd, pic_rec)
+                    self._common_options.mouse_click_pos(hwnd, pic_rec, 0)
                     return True
             # 按B，打开背包
             if not self.windows_opt.activate_windows(hwnd):
@@ -161,7 +139,7 @@ class FindFarmerPlanting:
         """
         查找肥料是否在背包内
         """
-        _fertilizer_res: tuple = self.windows_find.get_windows_image_rect(hwnd, read_image=self.pic_item_fertilizer, edge=True, threshold=0.5)
+        _fertilizer_res: tuple = self.windows_find.get_windows_image_rect(hwnd, template_image=self.pic_item_fertilizer, edge=True, threshold=0.5)
         if _fertilizer_res is None:
             return False
         else:
@@ -171,7 +149,7 @@ class FindFarmerPlanting:
         """
         查找种子是否在背包内
         """
-        _seed_res: tuple = self.windows_find.get_windows_image_rect(hwnd, read_image=self.pic_item_seed, edge=True, threshold=0.6)
+        _seed_res: tuple = self.windows_find.get_windows_image_rect(hwnd, template_image=self.pic_item_seed, edge=True, threshold=0.6)
         if _seed_res is None:
             return False
         else:
@@ -181,22 +159,22 @@ class FindFarmerPlanting:
         """
         查找肥料并使用
         """
-        _fertilizer_res: tuple = self.windows_find.get_windows_image_rect_first_pos(hwnd, read_image=self.pic_item_fertilizer, edge=True, threshold=0.6)
+        _fertilizer_res: tuple = self.windows_find.get_windows_image_rect(hwnd=hwnd, template_image=self.pic_item_fertilizer, threshold=0.6, edge=True)
         if _fertilizer_res is None:
             return False
         else:
-            self.click_pos_right_mouse(hwnd, _fertilizer_res)
+            self._common_options.mouse_click_pos(hwnd, _fertilizer_res, 1)
             return True
 
     def find_seed_and_use(self, hwnd: int) -> bool:
         """
         查找种子并使用
         """
-        _seed_res: tuple = self.windows_find.get_windows_image_rect_first_pos(hwnd, read_image=self.pic_item_seed, edge=True, threshold=0.5)
+        _seed_res: tuple = self.windows_find.get_windows_image_rect(hwnd, template_image=self.pic_item_seed, edge=True, threshold=0.5, result_type=1)
         if _seed_res is None:
             return False
         else:
-            self.click_pos_right_mouse(hwnd, _seed_res)
+            self._common_options.mouse_click_pos(hwnd, _seed_res, 1)
             return True
 
     def find_crops_pos(self, hwnd: int) -> bool:
@@ -247,22 +225,10 @@ class FindFarmerPlanting:
         """
         点击确定按钮
         """
-        __rec_goods_bag_tag_clickable = self.windows_find.get_windows_image_rect(hwnd, read_image=self._button_ok, threshold=0.5, edge=True)
-        if __rec_goods_bag_tag_clickable is not None:
-            self.windows_opt.activate_windows(hwnd)
-            time.sleep(0.5)
-            SetGhostMouse().move_mouse_to(__rec_goods_bag_tag_clickable[0], __rec_goods_bag_tag_clickable[1])
-            SetGhostMouse().click_mouse_left_button()
-            return True
-        return False
+        return self._common_options.find_get_all_button(hwnd)
 
     def find_open_loading(self, hwnd: int):
         """
         查询打开状态
         """
-        __rec_goods_bag_open_loading = self.windows_find.get_windows_image_rect(hwnd,
-                                                                                read_image=self._goods_pic_open_loading,
-                                                                                threshold=0.75)
-        if __rec_goods_bag_open_loading is not None:
-            return True
-        return False
+        return self._common_options.find_open_loading(hwnd)

@@ -154,7 +154,6 @@ class OpenGiftCard(QThread):
                     SetGhostMouse().click_mouse_right_button()
                     time.sleep(0.4)
                     is_loading = self.find_gift_card.find_open_loading(hwnd_i)
-                    # self.sin_out.emit(f"窗口id:{hwnd_i} 加载状态检测结果: {is_loading}")
                     if is_loading:
                         self.sin_out.emit(f"窗口id:{hwnd_i} 已开卡...")
 
@@ -167,24 +166,17 @@ class OpenGiftCard(QThread):
                     time.sleep(0.1)
             time.sleep(1)
             if len(_is_open_card_hwnd) != 0:
-
-                if len(_is_open_card_hwnd) == 1:
-                    # 如果当前只有一个窗口进行了开卡，那么多等3秒，因为可能进度条还没结束
-                    time.sleep(1)
-
                 for is_ok_h in _is_open_card_hwnd:
-
+                    time.sleep(1)
                     # 鼠标移动一下，避免挡住了包裹的图标
                     m_x, m_y = SetGhostMouse().get_mouse_x_y()
                     w_point = coordinate_change_from_windows(is_ok_h, (m_x - 10, m_y - 10))
                     SetGhostMouse().move_mouse_to(w_point[0], w_point[1])
-
                     # 如果有“获取全部”的按钮的话，那么就全部关掉吧
                     if self.find_gift_card.click_get_all(is_ok_h):
                         self.sin_out.emit(f"窗口id:{is_ok_h} 没有钱,领取一些丹药")
                     else:
                         self.sin_out.emit(f"窗口id:{is_ok_h} 开到钱了")
-                    time.sleep(1)
             _is_no_card_hwnd.clear()  # 清理掉
             _is_open_card_hwnd.clear()  # 清理掉
         self.mutex.unlock()

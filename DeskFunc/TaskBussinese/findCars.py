@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import time
-from collections import namedtuple
+from typing import Tuple
 
 import cv2
 import numpy as np
@@ -81,7 +81,7 @@ class TruckCar:
             self._map_pic = GetConfig().get_map_pic()
         return self._map_pic
 
-    def _get_pic_team(self) -> Team():
+    def _get_pic_team(self) -> Team:
         """
         检查队伍是否创建
         """
@@ -127,7 +127,7 @@ class TruckCar:
         退出不小心点到别人的镖车触发劫镖
         """
         __find_task_car: TruckCarPic = self._get_pic_truck_car()
-        __break_car_talk = self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(__find_task_car.fight_other_truck_car))
+        __break_car_talk = self.windows_find.get_windows_image_rect(hwnd, template_image=self._load_pic(__find_task_car.fight_other_truck_car))
         if __break_car_talk is None:
             return False
         WindowsHandle().activate_windows(hwnd)
@@ -141,8 +141,8 @@ class TruckCar:
         退出和NPC对话的窗口
         """
         __find_task: TruckCarReceiveTask = self._get_pic_receive_task()
-        __break_npc_talk = self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(__find_task.break_npc_talk))
-        __receive_task_talk = self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(__find_task.receive_task_talk))
+        __break_npc_talk = self.windows_find.get_windows_image_rect(hwnd, template_image=self._load_pic(__find_task.break_npc_talk))
+        __receive_task_talk = self.windows_find.get_windows_image_rect(hwnd, template_image=self._load_pic(__find_task.receive_task_talk))
         if __break_npc_talk is None:
             return False
         elif __receive_task_talk is not None:
@@ -233,7 +233,7 @@ class TruckCar:
         """
         time.sleep(1)
         find_task: TruckCarPic = self._get_pic_truck_car()
-        task_flag_status = self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(find_task.task_flag_status))
+        task_flag_status = self.windows_find.get_windows_image_rect(hwnd, template_image=self._load_pic(find_task.task_flag_status))
         if task_flag_status is None:
             """
             押镖状态没有了，可能是被
@@ -265,7 +265,7 @@ class TruckCar:
         __img_car = self.windows_cap.capture(hwnd)
         # 先找图片模板的驾车按钮在不在
         find_task: TruckCarPic = self._get_pic_truck_car()
-        cos = self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(find_task.task_star_mode))
+        cos = self.windows_find.get_windows_image_rect(hwnd, template_image=self._load_pic(find_task.task_star_mode))
         if cos is not None:
             return cos
         return None
@@ -293,7 +293,7 @@ class TruckCar:
             return False
         return True
 
-    def find_car_pos_in_display_v2(self, hwnd: int, pic_content: np.ndarray) -> tuple or None:
+    def find_car_pos_in_display_v2(self, pic_content: np.ndarray) -> Tuple[int, int] | None:
         rec = self.ocr.find_truck_car_ocr(pic_content, "的镖车")
         if rec is not None:
             return rec
@@ -318,7 +318,7 @@ class FightMonster(TruckCar):
         pic = self.windows_cap.capture(hwnd)
         # 高度1-300像素，宽度 画面右侧，查看所有状态栏
         pic_content = pic.pic_content[1:int(pic.pic_height * 0.4), int(pic.pic_width * 0.5):int(pic.pic_width)]
-        task_monster_fight = self.windows_find.get_image_all_rect(pic_content, self._load_pic(self.__find_task.task_monster_fight))
+        task_monster_fight = self.windows_find.get_windows_image_all_rect(pic_content, self._load_pic(self.__find_task.task_monster_fight))
         if task_monster_fight is not None:
             for xx in task_monster_fight:
                 if xx[-1] > 0.8:
@@ -339,7 +339,7 @@ class FightMonster(TruckCar):
         pic_content = pic.pic_content[1:int(pic.pic_height * 0.3), int(pic.pic_width * 0.3):int(pic.pic_width * 0.7)]
         fight_tag_skill: str = self.__find_task.task_monster_target_skil
 
-        task_monster_fight = self.windows_find.get_image_all_rect(pic_content, self._load_pic(fight_tag_skill))
+        task_monster_fight = self.windows_find.get_windows_image_all_rect(pic_content, self._load_pic(fight_tag_skill))
         if task_monster_fight is not None:
             for xx in task_monster_fight:
                 if xx[-1] > 0.5:
@@ -450,7 +450,7 @@ class TeamFunc(TruckCar):
             SetGhostBoards().click_press_and_release_by_key_name("o")
             time.sleep(0.5)
             for button in [button_create_team, button_leave_team]:
-                flag_status_rec = self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(button), threshold=0.85)
+                flag_status_rec = self.windows_find.get_windows_image_rect(hwnd, template_image=self._load_pic(button), threshold=0.85)
                 if flag_status_rec is None:
                     continue
                 if button == button_create_team:
@@ -529,7 +529,7 @@ class TeamFunc(TruckCar):
 #             __pic = self.windows_cap.capture(hwnd)
 #             __cap_pic = bitwise_and(__pic.pic_content, (0, 0, __pic.pic_width, int(__pic.pic_height * 0.4)))
 #
-#             qin_xiu_truck_point_npc = self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(self.city_npc))
+#             qin_xiu_truck_point_npc = self.windows_find.get_windows_image_rect(hwnd, template_image=self._load_pic(self.city_npc))
 #             if qin_xiu_truck_point_npc is not None:
 #                 """
 #                 找到了押镖NPC
@@ -552,13 +552,13 @@ class TeamFunc(TruckCar):
 #         # SetGhostBoards().click_press_and_release_by_key_name("N")
 #
 #         time.sleep(0.5)
-#         qin_xiu_rec = self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(find_npc.bang_hui))
+#         qin_xiu_rec = self.windows_find.get_windows_image_rect(hwnd, template_image=self._load_pic(find_npc.bang_hui))
 #         if qin_xiu_rec is None:
 #             time.sleep(0.2)
 #             SetGhostBoards().click_press_and_release_by_key_name("N")
 #
 #         time.sleep(1)
-#         qin_xiu_rec = self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(find_npc.bang_hui))
+#         qin_xiu_rec = self.windows_find.get_windows_image_rect(hwnd, template_image=self._load_pic(find_npc.bang_hui))
 #         if qin_xiu_rec is None:
 #             return False
 #
@@ -588,7 +588,7 @@ class TeamFunc(TruckCar):
 #             __pic = self.windows_cap.capture(hwnd)
 #             __cap_pic = bitwise_and(__pic.pic_content, (0, 0, __pic.pic_width, int(__pic.pic_height * 0.4)))
 #
-#             qin_xiu_truck_point = self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(__image_city))
+#             qin_xiu_truck_point = self.windows_find.get_windows_image_rect(hwnd, template_image=self._load_pic(__image_city))
 #
 #             if qin_xiu_truck_point is None:
 #                 continue
@@ -623,7 +623,7 @@ class TeamFunc(TruckCar):
 #             __pic = self.windows_cap.capture(hwnd)
 #             __cap_pic = bitwise_and(__pic.pic_content, (0, 0, __pic.pic_width, int(__pic.pic_height * 0.4)))
 #
-#             qin_xiu_truck_point_npc = self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(__image_city_npc))
+#             qin_xiu_truck_point_npc = self.windows_find.get_windows_image_rect(hwnd, template_image=self._load_pic(__image_city_npc))
 #             if qin_xiu_truck_point_npc is None:
 #                 continue
 #             else:
@@ -705,7 +705,7 @@ class FindTaskNPCFunc(TruckCar):
         try:
             qin_xiu_truck_point_npc = self.windows_find.get_windows_image_rect(
                 hwnd,
-                read_image=self._load_pic(self.city_npc),
+                template_image=self._load_pic(self.city_npc),
                 threshold=0.8
             )
             if qin_xiu_truck_point_npc is not None:
@@ -714,7 +714,7 @@ class FindTaskNPCFunc(TruckCar):
                 SetGhostMouse().click_mouse_left_button()
                 return True
             return False
-        except:
+        except Exception as e:
             return False
 
     def _click_bang_hui(self, hwnd: int, find_npc: FindTruckCarTaskNPC) -> bool:
@@ -723,7 +723,7 @@ class FindTaskNPCFunc(TruckCar):
         while attempts < self.max_retry_attempts:
             qin_xiu_rec = self.windows_find.get_windows_image_rect(
                 hwnd,
-                read_image=self._load_pic(find_npc.bang_hui),
+                template_image=self._load_pic(find_npc.bang_hui),
                 threshold=0.8
             )
 
@@ -768,7 +768,7 @@ class FindTaskNPCFunc(TruckCar):
             __pic = self.windows_cap.capture(hwnd)
             point_rec = self.windows_find.get_windows_image_rect(
                 hwnd,
-                read_image=self._load_pic(image_path),
+                template_image=self._load_pic(image_path),
                 threshold=0.8
             )
 
@@ -792,7 +792,7 @@ class FindTaskNPCFunc(TruckCar):
 
             npc_rec = self.windows_find.get_windows_image_rect(
                 hwnd,
-                read_image=self._load_pic(npc_image_path),
+                template_image=self._load_pic(npc_image_path),
                 threshold=0.8
             )
 
@@ -825,7 +825,7 @@ class ReceiveTruckTask(TruckCar):
         """
 
         time.sleep(1)
-        truck_npc_receive_task_talk = self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(self.find_task.receive_task_talk),  threshold=0.85)
+        truck_npc_receive_task_talk = self.windows_find.get_windows_image_rect(hwnd, template_image=self._load_pic(self.find_task.receive_task_talk),  threshold=0.85)
         if truck_npc_receive_task_talk is None:
             return None
         return truck_npc_receive_task_talk
@@ -846,7 +846,7 @@ class ReceiveTruckTask(TruckCar):
         step_3 = find_day_task.day_task_step_3
 
         for pic in [step_1, step_2, step_3]:
-            pic_rec = self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(pic), threshold=0.85)
+            pic_rec = self.windows_find.get_windows_image_rect(hwnd, template_image=self._load_pic(pic), threshold=0.85)
             if pic_rec is None:
                 # print(f"没有找到 {pic}")
                 return 0
@@ -895,7 +895,7 @@ class ReceiveTruckTask(TruckCar):
 
             print(f"当前押镖地点为 {__image_city_npc}")
             truck_npc_receive_task_address = self.windows_find.get_windows_image_rect(hwnd,
-                                                                                      read_image=self._load_pic(__image_city_npc))
+                                                                                      template_image=self._load_pic(__image_city_npc))
             if truck_npc_receive_task_address is None:
                 # print(f"没有找到 {__image_city_npc}")
                 continue
@@ -909,7 +909,7 @@ class ReceiveTruckTask(TruckCar):
                 break
         while 1:
             time.sleep(1)
-            truck_car_type = self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(find_task.car_type_little))
+            truck_car_type = self.windows_find.get_windows_image_rect(hwnd, template_image=self._load_pic(find_task.car_type_little))
             if truck_car_type is None:
                 continue
             else:
@@ -923,7 +923,7 @@ class ReceiveTruckTask(TruckCar):
         while 1:
             time.sleep(1)
 
-            truck_receive_task = self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(find_task.receive_task))
+            truck_receive_task = self.windows_find.get_windows_image_rect(hwnd, template_image=self._load_pic(find_task.receive_task))
             if truck_receive_task is None:
                 continue
             else:
@@ -937,7 +937,7 @@ class ReceiveTruckTask(TruckCar):
         while 1:
             time.sleep(1)
             truck_receive_task_confirm = self.windows_find.get_windows_image_rect(hwnd,
-                                                                                       read_image=self._load_pic(find_task.receive_task_confirm))
+                                                                                       template_image=self._load_pic(find_task.receive_task_confirm))
             if truck_receive_task_confirm is None:
                 continue
             else:
@@ -950,7 +950,7 @@ class ReceiveTruckTask(TruckCar):
                 break
         time.sleep(0.5)
         __find_task: TruckCarReceiveTask = self._get_pic_receive_task()
-        __break_npc_talk = self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(__find_task.break_npc_talk))
+        __break_npc_talk = self.windows_find.get_windows_image_rect(hwnd, template_image=self._load_pic(__find_task.break_npc_talk))
         if __break_npc_talk is not None:
             SetGhostBoards().click_press_and_release_by_code(27)
         return True
@@ -994,25 +994,25 @@ class TransportTaskFunc(TruckCar):
         # print(f"TransportTaskFunc: 未找到镖车的 “驾车” 按钮")
         return False
 
-    def find_truck_car_center_pos_v2(self, hwnd: int, display_area: int) -> tuple or None:
+    def find_truck_car_center_pos_v2(self, hwnd: int, display_area: int) -> tuple | None:
         """
         :param hwnd:
         :param display_area: 0 接镖后的查询，1：打怪后的查询
         """
         time.sleep(0.5)
-        __cap = self.windows_cap.capture(hwnd)
-        res_car = self.find_car_pos_in_display_v2(hwnd, __cap.pic_content)  # 拿出坐标
+        _cap: PicCapture = self.windows_cap.capture(hwnd)
+        res_car = self.find_car_pos_in_display_v2(_cap.pic_content)  # 拿出坐标
         if res_car is None:
             # 没有找到镖车，先顺时针旋转45度，等待下次再进来
             WindowsHandle().activate_windows(hwnd)
             time.sleep(0.1)
             SetGhostBoards().click_press_and_release_by_key_code_hold_time(37, 0.4)
             return None
-        res_center_car_bool: bool = self.find_car_in_center_display_v3(image=__cap,
+        res_center_car_bool: bool = self.find_car_in_center_display_v3(image=_cap,
                                                                        display_area=display_area)  # 检测图片是否在中间
-        if res_center_car_bool is False:
+        if not res_center_car_bool:
             # cap = self.windows.capture(hwnd)
-            __car_quadrant: int = self.check_target_pos_direction(__cap, target_pos=res_car)
+            __car_quadrant: int = self.check_target_pos_direction(_cap, target_pos=res_car)
             if __car_quadrant == 1:
                 """a
                 如果在第一象限，但是不符合规则；那么就向 左侧 转一下
@@ -1083,7 +1083,7 @@ class TransportTaskFunc(TruckCar):
             self.break_other_truck_car(hwnd)  # 不小心点到劫镖了，就退出一下
             self.break_npc_talk(hwnd)
 
-            if self.transport_truck(hwnd) is False:
+            if not self.transport_truck(hwnd):
                 # 没有没有找到车辆
                 continue
             return True
@@ -1094,14 +1094,14 @@ class TransportTaskFunc(TruckCar):
         不找车，直接在地图输入坐标前往
         """
 
-        if self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(self._get_pic_truck_car().task_star_mode)) is None:
+        if self.windows_find.get_windows_image_rect(hwnd, template_image=self._load_pic(self._get_pic_truck_car().task_star_mode)) is None:
             return False
 
         __map = self._get_map()
 
         SetGhostBoards().click_press_and_release_by_key_name("M")
         time.sleep(0.5)
-        __rec_pos_x = self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(__map.pos_x))
+        __rec_pos_x = self.windows_find.get_windows_image_rect(hwnd, template_image=self._load_pic(__map.pos_x))
         if __rec_pos_x is None:
             SetGhostBoards().click_press_and_release_by_key_name("M")
             return False
@@ -1133,7 +1133,7 @@ class TransportTaskFunc(TruckCar):
             time.sleep(0.1)
             SetGhostBoards().click_press_and_release_by_key_name("5")
 
-        __rec_pos_y = self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(__map.pos_y))
+        __rec_pos_y = self.windows_find.get_windows_image_rect(hwnd, template_image=self._load_pic(__map.pos_y))
         if __rec_pos_y is None:
             return False
         SetGhostMouse().move_mouse_to(__rec_pos_y[0] + 50, __rec_pos_y[1])
@@ -1164,7 +1164,7 @@ class TransportTaskFunc(TruckCar):
 
         while 1:
 
-            __rec_pos_search = self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(__map.search_pos))
+            __rec_pos_search = self.windows_find.get_windows_image_rect(hwnd, template_image=self._load_pic(__map.search_pos))
             if __rec_pos_search is None:
                 time.sleep(1)
                 continue
@@ -1174,7 +1174,7 @@ class TransportTaskFunc(TruckCar):
             break
 
         while 1:
-            __rec_pos_point = self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(__map.result_point))
+            __rec_pos_point = self.windows_find.get_windows_image_rect(hwnd, template_image=self._load_pic(__map.result_point))
             if __rec_pos_point is None:
                 time.sleep(1)
                 continue
@@ -1199,7 +1199,7 @@ class TransportTaskFunc(TruckCar):
 
         SetGhostBoards().click_press_and_release_by_key_name("M")
         time.sleep(0.5)
-        __rec_pos_plus = self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(__map.plus_map))
+        __rec_pos_plus = self.windows_find.get_windows_image_rect(hwnd, template_image=self._load_pic(__map.plus_map))
         if __rec_pos_plus is None:
             SetGhostBoards().click_press_and_release_by_key_name("M")
             return False
@@ -1232,7 +1232,7 @@ class TransportTaskFunc(TruckCar):
         pos = coordinate_change_from_windows(hwnd, (1, 1))
         SetGhostMouse().move_mouse_to(pos[0], pos[1])
 
-        if self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(self._get_pic_truck_car().task_star_mode)) is not None:
+        if self.windows_find.get_windows_image_rect(hwnd, template_image=self._load_pic(self._get_pic_truck_car().task_star_mode)) is not None:
             return True
         return False
 
@@ -1258,8 +1258,8 @@ class UserGoods(TruckCar):
         SetGhostBoards().click_press_and_release_by_key_code_hold_time(66, 0.3)
         time.sleep(1)
 
-        __rec_goods_bag_tag_clicked = self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(__goods_bag_tag_clicked))
-        __rec_goods_bag_tag_clickable = self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(__goods_bag_tag_clickable))
+        __rec_goods_bag_tag_clicked = self.windows_find.get_windows_image_rect(hwnd, template_image=self._load_pic(__goods_bag_tag_clicked))
+        __rec_goods_bag_tag_clickable = self.windows_find.get_windows_image_rect(hwnd, template_image=self._load_pic(__goods_bag_tag_clickable))
 
         __rec_bag = __rec_goods_bag_tag_clicked if __rec_goods_bag_tag_clicked is not None else __rec_goods_bag_tag_clickable if __rec_goods_bag_tag_clickable is not None else None
 
@@ -1284,7 +1284,7 @@ class UserGoods(TruckCar):
         pic = self.windows_cap.capture(hwnd)
         # 高度1-300像素，宽度 画面右侧，查看所有状态栏
         pic_content = pic.pic_content[1:int(pic.pic_height * 0.4), int(pic.pic_width * 0.5):int(pic.pic_width)]
-        __yf_buff_status = self.windows_find.get_image_all_rect(pic_content, self._load_pic(__yf_goods_buff))
+        __yf_buff_status = self.windows_find.get_windows_image_all_rect(pic_content, self._load_pic(__yf_goods_buff))
         if __yf_buff_status is not None:
             for _ss in __yf_buff_status:
                 # 看看当前状态有没有御风
@@ -1294,7 +1294,7 @@ class UserGoods(TruckCar):
         self.open_bag(hwnd)
 
         time.sleep(1)
-        __rec_yf_goods = self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(__yf_goods))
+        __rec_yf_goods = self.windows_find.get_windows_image_rect(hwnd, template_image=self._load_pic(__yf_goods))
         if __rec_yf_goods is not None:
             """
             如果找到了御风神水
@@ -1305,7 +1305,7 @@ class UserGoods(TruckCar):
             for i in range(10):
                 # 等待10秒
                 time.sleep(1)
-                __rec_yf_goods_ready = self.windows_find.get_windows_image_rect(hwnd, read_image=self._load_pic(__yf_goods_ready))
+                __rec_yf_goods_ready = self.windows_find.get_windows_image_rect(hwnd, template_image=self._load_pic(__yf_goods_ready))
 
                 if __rec_yf_goods_ready is not None or self.ocr.find_ocr(image=self.windows_cap.capture(hwnd).pic_content,
                                                                          temp_text="不断跑动跳跃"):

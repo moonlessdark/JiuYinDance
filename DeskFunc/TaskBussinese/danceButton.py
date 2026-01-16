@@ -122,8 +122,10 @@ class FindButton:
         _search_button_list: list = []
         for _btn_pic_tuple in _btn_list:
             xx = _btn_pic_tuple[1]
-            _button_list: list = self.__find_pic.get_image_all_rect(orign_image=orign_pic, read_image=xx, threshold=0.8,
-                                                                    edge=_edge)
+            _button_list: list = self.__find_pic.get_windows_image_all_rect(source_image=orign_pic,
+                                                                            template_image=xx,
+                                                                            threshold=0.8,
+                                                                            edge=_edge)
             if _button_list is None:
                 continue
             _button_list.sort()
@@ -159,11 +161,12 @@ if __name__ == '__main__':
     #     print(x)
     #     time.sleep(0.5)
 
-    def load_pic(pic_path):
-        return cv2.imdecode(fromfile(pic_path, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
-
-    xxx = FindButton()
-    saa = FindWindowsImageTemplate().get_image_all_rect(orign_image=load_pic(r"D:\2-5-0.png"),
-                                                        read_image=load_pic(r'D:\SoftWare\Developed\Projected\JiuYinDnaceRemake\Resources\ImageTemplate\PicPointNum\点.png'),
-                                                        threshold=0.9)
-    print(saa)
+    # def load_pic(pic_path):
+    #     return cv2.imdecode(fromfile(pic_path, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
+    #
+    # xxx = FindButton()
+    # saa = FindWindowsImageTemplate().get_windows_image_all_rect(orign_image=load_pic(r"D:\2-5-0.png"),
+    #                                                             read_image=load_pic(r'D:\SoftWare\Developed\Projected\JiuYinDnaceRemake\Resources\ImageTemplate\PicPointNum\点.png'),
+    #                                                             threshold=0.9)
+    # print(saa)
+    pass

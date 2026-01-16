@@ -1,9 +1,5 @@
 import time
 
-from PySide6 import QtCore
-from PySide6.QtCore import QEvent, Qt
-from PySide6.QtGui import QMouseEvent
-
 from DeskFunc.QThTask.QthMapGoods import MapGoodsQth
 from DeskFunc.QThTask.QthMoneyCard import OpenGiftCard
 from DeskPage.fuctionPage import TaskEnum
@@ -37,8 +33,8 @@ class TaskConnect(MainUI):
 
     def __init__(self):
         super().__init__()
-        self.__init_driver()
-        self.__init_game_windows_hwnd()
+        self._init_driver()
+        self._init_game_windows_hwnd()
 
         # 设置全局热键/鼠标监听开关
         self.global_mouse_monitoring = False
@@ -103,10 +99,10 @@ class TaskConnect(MainUI):
 
         # GUI的按钮的信号槽
         self.windows_get.push_button_run_windows.clicked.connect(self.run_task)  # 执行任务
-        self.windows_get.push_button_get_windows.clicked.connect(self.__init_game_windows_hwnd)  # 获取窗口
+        self.windows_get.push_button_get_windows.clicked.connect(self._init_game_windows_hwnd)  # 获取窗口
         self.windows_get.push_button_test_windows.clicked.connect(self.test_hwnd)  # 测试窗口
 
-    def __init_driver(self):
+    def _init_driver(self):
         """
         初始化幽灵键鼠的驱动
         :return:
@@ -159,7 +155,7 @@ class TaskConnect(MainUI):
         _run_task_status = False
         self._stop_run_task()
 
-    def __init_game_windows_hwnd(self):
+    def _init_game_windows_hwnd(self):
         """
         检查一下游戏窗口
         :return:
@@ -187,7 +183,7 @@ class TaskConnect(MainUI):
             __save_dict(_windows_list)
             self.windows_get.get_windows(_windows_hwnd_save.keys())
 
-    def __get_windows_hwnd_list(self) -> list:
+    def _get_windows_hwnd_list(self) -> list:
         """
         获取当前窗口有哪些窗口句柄被勾选了
         :return:
@@ -201,7 +197,7 @@ class TaskConnect(MainUI):
         检测窗口是否存在
         :return:
         """
-        _checked_hwnd_list: list = self.__get_windows_hwnd_list()
+        _checked_hwnd_list: list = self._get_windows_hwnd_list()
         if len(_checked_hwnd_list) == 0:
             self.log_print("未勾选窗口...")
             return None
@@ -222,7 +218,7 @@ class TaskConnect(MainUI):
         """
         global _run_task_status
 
-        _checked_hwnd_list: list = self.__get_windows_hwnd_list()
+        _checked_hwnd_list: list = self._get_windows_hwnd_list()
         if len(_checked_hwnd_list) == 0:
             self.log_print("请勾选需要执行的窗口")
             return False
@@ -277,8 +273,8 @@ class TaskConnect(MainUI):
                 if len(_checked_hwnd_list) > 1:
                     self.log_print("暂时只支持控制一个游戏窗口!")
                     return None
-                __truck_car_sum: int = int(self.task_tab_windows.task_activity.input_line_express_transportation.text())
-                self.qth_truck_find.get_param(_checked_hwnd_list[0], __truck_car_sum)
+                _truck_car_sum: int = int(self.task_tab_windows.task_activity.input_line_express_transportation.text())
+                self.qth_truck_find.get_param(_checked_hwnd_list[0], _truck_car_sum)
                 self.qth_truck_find.start()
             elif _widget_radio_enum == TaskEnum.xj_secret_scene:
                 """
@@ -302,9 +298,9 @@ class TaskConnect(MainUI):
                 """
                 每日演练
                 """
-                # if len(_checked_hwnd_list) > 1:
-                #     self.log_print("暂时只支持控制一个游戏窗口!")
-                #     return None
+                if len(_checked_hwnd_list) > 1:
+                    self.log_print("暂时只支持控制一个游戏窗口!")
+                    return None
                 self.qth_skill_dance.get_param(_checked_hwnd_list)
                 self.qth_skill_dance.start()
             elif _widget_radio_enum == TaskEnum.farmer_task:
@@ -315,8 +311,6 @@ class TaskConnect(MainUI):
                     self.log_print("暂时只支持控制一个游戏窗口!")
                     return None
                 _scan_product_num: int = (self.task_tab_windows.task_life_work.input_line_farmer_number.value())
-
-
                 self.qth_farmer_picking_crops.get_param(_checked_hwnd_list[0], _scan_product_num)
                 self.qth_farmer_picking_crops.start()
             elif _widget_radio_enum == TaskEnum.challenge_point_2_book:
@@ -381,7 +375,7 @@ class TaskConnect(MainUI):
                      4：打怪结束，重新查找车辆
         """
         # 前面已经做了判断，只能有一个窗口执行，所以这里直接获取
-        windows_handle: int = self.__get_windows_hwnd_list()[0]
+        windows_handle: int = self._get_windows_hwnd_list()[0]
         if step == 1:
             # self.print_logs("开启线程:等待劫镖NPC...")
             if not self.qth_truck_fight_monster.isRunning():
@@ -405,16 +399,3 @@ class TaskConnect(MainUI):
             """
             # self.print_logs("本次押镖结束,即将关闭所有线程")
             self.qth_truck_fight_monster.get_param(windows_handle, False)  # 停止打怪
-
-    def market_get_product_price(self):
-        """
-        获取世界竞拍的商品
-        """
-        windows_handle_list: list = self.__get_windows_hwnd_list()
-        if len(windows_handle_list) != 1:
-            self.log_print("暂时只支持选中一个窗口")
-            return None
-
-        self.qth_market.get_param(windows_handle_list[0])
-        self.qth_market.run()
-        return None

@@ -6,7 +6,6 @@ from numpy import fromfile
 
 from DeskFunc.TaskBussinese.findPersonPoint import FindPoint
 from Utils.FindWindowsImage import WindowsHandle, FindWindowsImageTemplate, WindowsCapture
-from Utils.ImageUtils.FindImageOCR import FindPicOCR
 from Utils.ImageUtils.MonitorDisplay import coordinate_change_from_windows
 from Utils.KeyMouseDriver.GhostSoft.get_driver_v3 import SetGhostBoards, SetGhostMouse
 from Utils.loadResources import GetConfig, get_map_goods_point_list
@@ -39,11 +38,11 @@ class FindMapGoodsPointList:
 
         __map = self._map_pic
 
-        __rec_pos_plus = self.windows.get_windows_image_rect(hwnd, read_image=self._load_pic(__map.plus_map))
+        __rec_pos_plus = self.windows.get_windows_image_rect(hwnd, template_image=self._load_pic(__map.plus_map))
         if __rec_pos_plus is None:
             SetGhostBoards().click_press_and_release_by_key_name("M")
             time.sleep(0.5)
-        __rec_pos_plus = self.windows.get_windows_image_rect(hwnd, read_image=self._load_pic(__map.plus_map))
+        __rec_pos_plus = self.windows.get_windows_image_rect(hwnd, template_image=self._load_pic(__map.plus_map))
         SetGhostMouse().move_mouse_to(__rec_pos_plus[0], __rec_pos_plus[1])
         time.sleep(0.2)
         SetGhostMouse().press_mouse_left_button()
@@ -68,7 +67,7 @@ class FindMapGoodsPointList:
         """
         X坐标
         """
-        __rec_pos_x = self.windows.get_windows_image_rect(hwnd, read_image=self._load_pic(__map.pos_x))
+        __rec_pos_x = self.windows.get_windows_image_rect(hwnd, template_image=self._load_pic(__map.pos_x))
         if __rec_pos_x is None:
             SetGhostBoards().click_press_and_release_by_key_name("M")
             return False
@@ -87,7 +86,7 @@ class FindMapGoodsPointList:
         """
         Y坐标
         """
-        __rec_pos_y = self.windows.get_windows_image_rect(hwnd, read_image=self._load_pic(__map.pos_y))
+        __rec_pos_y = self.windows.get_windows_image_rect(hwnd, template_image=self._load_pic(__map.pos_y))
         if __rec_pos_y is None:
             SetGhostBoards().click_press_and_release_by_key_name("M")
             return False
@@ -108,7 +107,7 @@ class FindMapGoodsPointList:
         """
         while 1:
 
-            __rec_pos_search = self.windows.get_windows_image_rect(hwnd, read_image=self._load_pic(__map.search_pos))
+            __rec_pos_search = self.windows.get_windows_image_rect(hwnd, template_image=self._load_pic(__map.search_pos))
             if __rec_pos_search is None:
                 time.sleep(1)
                 continue
@@ -119,7 +118,7 @@ class FindMapGoodsPointList:
             break
 
         while 1:
-            __rec_pos_point = self.windows.get_windows_image_rect(hwnd, read_image=self._load_pic(__map.result_point),threshold=0.70)
+            __rec_pos_point = self.windows.get_windows_image_rect(hwnd, template_image=self._load_pic(__map.result_point),threshold=0.70)
             if __rec_pos_point is None:
                 time.sleep(1)
                 continue
@@ -141,7 +140,7 @@ class FindMapGoodsPointList:
         """
         查询打开状态
         """
-        __rec_goods_bag_open_loading = self.windows.get_windows_image_rect(hwnd, read_image=self._load_pic(self._status_config.open_loading))
+        __rec_goods_bag_open_loading = self.windows.get_windows_image_rect(hwnd, template_image=self._load_pic(self._status_config.open_loading))
         if __rec_goods_bag_open_loading is not None:
             return True
         return False
@@ -200,7 +199,7 @@ class FindMapGoodsPointList:
         点击确定按钮
         """
         time.sleep(1)
-        __rec_goods_bag_tag_clickable = self.windows.get_windows_image_rect(hwnd, read_image=self._load_pic(self._status_config.get_all_goods))
+        __rec_goods_bag_tag_clickable = self.windows.get_windows_image_rect(hwnd, template_image=self._load_pic(self._status_config.get_all_goods))
         if __rec_goods_bag_tag_clickable is not None:
             SetGhostMouse().move_mouse_to(__rec_goods_bag_tag_clickable[0], __rec_goods_bag_tag_clickable[1])
             time.sleep(0.2)

@@ -38,7 +38,7 @@ class MoXiMapLine:
                 code: 202, [None, None]  # 发现有多个窗口在漠西风涛地图
                 code: 203 没有发现游戏窗口
         """
-        _hwnd_list: list or None = self._find_game_windows()
+        _hwnd_list: list | None = self._find_game_windows()
         if _hwnd_list is None:
             return 203, [0, 0]
         _hwnd_list_find: list = self.windows_hwnd_list.copy()
@@ -125,15 +125,6 @@ class MoXiMapLine:
             max_x_point: x坐标最大的点坐标(x,y)
             由于渲染的是位于第二象限的坐标，但是 x 坐标确实 正数，在象限中渲染时需要给 x 加个正数
         """
-
-        if type(image) is str:
-            # 读取图片(OpenCV默认读取为BGR格式)
-            img = cv2.imread(image)
-            if img is None:
-                return None, None
-        else:
-            img = image
-
         # 将目标RGB转换为BGR格式
         # target_bgr = target_rgb[::-1]
 
@@ -145,7 +136,7 @@ class MoXiMapLine:
         # mask = cv2.inRange(img, lower_bound, upper_bound)
 
         # 查找匹配像素的坐标(注意OpenCV的坐标顺序是(y,x))
-        matched_pixels = np.column_stack(np.where(img > 228))
+        matched_pixels = np.column_stack(np.where(image > 228))
 
         # 如果没有匹配像素，直接返回原图
         if len(matched_pixels) == 0:
@@ -213,44 +204,3 @@ class MoXiMapLine:
         masked_img = cv2.bitwise_and(img, img, mask=mask)
 
         return masked_img
-
-
-if __name__ == '__main__':
-    # 1:(28, 37),2:(58, 62)
-    x = MoXiMapLine()
-    pics = cv2.imread(r"D:\AAA.jpg")
-    # 检查图片是否成功加载
-    if pics is not None:
-        # 获取图片尺寸
-        height, width = pics.shape[:2]
-
-        # 计算起始坐标：x坐标 = 图片宽度 - 43，y坐标 = 58
-        start_x = width - 43
-        start_y = 58
-
-        # 定义框的尺寸
-        box_width = 126
-        box_height = 126
-
-        # 绘制矩形框（红色，线条粗细为2）
-        # cv2.rectangle(pics, (start_x, start_y), (start_x - box_width, start_y + box_height), (0, 0, 255), 2)
-
-        # 显示原图和框
-        # cv2.imshow("Image with Box", pics)
-        # cv2.waitKey(0)
-        # cv2.destroyAllWindows()
-
-        # 如果需要提取该区域，可以这样做：
-        roi = pics[start_y:start_y + box_height, start_x - box_width: start_x]
-        # cv2.imshow("Extracted Region", roi)
-        # cv2.waitKey(0)
-        # cv2.destroyAllWindows()
-        x.find_line_three_level(roi)
-    else:
-        print("无法加载图片，请检查路径是否正确")
-    # (hwnd, -43, 58, 126, 126)
-
-
-    #
-    # pics2 = cv2.imread(r"D:\SoftWare\Developed\Projected\JiuYinDnaceRemake\xx\ss2.png")
-    # x.find_line(pics2)

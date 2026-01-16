@@ -4,6 +4,7 @@ import cv2
 import numpy as np
 from numpy import fromfile
 
+from DeskFunc.TaskBussinese.commonOperations import CommonOperations
 from Utils.FindWindowsImage import WindowsHandle, FindWindowsImageTemplate
 from Utils.KeyMouseDriver.GhostSoft.get_driver_v3 import SetGhostMouse
 from Utils.loadResources import GetConfig
@@ -34,14 +35,11 @@ class ChangePoint2LuckyMoney:
         self.pic_exchange_ok = _load_pic(pic_template.exchange_ok)  # 兑换按钮
         self.pic_exchange_re_ok = _load_pic(pic_template.exchange_re_ok)  # 二次确认
 
-    def _activity_and_click(self, res_point: tuple, hwnd):
-        if not self.windows_opt.activate_windows(hwnd):
-            return False
-        time.sleep(0.4)
-        SetGhostMouse().move_mouse_to(res_point[0], res_point[1])
-        time.sleep(0.2)
-        SetGhostMouse().click_mouse_left_button()
-        return True
+        self.common_options = CommonOperations()  # 通用操作
+
+
+    def _activity_and_click(self, res_point: tuple, hwnd: int):
+        return self.common_options.mouse_click_pos(hwnd, res_point, 0)
 
     def find_change_point_shop_book(self, hwnd: int) -> bool:
         """

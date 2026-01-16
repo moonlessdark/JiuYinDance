@@ -1,6 +1,3 @@
-
-
-import time
 from operator import itemgetter
 
 import cv2
@@ -55,16 +52,16 @@ class FindPoint:
         _search_button_list: list = []
         for _btn_pic_tuple in self.num_list:
             xx = _btn_pic_tuple[1]
-            _button_list: list = self.__find_pic.get_image_all_rect(orign_image=orign_pic, read_image=xx, threshold=0.9)
+            _button_list: list = self.__find_pic.get_windows_image_all_rect(source_image=orign_pic, template_image=xx, threshold=0.9)
             if _button_list is None:
                 continue
             _button_list.sort()
             if [_btn_pic_tuple[0], _button_list.copy()] not in _search_button_list:
                 _search_button_list.append([_btn_pic_tuple[0], _button_list.copy()])
-        return self.__optimized_sort(_search_button_list)
+        return self._optimized_sort(_search_button_list)
 
     @staticmethod
-    def __optimized_sort(btn_list: list) -> str:
+    def _optimized_sort(btn_list: list) -> str:
         """
         给按钮排序
         :param btn_list:

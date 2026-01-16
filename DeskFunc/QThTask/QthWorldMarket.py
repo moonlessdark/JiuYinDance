@@ -1,7 +1,5 @@
-import os
 import time
 
-import cv2
 from PySide6.QtCore import QThread, Signal, QWaitCondition, QMutex
 from DeskFunc.TaskBussinese.findAuctionMarket import FindAuctionMarket
 from Utils.FindWindowsImage import WindowsCapture, PicCapture, WindowsHandle
@@ -54,6 +52,7 @@ class WorldMarketGetGoodsQth(QThread):
         self.product_sell_price = product_price_list
         self.product_pass_name_list = [product['product_name'] for product in product_price_list if product.get('max_price') != ""]  # 过滤掉所有没有设置最大金额的物品,这个列表的物品才是我们需要检测的
         self.scan_product_num = scan_product_num
+
     def run(self):
         self.mutex.lock()  # 先加锁
         self.sin_run_status.emit(True)  # 发送消息，人物开始
@@ -102,7 +101,7 @@ class WorldMarketGetGoodsQth(QThread):
                 if not (_product_min_price <= _product_current_price <= _product_max_price - 10):
                     # 不在出价范围内，换下一个
                     continue
-                self.sin_out(f"{_product_name} 符合出价条件,当前价格:{_product_current_price}")
+                self.sin_out.emit(f"{_product_name} 符合出价条件,当前价格:{_product_current_price}")
                 # 既然在出价返回内了，那么开始出价
                 if self.windows_handle == 0:
                     self.working = False

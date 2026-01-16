@@ -1,110 +1,21 @@
 """
-**To Find a smaller image in a larger image, in another word, find a template image in a source image**
-
-*This project is inspired from project [aircv](https://github.com/NetEaseGame/aircv.git), which is not maintained for a long time.*
-
-There are several improvements and changes:
-* support finding grayscale image, either source or template
-* support finding image with transparent channel
-* optimized the performance of find_all, use numpy slicing set data instead of floodFill
-* removed methods that are not related to finding images
-
-*The API of this project is compatible with aircv*
+模板匹配
+颜色匹配
+图片掩码
 """
 __version__ = '0.2.1'
-
-import time
 
 import cv2
 import numpy as np
 from numpy import ndarray
 
 
-def find_all_template(im_source: ndarray, im_template: ndarray, threshold: float = 0.5, max_cnt: int = 0,
-                      auto_scale=None,
+def find_all_template(im_source: ndarray, im_template: ndarray,
+                      threshold: float = 0.5,
+                      max_cnt: int = 0,
+                      auto_scale: tuple[float, float, float] = None,
                       edge: bool = False,
-                      to_gray: bool = True,
-                      debug: bool = False):
-    """
-    在im_source中查找im_template的匹配位置，返回最匹配的那个结果，内部调用find_all_template实现
-    To find im_template in im_source, returns the most matchable result.
-    This function calls find_all_template internally.
-    :arg:
-        im_source(string): 源图(大图)，opencv格式的图片
-
-            Source image, the bigger one, in opencv format
-
-        im_template(string): 需要查找的图片(小图)，opencv格式的图片
-
-            Template image, the smaller one, in opencv format
-
-        threshold: 阈值，当匹配度小于该阈值的时候，就忽略掉，是一个-1~1之间的值，通常小于0.5，匹配度就相当低了
-
-            Threshold of match confidence, should be between -1 to 1.
-            The result will be badly matchable if it's smaller than 0.5, generally.
-
-        max_cnt: 最大匹配数量, 缺省为0, 即不限
-
-            Maximum count of matched results, default is 0, means no limitation
-
-        auto_scale: 是否自动缩放im_template来查找匹配，如果为None表示不缩放，如果需要缩放，那么传一个tuple：(min_scale, max_scale, step)，
-            其中min_scale和max_scale分别是缩放倍数的下限和上限，都是小数，min_scale介于0~1之间，max_scale大于1, step表示从min尝试到max之间的步长,
-            默认为0.1。
-
-            Whether trying to scale the template image to find a match. Default is None, which means no scaling.
-            if given, should send a tuple formatted as: (min_scale, max_scale, step)
-            (min_scale, max_scale) means the lowest and highest limitation of scaling, they are all float numbers,
-            min_scale should be between 0 and 1, and max_scale should be greater than 1.
-            step indicates the granularity of the attempt from min to max,
-            for example, if given (0.5, 1.2, 0.1),
-            then the function will try up to 8 times to find match result from 0.5 to 1.2 times scaling
-
-        edge: 是否做边缘提取后再匹配，缺省为False，如果设置为True，会把源图和模板图，都基于Canny算法提取边缘，然后再做匹配
-
-            Whether to perform edge extraction before finding, default is False.
-            If given True, both source image and template image will be extracting edge by Canny Algorithm.
-        to_gray: 是否需要经过灰度处理，处理后能加快识别速度。
-            但是需要注意：
-            1 对比度小：原图中蓝色渐变区域与背景的对比度本身就较低
-            2 灰度化影响：转为灰度后，原本有细微颜色差异的区域会变得更接近，导致特征模糊
-            3 彩色匹配优势：保留RGB通道能利用颜色差异作为额外识别特征，提高匹配成功率
-            建议在处理这类低对比度模板时：
-            1 优先使用彩色匹配（如 cv2.TM_CCOEFF_NORMED）
-            2 可适当调整匹配阈值（如从0.8降低到0.7）
-            3 考虑对模板进行预处理增强对比度（如直方图均衡化）
-        debug: 是否不输出中间处理步骤和处理时间
-
-            Whether to export intermediate steps and performing time.
-
-    :returns:
-        匹配结果对象,包含如下属性:
-
-        Matched results, including:
-
-        result:
-            匹配区域的中心点
-
-            The center point of matched area.
-
-        rectangle:
-            匹配区域的四角坐标
-
-            The 4 corners of matched area.
-
-        confidence:
-            匹配程度, 是一个-1~1之间的值, 约大表示匹配度越高
-
-            Matched confidence, a float number between -1 and 1, the greater, the more matchable.
-
-
-        如果没有找到符合条件的匹配结果, 返回None
-
-        if not found, returns None
-
-    :raise
-        IOError, if read file failed.
-
-    """
+                      to_gray: bool = False):
     """
     在im_source中查找im_template的匹配位置，返回指定数量的匹配结果
 
@@ -112,107 +23,125 @@ def find_all_template(im_source: ndarray, im_template: ndarray, threshold: float
         im_source(string): 源图(大图)，opencv格式的图片
         im_template(string): 需要查找的图片(小图)，opencv格式的图片
         threshold: 阈值，当匹配度小于该阈值的时候，就忽略掉，是一个-1~1之间的值，通常小于0.5，匹配度就相当低了
-        maxcnt: 最大匹配数量, 缺省为0, 即不限
+        max_cnt: 最大匹配数量, 缺省为0, 即不限
         auto_scale: 是否自动缩放im_template来查找匹配，如果为None表示不缩放，如果需要缩放，那么传一个tuple：(min_scale, max_scale, step)，
         其中min_scale和max_scale分别是缩放倍数的下限和上限，都是小数，min_scale介于0~1之间，max_scale大于1, step表示从min尝试到max之间的步长,
         默认为0.1
+        to_gray: 是否启用灰度模式
         step是从min_scale开始，逐步尝试到max_scale之间的步长，缺省值为0.1，例如(0.8, 1.6, 0.2)
         edge: 是否做边缘提取后再匹配，缺省为False，如果设置为True，会把源图和模板图，都基于Canny算法提取边缘，然后再做匹配
-        debug: 是否不输出中间处理步骤和处理时间
     Returns:
         匹配结果列表，每个结果包含以下属性：
         result: 匹配区域的中心点
         rectangle: 匹配区域的四角坐标
         confidence: 匹配程度, 是一个-1~1之间的值, 约大表示匹配度越高
-
     Raises:
         IOError: 读取文件失败
     """
-
     w, h = im_template.shape[1], im_template.shape[0]
     sw, sh = im_source.shape[1], im_source.shape[0]
     if w > sw or h > sh:
-        raise RuntimeError(
-            "source image size must larger than template image size, but not source is {}x{}, template is {}x{}",
-            sw, sh, w, h)
-
-    start_time = time.time()
-
-    new_pic = cv2.cvtColor(np.array(im_source), cv2.COLOR_BGR2RGB)
-
+        raise RuntimeError(f"源图片尺寸({sw}x{sh})小于模板图片尺寸({w}x{h})，请检查！")
+    """
+    OpenCV 默认使用 BGR 顺序：读取图片时采用 Blue-Green-Red 的通道排列
+    多数显示系统使用 RGB 顺序：如 matplotlib、网页显示等使用 Red-Green-Blue 排列
+    从 BGR 格式转换为 RGB 格式，这样可以确保：
+     - 图片颜色显示正确
+     - 与大多数显示系统的颜色顺序保持一致
+     - 避免颜色失真问题
+    """
+    im_source = cv2.cvtColor(np.array(im_source), cv2.COLOR_BGR2RGB)
     if to_gray:
-        gray_template = _to_gray(im_template)
-        gray_source = _to_gray(new_pic)
-    else:
-        gray_template = im_template
-        gray_source = new_pic
-
-    if debug:
-        print("to_gray time: {}".format(time.time() - start_time))
-
-    # 边界提取(来实现背景去除的功能)
+        # 如果启用了灰度渲染模式，可以加快匹配速度
+        im_template = _to_gray(im_template)
+        im_source = _to_gray(im_source)
     if edge:
-        if debug:
-            start_time = time.time()
-        gray_template = gray_template.astype(np.uint8)
-        gray_source = gray_source.astype(np.uint8)
-
-        gray_template = cv2.Canny(gray_template, 100, 200)
-        gray_source = cv2.Canny(gray_source, 100, 200)
-        if debug:
-            print("Canny time: {}".format(time.time() - start_time))
-
-    result = _internal_find(gray_source, gray_template, max_cnt, threshold, debug)
-
+        # 如果启用边缘计算模式
+        im_template = im_template.astype(np.uint8)
+        im_source = im_source.astype(np.uint8)
+        im_template = cv2.Canny(im_template, 100, 200)
+        im_source = cv2.Canny(im_source, 100, 200)
+    result = _internal_find(im_source, im_template, max_cnt, threshold)
     if len(result) == 0 and auto_scale is not None:
-        scale_min = auto_scale[0]
-        scale_max = auto_scale[1]
-        step = auto_scale[2] if len(auto_scale) > 2 else 0.1
+        # 如果匹配结果为0，并且缩放设置不为None
+        scale_min: float = auto_scale[0]  # 最小缩放值
+        scale_max: float = auto_scale[1]  # 最大缩放值
+        step: float = auto_scale[2] if len(auto_scale) > 2 else 0.1  # 缩放步长
         for scale in np.arange(scale_min, scale_max, step):
-            resized = cv2.resize(gray_template, (int(w * scale), int(h * scale)),
+            resized = cv2.resize(im_template, (int(w * float(scale)), int(h * float(scale))),
                                  interpolation=cv2.INTER_CUBIC)
-            if debug:
-                print("try resize template in scale {} to find match".format(scale))
-            result = _internal_find(gray_source, resized, max_cnt, threshold, debug)
+            result = _internal_find(im_source, resized, max_cnt, threshold)
             if len(result) > 0:
+                # 当结果不为0时，结束匹配
                 break
-    if debug:
-        if len(result) > 0:
-            print("found {} results, top confidence is:{}".format(len(result), result[0]['confidence']))
-        else:
-            print("found nothing!")
     return result
 
 
 def _to_gray(image):
+    """
+    对图片进行灰度处理，用于加快匹配
+    但是精度会降低
+    """
     channel = 1 if len(image.shape) == 2 else image.shape[2]
     if channel == 1:
-        # if the image is gray, then keep it
+        # 如果图片本身就是灰度图片
         image_gray = image
     elif channel == 3:
-        # if it's colorful, then convert it to gray
+        # 如果图片是彩色图片
         image_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     elif channel == 4:
-        # if it's colorful with transparent channel, then convert it to gray
+        # 如果图片是带alpha通道的图片
         image_gray = cv2.cvtColor(image, cv2.COLOR_BGRA2GRAY)
     else:
-        raise RuntimeError('im_search have {} channel, which is unexpected!'.format(channel))
+        raise RuntimeError(f"查询的图片通道数({channel})不支持进行灰度处理")
     return image_gray
 
 
-def _internal_find(gray_source, gray_template, maxcnt, threshold, debug):
-    start_time = time.time()
+def _internal_find(gray_source, gray_template, max_cnt, threshold):
+    """
+    模板匹配
+    # OpenCV 模板匹配方法比较
 
+    根据提供的代码，其中使用了 `cv2.TM_CCOEFF_NORMED` 进行模板匹配，以下是三种主要方法的适用场景分析：
+
+    ## `cv2.TM_CCOEFF_NORMED`（标准化相关系数匹配）
+
+    - **最佳匹配值**：1（越大越好）
+    - **适用场景**：
+      - 图像内容相似但光照条件不同的情况
+      - 需要对亮度变化具有鲁棒性的匹配
+      - UI元素识别、图标匹配等场景
+      - 代码中使用的默认方法，适用于大多数常规模板匹配任务
+
+    ## `cv2.TM_SQDIFF`（平方差匹配）
+
+    - **最佳匹配值**：0（越小越好）
+    - **适用场景**：
+      - 完全相同的图像匹配（理想条件下）
+      - 对光照变化敏感的精确匹配
+      - 背景单一且对比度高的图像匹配
+      - 需要检测完全相同区域的应用
+
+    ## `cv2.TM_CCORR_NORMED`（标准化相关匹配）
+
+    - **最佳匹配值**：1（越大越好）
+    - **适用场景**：
+      - 图像亮度一致的理想匹配
+      - 简单的模式识别任务
+      - 对光照变化敏感的匹配需求
+      - 与 `TM_CCOEFF_NORMED` 类似但对光照变化不如其鲁棒
+
+    ## 在当前项目中的选择
+
+    代码中选择 `cv2.TM_CCOEFF_NORMED` 是合理的，因为：
+
+    1. **游戏自动化场景**：游戏界面可能存在轻微的光照变化
+    2. **UI元素识别**：需要对亮度变化有一定容忍度
+    3. **多平台兼容**：不同设备显示可能有亮度差异
+    """
     w, h = gray_template.shape[1], gray_template.shape[0]
     sw, sh = gray_source.shape[1], gray_source.shape[0]
-
-    if debug:
-        start_time = time.time()
     res = cv2.matchTemplate(gray_source, gray_template, cv2.TM_CCOEFF_NORMED)
-    if debug:
-        print("matchTemplate time: {}".format(time.time() - start_time))
-    if debug:
-        start_time = time.time()
     result = []
     while True:
         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
@@ -220,20 +149,15 @@ def _internal_find(gray_source, gray_template, maxcnt, threshold, debug):
         if max_val < threshold:
             break
 
-        # cv2.imshow("s", gray_source)
-        # cv2.imshow("ss", gray_template)
-        # cv2.waitKey()
-
         left = top_left[0]
         top = top_left[1]
         middle_point = (left + w / 2, top + h / 2)
         result.append(dict(
             result=middle_point,
-            rectangle=(top_left, (left, top + h), (left + w, top),
-                       (left + w, top + h)),
+            rectangle=(top_left, (left, top + h), (left + w, top), (left + w, top + h)),
             confidence=max_val
         ))
-        if maxcnt and len(result) >= maxcnt:
+        if max_cnt and len(result) >= max_cnt:
             break
         # 用最小值填充当前结果的周边区域，避免下次找到重叠的结果
         x1 = left - w + 1 if left - w + 1 > 0 else 0
@@ -241,8 +165,4 @@ def _internal_find(gray_source, gray_template, maxcnt, threshold, debug):
         y1 = top - h + 1 if top - h + 1 > 0 else 0
         y2 = top + h - 1 if top + h - 1 < sh else sh
         res[y1:y2, x1:x2] = -1000
-
-    if debug:
-        print("find max time: {}".format(time.time() - start_time))
-
     return result

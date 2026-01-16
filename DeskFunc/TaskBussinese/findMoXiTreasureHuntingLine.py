@@ -38,7 +38,7 @@ class MoXiMapLine:
                 code: 202, [None, None]  # 发现有多个窗口在漠西风涛地图
                 code: 203 没有发现游戏窗口
         """
-        _hwnd_list: list or None = self._find_game_windows()
+        _hwnd_list: list | None = self._find_game_windows()
         if _hwnd_list is None:
             return 203, [0, 0]
         _hwnd_list_find: list = self.windows_hwnd_list.copy()
@@ -123,15 +123,6 @@ class MoXiMapLine:
             max_x_point: x坐标最大的点坐标(x,y)
             由于渲染的是位于第二象限的坐标，但是 x 坐标确实 正数，在象限中渲染时需要给 x 加个正数
         """
-
-        if type(image) is str:
-            # 读取图片(OpenCV默认读取为BGR格式)
-            img = cv2.imread(image)
-            if img is None:
-                return None, None
-        else:
-            img = image
-
         # 将目标RGB转换为BGR格式
         # target_bgr = target_rgb[::-1]
 
@@ -143,7 +134,7 @@ class MoXiMapLine:
         # mask = cv2.inRange(img, lower_bound, upper_bound)
 
         # 查找匹配像素的坐标(注意OpenCV的坐标顺序是(y,x))
-        matched_pixels = np.column_stack(np.where(img > 242))
+        matched_pixels = np.column_stack(np.where(image > 242))
 
         # 如果没有匹配像素，直接返回原图
         if len(matched_pixels) == 0:
@@ -211,13 +202,3 @@ class MoXiMapLine:
         masked_img = cv2.bitwise_and(img, img, mask=mask)
 
         return masked_img
-
-
-if __name__ == '__main__':
-    # 1:(28, 37),2:(58, 62)
-    x = MoXiMapLine()
-    pics = cv2.imread(r"D:\XX.jpg")
-    x.find_line_three_level(pics)
-    #
-    # pics2 = cv2.imread(r"D:\SoftWare\Developed\Projected\JiuYinDnaceRemake\xx\ss2.png")
-    # x.find_line(pics2)

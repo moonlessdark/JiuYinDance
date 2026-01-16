@@ -5,8 +5,8 @@ from PySide6.QtCore import QMutex, QWaitCondition, Signal, QThread
 from datetime import datetime, timedelta
 
 from DeskFunc.TaskBussinese.findMapGoodsPoint import FindMapGoodsPointList
-from Utils.FindWindowsImage import WindowsCapture, WindowsHandle, PicCapture
-from Utils.KeyMouseDriver.GhostSoft.get_driver_v3 import SetGhostBoards, SetGhostMouse
+from Utils.FindWindowsImage import WindowsHandle
+from Utils.KeyMouseDriver.GhostSoft.get_driver_v3 import SetGhostBoards
 
 
 class MapGoodsQth(QThread):
@@ -101,7 +101,7 @@ class MapGoodsQth(QThread):
 
         while self.map_goods_point_working:
             for point in self.map_goods_point_list:
-                if self.map_goods_point_working is False:
+                if not self.map_goods_point_working:
                     # 如果已经停止
                     break
 
@@ -114,21 +114,21 @@ class MapGoodsQth(QThread):
 
                 while 1:
 
-                    if self.map_goods_point_working is False:
+                    if not self.map_goods_point_working:
                         break
 
                     self.status_bar.emit(_run_count)
 
                     self.check_time_out(_set_time_out)
 
-                    if self.time_out is False:
+                    if not self.time_out:
                         # 如果还没有等够10秒，就继续
                         time.sleep(1)
                         continue
 
                     self.sin_out.emit("10秒后确认人物移动状态")
 
-                    if self.find_map_goods.check_person_move_status(self.windows_handle) is False:
+                    if not self.find_map_goods.check_person_move_status(self.windows_handle):
                         # 任务依旧处于移动中
                         continue
 
@@ -141,7 +141,7 @@ class MapGoodsQth(QThread):
                     time.sleep(0.5)
                     for xx in range(8):
 
-                        if self.map_goods_point_working is False:
+                        if not self.map_goods_point_working:
                             # 如果已经停止
                             break
 
@@ -162,16 +162,16 @@ class MapGoodsQth(QThread):
                     """
                     while 1:
 
-                        if self.map_goods_point_working is False:
+                        if not self.map_goods_point_working:
                             # 如果已经停止
                             break
 
-                        if self.check_and_get_goods() is True:
+                        if self.check_and_get_goods():
                             _run_count += 1
                             self.status_bar.emit(_run_count)
                             continue
                         else:
-                            if self.find_map_goods.check_person_move_status(self.windows_handle) is False:
+                            if not self.find_map_goods.check_person_move_status(self.windows_handle):
                                 # 任务依旧处于移动中,说明这个点有问题，应该放弃
                                 SetGhostBoards().click_press_and_release_by_key_name("S")  # 按一下键盘,停止移动
                                 self.sin_out.emit(f"坐标({p_x},{p_y})地形不适合自动寻路,请优化坐标")
@@ -179,49 +179,6 @@ class MapGoodsQth(QThread):
                                 self.sin_out.emit(f"坐标({p_x},{p_y})采集结束,继续执行")
                             break
                     break
-
-                #
-                #
-                # if self.time_out:
-                #
-                #     # 60秒了，检测一次坐标看看是不是停止运行了
-                #     # print("已经超时，检测是否有资源")
-                #     if self.find_map_goods.check_person_move_status(self.windows_handle) is True:
-                #         self.sin_out.emit(f"检测到人物已停止移动")
-                #         # 人物停止移动了，但是没有出现进度条
-                #         if self.find_map_goods.find_open_loading(self.windows_handle) is False:
-                #             # 点击一下小地图，尝试一下看看能不能出
-                #             self.sin_out.emit(f"点击小地图,自动采集...")
-                #             if self.check_and_get_goods() is False:
-                #                 self.sin_out.emit(f"未检测到采集进度条,可能没有物资了或者旁边有NPC干扰")
-                #                 # 如果没有监测到进度条，那就继续下一个坐标，结束本次循环
-                #                 break
-                #             else:
-                #                 # 出现了进度条，交给下一个方法执行
-                #                 self.start_time = None  # 这个坐标扫描结束了，超时时间重置一下
-                #         else:
-                #             # 出现了进度条，交给下面的方法执行吧，这里不做任何处理，只能说运气十分不好卡在最后一秒出现了进度条
-                #             self.start_time = None  # 这个坐标扫描结束了，超时时间重置一下
-                #     self.sin_out.emit("人物移动中...")
-                # if self.find_map_goods.find_open_loading(self.windows_handle):
-                #     # 如果出现了进度条，说明自动采集中，一般砍树会触发此判断
-                #     while 1:
-                #
-                #         if self.map_goods_point_working is False:
-                #             break
-                #
-                #         if self.find_map_goods.click_ok(self.windows_handle) is False:
-                #             continue
-                #         else:
-                #             if self.check_and_get_goods() is False:
-                #                 self.sin_out.emit(f"未检测到采集进度条,可能没有物资了或者旁边有NPC干扰")
-                #                 break
-                #             else:
-                #                 self.sin_out.emit(f"坐标:({p_x},{p_y})物资已采集")
-                #     _run_count += 1
-                #
-                #     self.start_time = None  # 这个坐标扫描结束了，超时时间重置一下
-                #     break
 
         self.wait()  # 等待线程结束
         self.mutex.unlock()  # 解锁

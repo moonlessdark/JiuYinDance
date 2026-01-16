@@ -5,7 +5,7 @@ import numpy as np
 from numpy import fromfile
 
 from Utils.FindWindowsImage import WindowsHandle, FindWindowsImageTemplate
-from Utils.KeyMouseDriver.GhostSoft.get_driver_v3 import SetGhostBoards, SetGhostMouse
+from Utils.KeyMouseDriver.GhostSoft.get_driver_v3 import SetGhostMouse
 from Utils.loadResources import GetConfig
 
 
@@ -13,7 +13,6 @@ def bitwise_and(image: np.ndarray):
     """
     给图片加个掩膜遮罩，避免干扰
     :param image: 图片
-    :param mask_position: # 指定掩膜位置（左上角坐标， 右下角坐标） mask_position = (50, 50, 200, 200)
     """
     if image is not None:
         # 绘制掩膜（矩形）
@@ -22,7 +21,7 @@ def bitwise_and(image: np.ndarray):
     return image
 
 
-def _load_pic(img_path: str) -> np.array:
+def _load_pic(img_path: str) -> np.ndarray:
     """
     加载图片
     :param img_path:
@@ -49,7 +48,7 @@ class FindMyFight:
         """
         找到我的战斗
         """
-        __rec_my_fight = self.windows_find.get_windows_image_rect(hwnd, read_image=self._my_fight_pic)
+        __rec_my_fight = self.windows_find.get_windows_image_rect(hwnd, template_image=self._my_fight_pic)
         if __rec_my_fight is not None:
             SetGhostMouse().move_mouse_to(__rec_my_fight[0], __rec_my_fight[1])
             return True
@@ -59,7 +58,7 @@ class FindMyFight:
         """
         查询玄机秘境
         """
-        __rec_x_ji_mi_ji = self.windows_find.get_windows_image_rect(hwnd, read_image=self._x_ji_mi_ji)
+        __rec_x_ji_mi_ji = self.windows_find.get_windows_image_rect(hwnd, template_image=self._x_ji_mi_ji)
         if __rec_x_ji_mi_ji is not None:
             # 检测一些鼠标的位置，如果人为移动的鼠标，那说明有突发情况，需要停止
             x, y = SetGhostMouse().get_mouse_x_y()
@@ -75,7 +74,7 @@ class FindMyFight:
         :param hwnd:
         :return:
         """
-        __rec_bao_ming = self.windows_find.get_windows_image_rect(hwnd, read_image=self.bao_ming)
+        __rec_bao_ming = self.windows_find.get_windows_image_rect(hwnd, template_image=self.bao_ming)
         if __rec_bao_ming is not None:
             SetGhostMouse().move_mouse_to(__rec_bao_ming[0], __rec_bao_ming[1])
             return True
@@ -86,7 +85,7 @@ class FindMyFight:
         查询打开状态
         """
         __rec_goods_bag_open_loading = self.windows_find.get_windows_image_rect(hwnd,
-                                                                                read_image=_load_pic(
+                                                                                template_image=_load_pic(
                                                                                     self._status_config.open_loading), threshold=0.8)
         if __rec_goods_bag_open_loading is not None:
             return True

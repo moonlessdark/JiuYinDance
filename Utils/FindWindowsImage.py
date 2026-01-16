@@ -1,6 +1,7 @@
 """
 查询游戏窗口中的图标
 """
+import time
 from collections import namedtuple
 from ctypes import windll, c_ubyte, wintypes, byref
 from typing import List, Optional
@@ -8,12 +9,10 @@ from typing import List, Optional
 import cv2
 import numpy as np
 import psutil
-import win32api
 import win32con
 import win32gui
 import win32process
 import win32ui
-from numpy import fromfile, uint8
 
 from Utils.ImageUtils.FindImageTemplate import find_all_template
 from Utils.ImageUtils.MonitorDisplay import coordinate_change_from_windows
@@ -58,7 +57,7 @@ class WindowsCapture:
         return _check_result
 
     @staticmethod
-    def check_capture_width_height_is_zero(cap_pic_temp: PicCapture) -> bool:
+    def _check_capture_width_height_is_zero(cap_pic_temp: PicCapture) -> bool:
         """
         检测这个截图是否有效，宽高是否存在 0 像素的情况
         :param cap_pic_temp: 截图
@@ -69,7 +68,7 @@ class WindowsCapture:
             return False
         return True
 
-    def capture_bitblt(self, handle: int) -> Optional[PicCapture]:
+    def _capture_bitblt(self, handle: int) -> Optional[PicCapture]:
         """
         使用BitBlt方法截图窗口
 
@@ -112,16 +111,48 @@ class WindowsCapture:
         # 返回截图数据为numpy.ndarray
         cap_pic = PicCapture(np.frombuffer(buffer, dtype=np.uint8).reshape(height, width, 4), width, height)
 
-        if not self.check_capture_width_height_is_zero(cap_pic):
+        if not self._check_capture_width_height_is_zero(cap_pic):
             return None
         return cap_pic
 
     def capture(self, handle: int) -> Optional[PicCapture]:
         # 其次尝试BitBlt方法
-        result = self.capture_bitblt(handle)
+        result = self._capture_bitblt(handle)
         if result is not None:
             return result
         return None
+
+    @staticmethod
+    def _calculate_region_coordinates(hwnd: int, x: int, y: int, width: int, height: int) -> tuple:
+        """计算区域截图的准确坐标"""
+        # 获取窗口和客户区尺寸
+        left, top, right, bottom = win32gui.GetWindowRect(hwnd)
+        window_width = right - left
+        window_height = bottom - top
+
+        client_rect = win32gui.GetClientRect(hwnd)
+        client_width = client_rect[2] - client_rect[0]
+        client_height = client_rect[3] - client_rect[1]
+
+        # 计算边框尺寸
+        border_width = (window_width - client_width) // 2
+        title_height = window_height - client_height - border_width
+
+        # 处理特殊坐标值
+        x = -1 if x == -0 else x
+        y = -1 if y == -0 else y
+
+        # 转换坐标
+        actual_x = client_width + x - width + border_width if x < 0 else x + border_width
+        actual_y = client_height + y - height + title_height if y < 0 else y + title_height
+
+        # 边界检查
+        if (actual_x < border_width or actual_y < title_height or
+                (actual_x + width) > (client_width + border_width) or
+                (actual_y + height) > (client_height + title_height)):
+            raise ValueError(f"坐标超出窗口范围，窗口尺寸: {client_width}*{client_height}")
+
+        return actual_x, actual_y, width, height, client_width, client_height
 
     def capture_window_region(self, hwnd: int, x: int, y: int, width: int, height: int) -> Optional[PicCapture]:
         """
@@ -213,7 +244,7 @@ class WindowsCapture:
         win32gui.ReleaseDC(hwnd, hwnd_dc)
 
         cap_pic = PicCapture(img, width, height)
-        if not self.check_capture_width_height_is_zero(cap_pic):
+        if not self._check_capture_width_height_is_zero(cap_pic):
             return None
         return cap_pic
 
@@ -247,17 +278,31 @@ class WindowsHandle:
     def activate_windows(windows_handle: int) -> bool:
         """
         激活窗口
-        :param windows_handle:
-        :return:
+        :param windows_handle: 窗口句柄
+        :return: 激活是否成功
         """
-        if windows_handle != win32gui.GetForegroundWindow():
-            try:
-                win32api.keybd_event(0xC, 0, 0, 0)
-                win32gui.ShowWindow(windows_handle, win32con.SW_SHOWNA)
-                win32gui.SetForegroundWindow(windows_handle)
-            except Exception:
-                return False
-        return True
+        if not win32gui.IsWindow(windows_handle):
+            return False
+
+        current_foreground = win32gui.GetForegroundWindow()
+        if windows_handle == current_foreground:
+            return True
+
+        try:
+            # 检查窗口是否最小化，如果是则恢复
+            if win32gui.IsIconic(windows_handle):
+                win32gui.ShowWindow(windows_handle, win32con.SW_RESTORE)
+
+            # 尝试激活窗口
+            win32gui.ShowWindow(windows_handle, win32con.SW_SHOWNA)
+            win32gui.SetForegroundWindow(windows_handle)
+
+            # 验证激活是否成功
+            time.sleep(0.2)  # 短暂等待窗口激活
+            return win32gui.GetForegroundWindow() == windows_handle
+
+        except (win32gui.error, AttributeError):
+            return False
 
 
 class FindWindowsImageTemplate:
@@ -268,155 +313,158 @@ class FindWindowsImageTemplate:
     def __init__(self):
         self._windows_cap = WindowsCapture()
 
-    def get_windows_image_rect(self, hwnd: int, read_image: np.ndarray, threshold: float = 0.7,
-                               edge: bool = False) -> Optional[tuple]:
+    def get_windows_image_rect(self, hwnd: int, template_image: np.ndarray,
+                               threshold: float = 0.7,
+                               max_cnt: int = 0,
+                               auto_scale: tuple[float, float, float] = None,
+                               edge: bool = False,
+                               to_gray: bool = False,
+                               result_type: int = 0,
+                               coordinate_change_to_windows: bool = True) -> Optional[tuple]:
         """
         查询图标模板在游戏窗口中的匹配度最高的坐标，并将坐标映射到Windows窗口中。
         此坐标可被鼠标直接使用
         :param edge: 是否支持透明图层
         :param threshold: 匹配度 0 - 1
         :param hwnd: 窗口id
-        :param read_image: 需要寻找的模板
+        :param template_image: 需要寻找的模板
+        :param to_gray: 是否需要灰度处理
+        :param max_cnt: 最大匹配数量
+        :param auto_scale: 是否需要进行缩放，参数格式： (min_scale, max_scale, step)
+        :param coordinate_change_to_windows: 是否需要将坐标转换为Windows窗口中的坐标，如果需要使用到鼠标时那么就需要转换
+        :param result_type: 排序类型
+                            0-表示返回匹配度最高的结果
+                            1-表示返回最靠左上角的结果
+                            2-表示返回最靠右下角的结果
         :return: None 或者 （x, y）
-        """
-        _windows_cap: PicCapture = self._windows_cap.capture(hwnd)
-
-        _cap_point: list = []
-
-        if _windows_cap is not None:
-            if isinstance(read_image, str):
-                # img_read = cv2.cv2.imread(img)   # 这个方法无法处理带中文的路径
-                image = cv2.imdecode(fromfile(read_image, dtype=uint8), cv2.IMREAD_UNCHANGED)
-            else:
-                image = read_image.copy()
-            match_result = find_all_template(_windows_cap.pic_content, image, threshold, edge=edge)
-            """
-            match_result = [{'result': (951.0, 770.0), 'rectangle': ((933, 752), (933, 788), (969, 752), (969, 788)), 'confidence': 0.9120017886161804}, 
-                            {'result': (911.0, 770.0), 'rectangle': ((893, 752), (893, 788), (929, 752), (929, 788)), 'confidence': 0.9051406979560852}, 
-                            {'result': (871.0, 770.0), 'rectangle': ((853, 752), (853, 788), (889, 752), (889, 788)), 'confidence': 0.90046226978302}, 
-                            {'result': (831.0, 770.0), 'rectangle': ((813, 752), (813, 788), (849, 752), (849, 788)), 'confidence': 0.884774923324585}]
-            """
-            max_confidence_match_point: tuple = ()
-            check_confidence: float = -1
-            for match_result_l in match_result:
-                # 拿出所有匹配的坐标(x, y),校验一下匹配度大小
-                rect_re: float = match_result_l['confidence']
-                if rect_re > check_confidence:
-                    check_confidence = rect_re
-                    max_confidence_match_point = match_result_l['result']
-            if len(max_confidence_match_point) != 0:
-                _p: tuple = coordinate_change_from_windows(hwnd=hwnd, coordinate=max_confidence_match_point)
-                return _p
-        return None
-
-    @staticmethod
-    def get_image_all_rect(orign_image: np.ndarray, read_image: np.ndarray, threshold: float = 0.7, edge: bool = False,
-                           hwnd: int = None) -> Optional[list]:
-        """
-        查询所有相似度匹配的坐标，并映射到windows窗口中，此坐标可被鼠标直接使用
-        :param hwnd: 窗口句柄，如果传了的话，那么就返回图片在桌面窗口中的坐标，不传就返回图片在游戏窗口中的坐标
-        :param orign_image: 原图(完整图片)
-        :param read_image: 需要查询的图片模板(小图)
-        :param threshold: 相似度
-        :param edge: 是否支持透明图层
-        :return: None 或者 [(x1, y1), (x2, y2)]
-        """
-        img_result = []
-        if orign_image is not None:
-
-            if isinstance(read_image, str):
-                # img_read = cv2.cv2.imread(img)   # 这个方法无法处理带中文的路径
-                image = cv2.imdecode(fromfile(read_image, dtype=uint8), cv2.IMREAD_UNCHANGED)
-            else:
-                image = read_image.copy()
-
-            match_result = find_all_template(orign_image, image, threshold, edge=edge)
-
-            """
-            match_result = [{'result': (951.0, 770.0), 'rectangle': ((933, 752), (933, 788), (969, 752), (969, 788)), 'confidence': 0.9120017886161804}, 
-                            {'result': (911.0, 770.0), 'rectangle': ((893, 752), (893, 788), (929, 752), (929, 788)), 'confidence': 0.9051406979560852}, 
-                            {'result': (871.0, 770.0), 'rectangle': ((853, 752), (853, 788), (889, 752), (889, 788)), 'confidence': 0.90046226978302}, 
-                            {'result': (831.0, 770.0), 'rectangle': ((813, 752), (813, 788), (849, 752), (849, 788)), 'confidence': 0.884774923324585}]
-            """
-
-            for match_result_l in match_result:
-                # 拿出所有匹配的坐标(x, y)
-                rect_re = match_result_l['result']
-                img_result.append(rect_re)
-
-        point_result: list = []
-        if hwnd is not None:
-            # 传入了 窗口句柄，返回窗口桌面中的坐标
-            for point in img_result:
-                _p: tuple = coordinate_change_from_windows(hwnd=hwnd, coordinate=point)
-                point_result.append(_p)
-            if len(point_result) == 0:
-                return None
-        else:
-            # 没有传入句柄，那么就返回在游戏窗口中的坐标
-            if len(img_result) == 0:
-                return None
-            else:
-                point_result = img_result
-        return point_result
-
-    def get_windows_image_rect_first_pos(self, hwnd: int, read_image: np.ndarray, threshold: float = 0.7,
-                                         edge: bool = False) -> Optional[tuple]:
-        """
-        返回查询到的坐标在左上位置的第一个坐标
-        从左往右查询
-        从上往下寻找
         """
         _windows_cap: PicCapture = self._windows_cap.capture(hwnd)
         if _windows_cap is None:
             return None
-        pic_result = self.get_image_all_rect(_windows_cap.pic_content, read_image, threshold, edge)
-        if pic_result is None:
+        match_result = find_all_template(im_source=_windows_cap.pic_content, im_template=template_image,
+                                         threshold=threshold,
+                                         edge=edge,
+                                         max_cnt=max_cnt,
+                                         auto_scale=auto_scale,
+                                         to_gray=to_gray)
+        if match_result is None or len(match_result) == 0:
             return None
-        pic_result.sort()
-        pos: tuple = coordinate_change_from_windows(hwnd=hwnd, coordinate=pic_result[0])
-        return pos  # 获取排序后的第一个结果
+        """
+        match_result = [{'result': (951.0, 770.0), 'rectangle': ((933, 752), (933, 788), (969, 752), (969, 788)), 'confidence': 0.9120017886161804}, 
+                        {'result': (911.0, 770.0), 'rectangle': ((893, 752), (893, 788), (929, 752), (929, 788)), 'confidence': 0.9051406979560852}, 
+                        {'result': (871.0, 770.0), 'rectangle': ((853, 752), (853, 788), (889, 752), (889, 788)), 'confidence': 0.90046226978302}, 
+                        {'result': (831.0, 770.0), 'rectangle': ((813, 752), (813, 788), (849, 752), (849, 788)), 'confidence': 0.884774923324585}]
+        """
+        if result_type == 0:
+            # 按置信度降序排列（优先高匹配度）
+            match_result.sort(key=lambda x: x['confidence'], reverse=True)
+        elif result_type == 1:
+            # 按左上角坐标升序排列
+            match_result.sort(key=lambda x: x['result'][0])
+        elif result_type == 2:
+            # 多级排序（先按Y坐标，再按X坐标）
+            match_result.sort(key=lambda x: (x['result'][1], x['result'][0]))
+        else:
+            raise ValueError("result_type参数错误")
+
+        result_match = match_result[0]
+        coordinate_x, coordinate_y = result_match['result']
+        if coordinate_change_to_windows:
+            # 如果需要转换为窗口坐标
+            windows_coordinate: tuple = coordinate_change_from_windows(hwnd=hwnd, coordinate=(coordinate_x, coordinate_y))
+            coordinate_x, coordinate_y = windows_coordinate
+        return coordinate_x, coordinate_y
 
     @staticmethod
-    def find_area(bigger_img, smaller_pic, threshold=0.7, edge: bool = False) -> list:
+    def get_windows_image_all_rect(source_image: np.ndarray, template_image: np.ndarray,
+                                   threshold: float = 0.7,
+                                   edge: bool = False,
+                                   max_cnt: int = 0,
+                                   auto_scale: tuple[float, float, float] = None,
+                                   to_gray: bool = False,
+                                   coordinate_change_to_windows: bool = True,
+                                   hwnd: int = None) -> Optional[list]:
         """
-        大图中寻找小区的坐标区域
+        查询所有相似度匹配的坐标，并映射到windows窗口中，此坐标可被鼠标直接使用
+        :param source_image: 原图(完整图片)
+        :param template_image: 需要查询的图片模板(小图)
+        :param threshold: 相似度
+        :param edge: 是否支持透明图层
+        :param max_cnt: 最大匹配数量
+        :param auto_scale: 是否需要缩放匹配
+        :param coordinate_change_to_windows: 是否需要转为window坐标
+        :param to_gray: 是否需要灰度计算
+        :param hwnd: 窗口句柄，用于转换Windows坐标
+        :return: None 或者 [(x1, y1), (x2, y2)]
+        """
+
+        match_result = find_all_template(im_source=source_image, im_template=template_image,
+                                         threshold=threshold,
+                                         edge=edge,
+                                         max_cnt=max_cnt,
+                                         auto_scale=auto_scale,
+                                         to_gray=to_gray)
+        if match_result is None or len(match_result) == 0:
+            return None
+
+        img_result = []
+        if coordinate_change_to_windows:
+            for result in match_result:
+                coordinate_x, coordinate_y = result['result']
+                windows_coordinate: tuple = coordinate_change_from_windows(hwnd=hwnd, coordinate=(coordinate_x, coordinate_y))
+                coordinate_x, coordinate_y = windows_coordinate
+                img_result.append((coordinate_x, coordinate_y))
+        else:
+            for result in match_result:
+                img_result.append(result['result'])
+        return img_result
+
+    @staticmethod
+    def get_windows_image_area(bigger_img, smaller_pic,
+                               threshold=0.7,
+                               edge: bool = False,
+                               auto_scale: tuple[float, float, float] = None,
+                               to_gray: bool = False,
+                               result_type: int = 0, ) -> Optional[tuple, int]:
+        """
+        通过模板匹配，返回匹配度最高的4个坐标(非圆心点)
         :param smaller_pic:
         :param bigger_img:
         :param threshold:
-        :param edge:
+        :param edge: 是否边缘计算
+        :param auto_scale: 缩放
+        :param to_gray: 是否灰度计算
+        :param result_type 排序类型
+                            0-表示返回匹配度最高的结果
+                            1-表示返回最靠左上角的结果
+                            2-表示返回最靠右下角的结果
         :return: [(左上角，右上角，左下角，右下角)， 相似度]
         """
-        match_result = find_all_template(bigger_img, smaller_pic, threshold, edge=edge)
-        img_result = []
-        if len(match_result) > 0:
-            for mr in match_result:
-                rect = mr['rectangle']
 
-                # img_result = bigger_img.copy()
-                # cv2.rectangle(img_result, (rect[0][0], rect[0][1]), (rect[3][0], rect[3][1]), (0, 0, 220), 2)
-                # cv2.imshow('find_all_template_result.en.png', img_result)
-                # cv2.waitKey()
+        match_result = find_all_template(im_source=bigger_img, im_template=smaller_pic, threshold=threshold, edge=edge,
+                                         auto_scale=auto_scale, to_gray=to_gray)
+        if len(match_result) == 0 or match_result is None:
+            return None
+        if result_type == 0:
+            # 按置信度降序排列（优先高匹配度）
+            match_result.sort(key=lambda x: x['confidence'], reverse=True)
+        elif result_type == 1:
+            # 按左上角坐标升序排列
+            match_result.sort(key=lambda x: x['result'][0])
+        elif result_type == 2:
+            # 多级排序（先按Y坐标，再按X坐标）
+            match_result.sort(key=lambda x: (x['result'][1], x['result'][0]))
+        else:
+            raise ValueError("result_type参数错误")
 
-                confidence: float = mr['confidence']
-                confidence = round(confidence, 2)  # 相似度保留2位小数
-                img_result.append(
-                    [(rect[0][0], rect[0][1]),  # 左上角
-                     (rect[1][0], rect[1][1]),  # 右上角
-                     (rect[2][0], rect[2][1]),  # 左下角
-                     (rect[3][0], rect[3][1]),  # 右上角
-                     confidence  # 相似度
-                     ]
-                )
-        img_result_check: list = []
-        if len(img_result) > 1:
-            # 如果找到了多个结果的时候,把匹配对最高的那个拿出来
-            confidence_check: float = 0
-            for area_li in img_result:
-                if area_li[4] > confidence_check:
-                    img_result_check = area_li
-                confidence_check = area_li[4]
-        elif len(img_result) == 1:
-            img_result_check: list = img_result[0]
-        img_result_check = [0, 0, 0, 0, 0] if len(img_result_check) == 0 else img_result_check
-        return img_result_check
+        match = match_result[0]
+        rect = match['rectangle']
+        confidence: float = match['confidence']
+        confidence = round(confidence, 2)  # 相似度保留2位小数
+        img_result = [(rect[0][0], rect[0][1]),  # 左上角
+                      (rect[1][0], rect[1][1]),  # 右上角
+                      (rect[2][0], rect[2][1]),  # 左下角
+                      (rect[3][0], rect[3][1]),  # 右上角
+                      confidence  # 相似度
+                      ]
+        return img_result

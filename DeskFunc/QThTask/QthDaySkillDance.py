@@ -100,10 +100,10 @@ class SkillDanceQth(QThread):
                     self.status_bar.emit(_run_count)
                     time.sleep(0.5)
 
-                # if _run_count >= all_skill_num:
-                #     self.sin_out.emit(f"窗口id:{hwnd} 所有技能已演练")
-                #     if hwnd not in _is_dance_ok_hwnd_list:
-                #         _is_dance_ok_hwnd_list.append(hwnd)
+                if _run_count >= all_skill_num:
+                    self.sin_out.emit(f"窗口id:{hwnd} 所有技能已演练")
+                    if hwnd not in _is_dance_ok_hwnd_list:
+                        _is_dance_ok_hwnd_list.append(hwnd)
 
         self.sin_run_status.emit(False)  # 发送消息，任务结束了
         self.mutex.unlock()

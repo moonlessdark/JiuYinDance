@@ -1,16 +1,13 @@
 # -*- coding:utf-8 -*-
-import re
-import time
 
 import cv2
-import numpy
 import numpy as np
 
 from numpy import fromfile
 
 from Utils.ImageUtils.FindImageOCR import FindPicOCR
 from Utils.loadResources import GetConfig
-from Utils.FindWindowsImage import FindWindowsImageTemplate, WindowsHandle, WindowsCapture
+from Utils.FindWindowsImage import FindWindowsImageTemplate
 
 
 def filter_taben(data: list) -> list:
@@ -212,7 +209,7 @@ class FindAuctionMarket:
         return False
 
     @staticmethod
-    def __check_summit_price_clicked(button_image: np.ndarray):
+    def _check_summit_price_clicked(button_image: np.ndarray):
         """
         检测确认出价按钮是否高亮可点击
         :param button_image:
@@ -239,7 +236,7 @@ class FindAuctionMarket:
         """
         检测 我的关注 是不是 高亮的，如果不是高亮的就需要结束竞拍
         """
-        __follow_list_res = self.find_pic.get_image_all_rect(image, self.__market_pic_follow_line)
+        __follow_list_res = self.find_pic.get_windows_image_all_rect(image, self.__market_pic_follow_line)
         if __follow_list_res[-1] > 0.85:
             return True
         return False
@@ -251,8 +248,8 @@ class FindAuctionMarket:
         """
         __market_pic_plus_price = self.__market_pic_plus_price
         __market_pic_plus_price_100 = self.__market_pic_plus_price_100
-        __res_10 = self.find_pic.get_image_all_rect(image, __market_pic_plus_price)
-        __res_100 = self.find_pic.get_image_all_rect(image, __market_pic_plus_price_100)
+        __res_10 = self.find_pic.get_windows_image_all_rect(image, __market_pic_plus_price)
+        __res_100 = self.find_pic.get_windows_image_all_rect(image, __market_pic_plus_price_100)
 
         if int(__res_10[0][0]) < int(__res_100[0][0]):
             return __res_10
@@ -262,12 +259,16 @@ class FindAuctionMarket:
         """
         判断确认出价按钮是否可点击
         """
-        __market_pic_summit_price = self.__market_pic_summit_price
-        __summit_price = self.find_pic.find_area(image, __market_pic_summit_price)
-        __button_pic = image[int(__summit_price[0][1]):int(__summit_price[1][1]),
-        int(__summit_price[1][0]):int(__summit_price[3][0])]
-        if self.__check_summit_price_clicked(__button_pic):
-            return __summit_price
+        _market_pic_summit_price = self.__market_pic_summit_price
+        _summit_price = self.find_pic.get_windows_image_area(image, _market_pic_summit_price)
+        if _summit_price is None:
+            return None
+
+        _button_pic = image[int(_summit_price[0][1]):int(_summit_price[1][1]),
+                            int(_summit_price[1][0]):int(_summit_price[3][0])]
+
+        if self._check_summit_price_clicked(_button_pic):
+            return _summit_price
         return None
 
     def find_re_summit_price(self, image: np.ndarray):
@@ -275,7 +276,7 @@ class FindAuctionMarket:
         判断确认出价按钮是否可点击
         """
         __market_pic_re_summit_price = self.__market_pic_ok
-        __summit_price = self.find_pic.get_image_all_rect(image, __market_pic_re_summit_price)
+        __summit_price = self.find_pic.get_windows_image_all_rect(image, __market_pic_re_summit_price)
         if __summit_price is not None:
             return __summit_price
         return None
@@ -288,11 +289,12 @@ class FindAuctionMarket:
         if pass_product_name is None:
             pass_product_name = []
 
-        start_time = time.time()
-
-        __market_pic_main_line = self.__market_pic_main_line
+        _market_pic_main_line = self.__market_pic_main_line
         bigger = image
-        res = self.find_pic.find_area(bigger, __market_pic_main_line)
+        res = self.find_pic.get_windows_image_area(bigger, _market_pic_main_line)
+
+        if res is None:
+            return []
 
         __goods_find_res: dict = {}
         _prodict_list: list = []
@@ -324,7 +326,7 @@ class FindAuctionMarket:
                     # 如果当前扫描的产品不在表格设置了最大价格的列表内，就跳过
                     continue
 
-                _product_rect: list = self.find_pic.get_image_all_rect(cap_pic_all, _product_image, threshold=0.9, edge=False)
+                _product_rect: list = self.find_pic.get_windows_image_all_rect(cap_pic_all, _product_image, threshold=0.9, edge=False)
 
                 if _product_rect is None:
                     # 没有匹配到，跳过下一个
@@ -344,7 +346,7 @@ class FindAuctionMarket:
                     """
                     如果当前商品已经有成交人了，就跳过
                     """
-                    _bidder_man_rect: list = self.find_pic.get_image_all_rect(cap_pic_product_line_content, self.__market_bidder_man, threshold=0.9)
+                    _bidder_man_rect: list = self.find_pic.get_windows_image_all_rect(cap_pic_product_line_content, self.__market_bidder_man, threshold=0.9)
                     if _bidder_man_rect is not None:
                         continue
 
@@ -362,7 +364,7 @@ class FindAuctionMarket:
                     for m in self.number_list:
                         num: str = m[0]
                         num_pic: np.ndarray = m[1]
-                        _num_rect: list = self.find_pic.get_image_all_rect(cap_pic_all_new, num_pic, threshold=0.9)
+                        _num_rect: list = self.find_pic.get_windows_image_all_rect(cap_pic_all_new, num_pic, threshold=0.9)
                         if _num_rect is None:
                             continue
 
@@ -372,8 +374,6 @@ class FindAuctionMarket:
                     _prodict_list.append([int(product_line[1]), _product_name, _price, product_line])
         _prodict_list = filter_taben(_prodict_list)
         _prodict_list.sort()
-        end_time = time.time()
-        # print(f"识别列表：{_prodict_list}，识别耗时: {end_time - start_time}秒")
         return _prodict_list
 
 

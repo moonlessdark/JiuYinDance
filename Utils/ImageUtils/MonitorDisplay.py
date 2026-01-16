@@ -164,18 +164,18 @@ def coordinate_change_from_monitor(coordinate: tuple, old_monitor_size: tuple, n
     return tag_x, tag_y
 
 
-def coordinate_change_from_windows(hwnd: int, coordinate: tuple or list):
+def coordinate_change_from_windows(hwnd: int, coordinate: tuple):
     """
     坐标映射，从游戏窗口中的某个坐标映射到屏幕显示器上，用于鼠标点击
     特别说明：
     in32gui.ClientToScreen 坐标转换确实会受到 SetProcessDpiAwareness 设置的影响，特别是在 DPI 缩放环境下。
     详细说明
     1. DPI感知级别差异
-    DPI模式1（系统DPI感知）：程序不感知高DPI，Windows自动进行缩放
-    DPI模式2（每监视器DPI感知）：程序感知每个显示器的DPI，需要自己处理缩放
+        DPI模式1（系统DPI感知）：程序不感知高DPI，Windows自动进行缩放
+        DPI模式2（每监视器DPI感知）：程序感知每个显示器的DPI，需要自己处理缩放
     2. 坐标系统差异
-    模式1：坐标基于系统缩放后的逻辑像素
-    模式2：坐标基于物理像素，但 ClientToScreen 仍返回逻辑坐标
+        模式1：坐标基于系统缩放后的逻辑像素
+        模式2：坐标基于物理像素，但 ClientToScreen 仍返回逻辑坐标
 
     :param hwnd: 游戏窗口所句柄，用于获取桌面所在的尺寸
     :param coordinate: 在游戏窗口中获取的坐标（x, y）
