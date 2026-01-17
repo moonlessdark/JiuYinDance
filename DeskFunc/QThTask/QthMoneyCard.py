@@ -60,7 +60,7 @@ class OpenGiftCard(QThread):
             if start <= current_time <= end:
                 match_flag = True
                 break
-        return match_flag
+        return True
 
     def stop_execute_init(self):
         """
@@ -164,8 +164,9 @@ class OpenGiftCard(QThread):
                             _is_open_card_hwnd.append(hwnd_i)
                         break
                     time.sleep(0.1)
-            time.sleep(1)
+                self.working = False
             if len(_is_open_card_hwnd) != 0:
+                time.sleep(2)
                 for is_ok_h in _is_open_card_hwnd:
                     time.sleep(1)
                     # 鼠标移动一下，避免挡住了包裹的图标

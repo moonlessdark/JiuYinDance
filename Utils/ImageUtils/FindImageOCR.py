@@ -1,5 +1,4 @@
 # coding=utf-8
-import os
 import time
 
 import numpy as np
@@ -27,7 +26,7 @@ class FindPicOCR:
             images = image
         return images
 
-    def find_ocr(self, image: np.ndarray, temp_text: str) -> list or None:
+    def find_ocr(self, image: np.ndarray, temp_text: str) -> list | None:
         """
         :param image: 需要查找文字的图片
         :param temp_text: 想要再图片中查询的文字
@@ -44,7 +43,7 @@ class FindPicOCR:
                     return [int(x_center), int(y_center)]
         return None
 
-    def find_truck_car_ocr(self, image: np.ndarray, temp_text: str) -> list or None:
+    def find_truck_car_ocr(self, image: np.ndarray, temp_text: str) -> list | None:
         """
         :param image: 专门来找镖车
         :param temp_text: 想要再图片中查询的文字

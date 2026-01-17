@@ -61,17 +61,17 @@ class CommonOperations:
         time.sleep(0.3)  # 点击之后等待一下，给游戏窗口响应时间
         return True
 
-    def _find_loading_bar_by_pic(self, hwnd: int) -> bool:
+    def _find_loading_bar_by_template(self, image: np.ndarray) -> bool:
         """
         查找进度条：通过模板匹配
         """
-        loading_bar_pos: tuple = self._windows_find.get_windows_image_rect(hwnd,
-                                                                           template_image=self._load_pic(self._config.open_loading),
-                                                                           threshold=0.85,
-                                                                           to_gray=False)
+        loading_bar_pos: list = self._windows_find.get_windows_image_area(bigger_img=image,
+                                                                           smaller_pic=self._load_pic(self._config.open_loading),
+                                                                           threshold=0.7,
+                                                                           to_gray=True)
         if loading_bar_pos is None:
             return False
-        return self.mouse_click_pos(hwnd, loading_bar_pos, 0)
+        return True
 
     @staticmethod
     def _find_progress_bar_by_color(roi: np.ndarray) -> bool:
@@ -98,13 +98,14 @@ class CommonOperations:
         cap = self._windows_cap.capture(hwnd)
         cap_content = cap.pic_content[int(cap.pic_height * 0.5):int(cap.pic_height * 0.9),  # 高度范围
                                       int(cap.pic_width * 0.3):int(cap.pic_width * 0.7)]  # 宽度范围
+        template_bool: bool = self._find_loading_bar_by_template(cap_content)
+        if template_bool:
+            return True
         color_bool: bool = self._find_progress_bar_by_color(cap_content)
-        # 方法2：模板匹配
-        template_bool: bool = self._find_loading_bar_by_pic(hwnd)
-        # 颜色和模板都匹配时，我认为这个进度条出现了
-        if color_bool and template_bool:
+        if color_bool:
             return True
         return False
+
 
     def _find_get_all_button_pic(self, hwnd: int) -> bool:
         """
@@ -123,12 +124,12 @@ class CommonOperations:
         查找“获取全部”按钮：通过OCR识别
         """
         cap: PicCapture = self._windows_cap.capture(hwnd)
-        if not cap.pic_content:
+        if cap is None:
             return False
-        get_all_button_pos: tuple = self._ocr.find_ocr(cap.pic_content, "全部拾取")
+        get_all_button_pos: list = self._ocr.find_ocr(cap.pic_content, "全部拾取")
         if get_all_button_pos is None:
             return False
-        return self.mouse_click_pos(hwnd, get_all_button_pos, 0)
+        return self.mouse_click_pos(hwnd, tuple(get_all_button_pos), 0)
 
     def find_get_all_button(self, hwnd: int) -> bool:
         """
@@ -136,8 +137,10 @@ class CommonOperations:
         """
         # 方法1：模板匹配
         if self._find_get_all_button_pic(hwnd):
+            print("找到了获取全部的模板")
             return True
         # 方法2：OCR识别
         if self._find_get_all_button_ocr(hwnd):
+            print("找到了获取全部的OCR")
             return  True
         return False

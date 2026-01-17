@@ -251,10 +251,21 @@ class TruckCar:
         检测押镖是否结束。
         OCR不太稳定，得想想办法
         """
-        if len(self.ocr.find_ocr_arbitrarily(self.windows_cap.capture(hwnd).pic_content,
-                                             ["获得帮派贡献度", "为帮会带来"])) > 0:
-            # print("DriverTruckCarFuc: 运镖结束")
-            return True
+        find_text_list: list[str] = ["获得帮派", "获得帮会贡献度", "获得帮派质献度", "为帮会带来", "两的收入",
+                                     "献度：11000", "献度：10000"]
+        for run_i in range(5):
+            pic: PicCapture = self.windows_cap.capture(hwnd)
+            if pic is None:
+                continue
+            pic_content_cap = pic.pic_content[int(pic.pic_height * 0.7): int(pic.pic_height * 0.97),
+                               int(pic.pic_width * 0.7): int(pic.pic_width * 0.99)]
+
+            # 这些字符只有找到其中1个以上，就算判断成功
+            res_list: dict = self.ocr.find_ocr_arbitrarily(pic_content_cap, find_text_list)
+            if len(res_list) > 0:
+                # print("DriverTruckCarFuc: 运镖结束")
+                return True
+            time.sleep(0.2)
         return False
 
     def _find_driver_truck_type(self, hwnd: int):
@@ -1094,6 +1105,8 @@ class TransportTaskFunc(TruckCar):
         """
         不找车，直接在地图输入坐标前往
         """
+        # 需要先等3秒，等那个接镖成功的提示语消失
+        time.sleep(4)
 
         if self.windows_find.get_windows_image_rect(hwnd, template_image=self._load_pic(self._get_pic_truck_car().task_star_mode)) is None:
             return False
