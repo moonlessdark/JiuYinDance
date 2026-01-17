@@ -137,10 +137,10 @@ class CommonOperations:
         """
         # 方法1：模板匹配
         if self._find_get_all_button_pic(hwnd):
-            print("找到了获取全部的模板")
+            # print("找到了获取全部的模板")
             return True
         # 方法2：OCR识别
         if self._find_get_all_button_ocr(hwnd):
-            print("找到了获取全部的OCR")
+            # print("找到了获取全部的OCR")
             return  True
         return False
