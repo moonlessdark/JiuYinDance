@@ -55,12 +55,22 @@ def find_all_template(im_source: ndarray, im_template: ndarray,
         # 如果启用了灰度渲染模式，可以加快匹配速度
         im_template = _to_gray(im_template)
         im_source = _to_gray(im_source)
+
+    # 如果不使用灰度模式，需要处理多通道图像
+    if not to_gray:
+        # 检查是否为多通道图像，如果是则转换为3通道BGR
+        if len(im_source.shape) == 3 and im_source.shape[2] == 4:
+            im_source = cv2.cvtColor(im_source, cv2.COLOR_BGRA2BGR)
+        if len(im_template.shape) == 3 and im_template.shape[2] == 4:
+            im_template = cv2.cvtColor(im_template, cv2.COLOR_BGRA2BGR)
+
     if edge:
         # 如果启用边缘计算模式
         im_template = im_template.astype(np.uint8)
         im_source = im_source.astype(np.uint8)
         im_template = cv2.Canny(im_template, 100, 200)
         im_source = cv2.Canny(im_source, 100, 200)
+
     result = _internal_find(im_source, im_template, max_cnt, threshold)
     if len(result) == 0 and auto_scale is not None:
         # 如果匹配结果为0，并且缩放设置不为None
@@ -95,6 +105,19 @@ def _to_gray(image):
     else:
         raise RuntimeError(f"查询的图片通道数({channel})不支持进行灰度处理")
     return image_gray
+
+def _ensure_valid_dtype(image):
+    """
+    确保图像数据类型符合OpenCV要求
+    """
+    if image.dtype != np.uint8 and image.dtype != np.float32:
+        # 转换为uint8类型（最常用）
+        if image.max() <= 1.0:
+            # 如果像素值在0-1范围内，先乘以255
+            image = (image * 255).astype(np.uint8)
+        else:
+            image = image.astype(np.uint8)
+    return image
 
 
 def _internal_find(gray_source, gray_template, max_cnt, threshold):
@@ -139,6 +162,10 @@ def _internal_find(gray_source, gray_template, max_cnt, threshold):
     2. **UI元素识别**：需要对亮度变化有一定容忍度
     3. **多平台兼容**：不同设备显示可能有亮度差异
     """
+    # 确保输入图像类型正确
+    gray_source = _ensure_valid_dtype(gray_source)
+    gray_template = _ensure_valid_dtype(gray_template)
+
     w, h = gray_template.shape[1], gray_template.shape[0]
     sw, sh = gray_source.shape[1], gray_source.shape[0]
     res = cv2.matchTemplate(gray_source, gray_template, cv2.TM_CCOEFF_NORMED)

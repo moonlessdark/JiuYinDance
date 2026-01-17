@@ -4,7 +4,7 @@
 import time
 from collections import namedtuple
 from ctypes import windll, c_ubyte, wintypes, byref
-from typing import List, Optional
+from typing import List, Optional, Any
 
 import cv2
 import numpy as np
@@ -411,8 +411,9 @@ class FindWindowsImageTemplate:
         if coordinate_change_to_windows:
             for result in match_result:
                 coordinate_x, coordinate_y = result['result']
-                windows_coordinate: tuple = coordinate_change_from_windows(hwnd=hwnd, coordinate=(coordinate_x, coordinate_y))
-                coordinate_x, coordinate_y = windows_coordinate
+                if hwnd is not None:
+                    windows_coordinate: tuple = coordinate_change_from_windows(hwnd=hwnd, coordinate=(coordinate_x, coordinate_y))
+                    coordinate_x, coordinate_y = windows_coordinate
                 img_result.append((coordinate_x, coordinate_y))
         else:
             for result in match_result:
@@ -425,7 +426,7 @@ class FindWindowsImageTemplate:
                                edge: bool = False,
                                auto_scale: tuple[float, float, float] = None,
                                to_gray: bool = False,
-                               result_type: int = 0, ) -> Optional[tuple]:
+                               result_type: int = 0, ) -> list[tuple[Any, Any] | float] | None:
         """
         通过模板匹配，返回匹配度最高的4个坐标(非圆心点)
         :param smaller_pic:

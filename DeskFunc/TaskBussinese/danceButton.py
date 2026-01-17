@@ -16,7 +16,7 @@ class FindButton:
     """
 
     def __init__(self):
-        self.__find_pic = FindWindowsImageTemplate()
+        self._find_pic = FindWindowsImageTemplate()
         _dance_grey = GetConfig().get_dance_grey_pic()
         _dance_green = GetConfig().get_dance_green_pic()  # 漠西风涛使用
         _dance_whz = GetConfig().get_dance_whz_pic()  # 挖宝、望辉州
@@ -122,19 +122,19 @@ class FindButton:
         _search_button_list: list = []
         for _btn_pic_tuple in _btn_list:
             xx = _btn_pic_tuple[1]
-            _button_list: list = self.__find_pic.get_windows_image_all_rect(source_image=orign_pic,
-                                                                            template_image=xx,
-                                                                            threshold=0.8,
-                                                                            edge=_edge)
+            _button_list: list = self._find_pic.get_windows_image_all_rect(source_image=orign_pic,
+                                                                           template_image=xx,
+                                                                           threshold=0.8,
+                                                                           edge=_edge)
             if _button_list is None:
                 continue
             _button_list.sort()
             if [_btn_pic_tuple[0], _button_list.copy()] not in _search_button_list:
                 _search_button_list.append([_btn_pic_tuple[0], _button_list.copy()])
-        return self.__optimized_sort(_search_button_list)
+        return self._optimized_sort(_search_button_list)
 
     @staticmethod
-    def __optimized_sort(btn_list: list) -> list:
+    def _optimized_sort(btn_list: list) -> list:
         """
         给按钮排序
         :param btn_list:
