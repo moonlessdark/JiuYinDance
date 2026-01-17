@@ -91,10 +91,10 @@ class SkillDanceQth(QThread):
                         center_pos_in_screen: tuple = coordinate_change_from_windows(hwnd, pos_content)
                         SetGhostMouse().move_mouse_to(center_pos_in_screen[0], center_pos_in_screen[1])
 
-                    time.sleep(1)
+                    time.sleep(0.3)
                     SetGhostBoards().click_press_and_release_by_key_name(key_str)
                     if need_ground:
-                        time.sleep(0.3)
+                        time.sleep(0.2)
                         SetGhostMouse().click_mouse_left_button()
                     _run_count += 1
                     self.status_bar.emit(_run_count)
