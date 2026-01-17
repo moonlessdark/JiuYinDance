@@ -318,7 +318,7 @@ class FindWindowsImageTemplate:
                                max_cnt: int = 0,
                                auto_scale: tuple[float, float, float] = None,
                                edge: bool = False,
-                               to_gray: bool = False,
+                               to_gray: bool = True,
                                result_type: int = 0,
                                coordinate_change_to_windows: bool = True) -> Optional[tuple]:
         """
@@ -381,7 +381,7 @@ class FindWindowsImageTemplate:
                                    edge: bool = False,
                                    max_cnt: int = 0,
                                    auto_scale: tuple[float, float, float] = None,
-                                   to_gray: bool = False,
+                                   to_gray: bool = True,
                                    coordinate_change_to_windows: bool = True,
                                    hwnd: int = None) -> Optional[list]:
         """
@@ -425,7 +425,7 @@ class FindWindowsImageTemplate:
                                threshold=0.7,
                                edge: bool = False,
                                auto_scale: tuple[float, float, float] = None,
-                               to_gray: bool = False,
+                               to_gray: bool = True,
                                result_type: int = 0, ) -> list[tuple[Any, Any] | float] | None:
         """
         通过模板匹配，返回匹配度最高的4个坐标(非圆心点)

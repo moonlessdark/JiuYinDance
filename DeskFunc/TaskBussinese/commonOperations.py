@@ -65,7 +65,10 @@ class CommonOperations:
         """
         查找进度条：通过模板匹配
         """
-        loading_bar_pos: tuple = self._windows_find.get_windows_image_rect(hwnd, template_image=self._load_pic(self._config.open_loading), threshold=0.85)
+        loading_bar_pos: tuple = self._windows_find.get_windows_image_rect(hwnd,
+                                                                           template_image=self._load_pic(self._config.open_loading),
+                                                                           threshold=0.85,
+                                                                           to_gray=False)
         if loading_bar_pos is None:
             return False
         return self.mouse_click_pos(hwnd, loading_bar_pos, 0)
@@ -107,7 +110,10 @@ class CommonOperations:
         """
         查找“获取全部”按钮：通过模板匹配
         """
-        get_all_button_pos: tuple = self._windows_find.get_windows_image_rect(hwnd, template_image=self._load_pic(self._config.get_all_goods), threshold=0.85)
+        get_all_button_pos: tuple = self._windows_find.get_windows_image_rect(hwnd,
+                                                                              template_image=self._load_pic(self._config.get_all_goods),
+                                                                              threshold=0.85,
+                                                                              to_gray= False)
         if get_all_button_pos is None:
             return False
         return self.mouse_click_pos(hwnd, get_all_button_pos, 0)

@@ -163,6 +163,9 @@ class MyFightXJ(QThread):
                 self.sin_out.emit(f"窗口id:{hwnd_i} 开始报名")
                 _is_clicked: bool = False  # 是否报名成功
                 for xx in range(50):
+                    if not self.working:
+                        break
+
                     SetGhostMouse().click_mouse_left_button()
                     time.sleep(0.3)
                     if self.find_my_f.find_open_loading(hwnd_i):
@@ -175,7 +178,6 @@ class MyFightXJ(QThread):
                     self.status_bar.emit(_open_count)
                 else:
                     self.sin_out.emit(f"窗口id:{hwnd_i} 报名失败")
-
             self.working = False
         self.sin_out.emit("任务结束")
         self.mutex.unlock()
