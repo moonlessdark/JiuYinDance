@@ -45,7 +45,7 @@ class TruckCarTaskQth(QThread):
         self.__team = TeamFunc()  # 创建队伍
         self.__find_npc = FindTaskNPCFunc()  # 查找当地的NPC
         self.__get_task = ReceiveTruckTask()  # 接任务
-        self.__transport_task = TransportTaskFunc()  # 开始运镖
+        self._transport_task = TransportTaskFunc()  # 开始运镖
         self.__use_goods = UserGoods()
 
     def __del__(self):
@@ -88,7 +88,7 @@ class TruckCarTaskQth(QThread):
         self.__get_task.reply_person_perspective_up(self.windows_handle)  # 初始化视角
         self.sin_out.emit("初始化视角...")
 
-        self.__transport_task.plus_map(self.windows_handle)
+        self._transport_task.plus_map(self.windows_handle)
         time.sleep(0.5)
 
         for count_i in range(self.truck_count):
@@ -174,7 +174,7 @@ class TruckCarTaskQth(QThread):
                         continue
 
                     # 已经接取了任务，寻找一下镖车,驾车上路
-                    if not self.__transport_task.driver_truck_car(self.windows_handle, map_name=map_name):
+                    if not self._transport_task.driver_truck_car(self.windows_handle, map_name=map_name):
                         # 失败次数+1
                         mutex.acquire()
                         is_not_in_car_sum += 1
@@ -204,7 +204,7 @@ class TruckCarTaskQth(QThread):
                 elif __task_status == 5:
 
                     # 打怪结束，先检查一下是不是输出太低，镖车已经木有了
-                    if not self.__transport_task.check_task_status(self.windows_handle):
+                    if not self._transport_task.check_task_status(self.windows_handle):
                         __task_status = 0
                         continue
 
@@ -227,7 +227,7 @@ class TruckCarTaskQth(QThread):
 
                     if is_can_go_car:
 
-                        if not self.__transport_task.transport_truck(self.windows_handle):
+                        if not self._transport_task.transport_truck(self.windows_handle):
                             # 失败次数+1
                             mutex.acquire()
                             is_not_in_car_sum += 1
@@ -236,7 +236,7 @@ class TruckCarTaskQth(QThread):
 
                     # 打完怪了，开始继续找镖车
                     else:
-                        if not self.__transport_task.driver_truck_car_v2(self.windows_handle, car_area_type=1):
+                        if not self._transport_task.driver_truck_car_v2(self.windows_handle, car_area_type=1):
 
                             self.sin_out.emit(f"上车失败(次数:{is_not_in_car_sum + 1}),往前走1步")
                             SetGhostBoards().click_press_and_release_by_key_name_hold_time("w", 0.1)  # 往前走一步
@@ -252,11 +252,11 @@ class TruckCarTaskQth(QThread):
 
                 elif __task_status == 6:
                     # 打怪结束，上车成功，等待任务结束
-                    if self.__transport_task.check_task_status(self.windows_handle):
+                    if self._transport_task.check_task_status(self.windows_handle):
                         time.sleep(0.5)
                         continue
                     else:
-                        if self.__transport_task.check_task_end(self.windows_handle):
+                        if self._transport_task.check_task_end(self.windows_handle):
                             self.sin_out.emit(f"本次押镖(第{count_i + 1}轮已经完成)")
                             self.status_bar.emit(count_i + 1)
                         else:

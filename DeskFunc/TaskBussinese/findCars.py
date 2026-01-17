@@ -248,7 +248,8 @@ class TruckCar:
 
     def check_task_end(self, hwnd: int) -> bool:
         """
-        检测押镖是否结束
+        检测押镖是否结束。
+        OCR不太稳定，得想想办法
         """
         if len(self.ocr.find_ocr_arbitrarily(self.windows_cap.capture(hwnd).pic_content,
                                              ["获得帮派贡献度", "为帮会带来"])) > 0:
