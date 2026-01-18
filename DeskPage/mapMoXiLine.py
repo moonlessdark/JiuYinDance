@@ -204,7 +204,7 @@ class QuadrantChart(QtWidgets.QWidget):
         :param point_list:
         :return:
         """
-        # 设置要绘制的坐标点 [(28, 37),(58, 62)]
+        # 设置要绘制的坐标点
         points = point_list
         self.current_points = points
 
@@ -212,34 +212,45 @@ class QuadrantChart(QtWidgets.QWidget):
         x1, y1 = points[0]
         x2, y2 = points[1]
 
+        # 如果这个坐标点已经渲染在窗口中了，那么就提示一下
+        for line in self.all_lines:
+            if line.get("points") == points:
+                self._print_information(f"坐标:{points} 已经存在，请勿重复点击生成线条")
+                return None
+
         # 计算直线方程 y = kx + b
-        if x2 != x1:
+        if x2 == x1:  # 垂直线
+            # 对于垂直线，y坐标范围扩展到更大的范围
+            large_value = max(self.width(), self.height()) * 2  # 使用一个足够大的值
+            extended_line = [(x1, -large_value), (x1, large_value)]
+        elif y2 == y1:  # 水平线
+            # 对于水平线，x坐标范围扩展到更大的范围
+            large_value = max(self.width(), self.height()) * 2
+            extended_line = [(-large_value, y1), (large_value, y1)]
+        else:  # 斜线
             k = (y2 - y1) / (x2 - x1)
             b = y1 - k * x1
 
-            # 计算与窗口左右边界的交点
-            left_x = -self.origin.x()  # 窗口左边界x坐标(相对于原点)
+            # 使用一个足够大的范围来表示"无限延长"
+            large_value = max(self.width(), self.height()) * 2
+            left_x = -large_value
+            right_x = large_value
             left_y = k * left_x + b
-
-            right_x = self.width() - self.origin.x()  # 窗口右边界x坐标(相对于原点)
             right_y = k * right_x + b
 
-            # 如果这个坐标点已经渲染在窗口中了，那么就提示一下
-            for line in self.all_lines:
-                if line.get("points") == points:
-                    self._print_information(f"坐标:{points} 已经存在，请勿重复点击生成线条")
-                    return None
-            # 保存线条数据
-            line_data = {
-                'points': points,
-                'extended_line': [(left_x, left_y), (right_x, right_y)],
-                'moved': False,
-                'color': QColor(200, 100, 200)  # 紫色
-            }
+            extended_line = [(left_x, left_y), (right_x, right_y)]
 
-            self.all_lines.append(line_data)
-            self.update()
-        # print(f"所有点位: {self.all_lines}")
+        # 保存线条数据
+        line_data = {
+            'points': points,
+            'extended_line': extended_line,
+            'moved': False,
+            'color': QColor(200, 100, 200)  # 紫色
+        }
+
+        self.all_lines.append(line_data)
+        self.update()
+        return line_data
 
     def move_next_line(self):
         sender = self.sender()
@@ -281,8 +292,31 @@ class QuadrantChart(QtWidgets.QWidget):
         x1, y1 = line['extended_line'][0]
         x2, y2 = line['extended_line'][1]
 
-        # 计算直线方程 y = kx + b
-        if x2 != x1:
+        # 处理垂直线（x坐标相同）
+        if x2 == x1:
+            # 对于垂直线，只需要移动x坐标到目标位置
+            line['extended_line'] = [
+                (target_x, y1),
+                (target_x, y2)
+            ]
+            line['moved'] = True
+            line['color'] = QColor(100, 200, 200)  # 移动后改为青色
+            self.update()
+
+        # 处理水平线（y坐标相同）
+        elif y2 == y1:
+            # 对于水平线，只需要移动y坐标到目标位置
+            line['extended_line'] = [
+                (x1, target_y),
+                (x2, target_y)
+            ]
+            line['moved'] = True
+            line['color'] = QColor(100, 200, 200)  # 移动后改为青色
+            self.update()
+
+        # 处理斜线
+        else:
+            # 计算直线方程 y = kx + b
             k = (y2 - y1) / (x2 - x1)
             b = y1 - k * x1
 

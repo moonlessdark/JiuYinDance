@@ -106,7 +106,7 @@ class MoXiMapLine:
 
         _t_pic: np.ndarray = custom_image(x, xxs, xxs + 1)  # 对图片进行二值化，把指针(箭头)高亮
 
-        # cv2.imshow("s", _t_pic)
+        # cv2.imshow("cap_right_top", _t_pic)
         # cv2.waitKey()
 
         _min_point, _max_point = self._find_color_extremes_and_draw_line(_t_pic)
