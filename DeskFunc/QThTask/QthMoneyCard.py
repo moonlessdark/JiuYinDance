@@ -167,7 +167,8 @@ class OpenGiftCard(QThread):
             if len(_is_open_card_hwnd) != 0:
                 time.sleep(2)
                 for is_ok_h in _is_open_card_hwnd:
-                    time.sleep(1)
+                    self.windows_opt.activate_windows(is_ok_h)
+                    time.sleep(0.6)
                     # 鼠标移动一下，避免挡住了包裹的图标
                     m_x, m_y = SetGhostMouse().get_mouse_x_y()
                     w_point = coordinate_change_from_windows(is_ok_h, (m_x - 10, m_y - 10))
