@@ -144,3 +144,147 @@ class CommonOperations:
             # print("找到了获取全部的OCR")
             return  True
         return False
+        
+
+class ProgressBarDetector:
+    def __init__(self, 
+                 frame_interval=0.2, 
+                 frame_count=3, 
+                 blue_hsv_range=([100,50,50], [130,255,255]),
+                 timeout=5.0):  # 新增：默认超时时间5秒
+        """
+        进度条检测器（支持超时+反复初始化）
+        :param frame_interval: 帧间隔时间（秒）
+        :param frame_count: 检测所需帧数（至少3）
+        :param blue_hsv_range: 蓝色HSV范围 ([lower], [upper])
+        :param timeout: 单次检测超时时间（秒），超时后自动重置
+        """
+        # 基础参数
+        self.frame_interval = frame_interval
+        self.frame_count = frame_count
+        self.lower_blue = np.array(blue_hsv_range[0])
+        self.upper_blue = np.array(blue_hsv_range[1])
+        self.timeout = timeout  # 超时阈值
+        
+        # 状态变量（初始化）
+        self.reset()  # 调用重置函数初始化所有状态变量
+
+    def reset(self):
+        """
+        手动初始化/重置所有状态变量（核心：支持反复调用）
+        调用场景：1. 初始化 2. 检测超时 3. 主动结束检测
+        """
+        self.prev_masks = []          # 历史mask列表
+        self.last_check_time = 0      # 上一次检测时间
+        self.detect_start_time = 0    # 单次检测的开始时间（用于超时判断）
+        self.is_detecting = False     # 是否正在检测中（避免重复计时）
+
+    def _get_blue_mask(self, roi):
+        """生成蓝色过滤后的mask"""
+        if roi is None or roi.size == 0:
+            return np.array([])
+        hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
+        mask = cv2.inRange(hsv, self.lower_blue, self.upper_blue)
+        return mask
+
+    def detect(self, roi):
+        """
+        实时检测进度条（可反复调用，自带超时+自动重置）
+        :param roi: 当前帧的ROI区域（BGR格式）
+        :return: tuple - (是否检测到进度条, 是否超时)
+        """
+        # 1. 初始化检测开始时间（首次调用时）
+        if not self.is_detecting:
+            self.detect_start_time = time.time()
+            self.is_detecting = True
+
+        # 2. 超时判断：超过阈值则重置并返回超时
+        current_time = time.time()
+        if current_time - self.detect_start_time > self.timeout:
+            self.reset()  # 超时后自动初始化变量
+            return False, True
+
+        # 3. 生成当前帧mask（空ROI直接返回）
+        current_mask = self._get_blue_mask(roi)
+        if current_mask.size == 0:
+            return False, False
+
+        # 4. 控制帧间隔（避免帧采集过快）
+        if current_time - self.last_check_time < self.frame_interval:
+            return False, False
+        self.last_check_time = current_time
+
+        # 5. 更新历史mask（只保留最近frame_count帧）
+        self.prev_masks.append(current_mask)
+        if len(self.prev_masks) > self.frame_count:
+            self.prev_masks.pop(0)
+
+        # 6. 历史帧不足时，暂不判断
+        if len(self.prev_masks) < self.frame_count:
+            return False, False
+
+        # 7. 分析动态变化规律
+        change_pixels = []
+        for i in range(1, len(self.prev_masks)):
+            # 计算新增蓝色像素（当前帧 - 上一帧）
+            diff = cv2.subtract(self.prev_masks[i], self.prev_masks[i-1])
+            non_zero = cv2.findNonZero(diff)
+            if non_zero is None:
+                continue
+            x_mean = np.mean(non_zero[:, 0, 0])  # 新增像素的x坐标均值
+            change_pixels.append(x_mean)
+
+        # 8. 基础校验：变化点不足则重置
+        if len(change_pixels) < 2:
+            self.reset()
+            return False, False
+        
+        # 9. 判断进度条特征：单调递增+足够变化量
+        is_increasing = all(
+            change_pixels[i] >= change_pixels[i-1] - 10 
+            for i in range(1, len(change_pixels))
+        )
+        total_change = change_pixels[-1] - change_pixels[0]
+        
+        # 10. 检测到进度条：重置状态，返回结果
+        if is_increasing and total_change > 20:
+            self.reset()  # 初始化变量，为下一次检测做准备
+            return True, False
+        
+        return False, False
+
+# ------------------- 游戏脚本实战调用示例 -------------------
+if __name__ == "__main__":
+    # 1. 初始化检测器（设置超时时间为8秒，适配不同场景）
+    detector = ProgressBarDetector(frame_interval=0.2, frame_count=3, timeout=8.0)
+    
+    # 2. 模拟游戏脚本的循环调用（反复检测）
+    while True:
+        # 模拟截取游戏画面ROI（替换为你的真实截图逻辑）
+        # 示例：用pyautogui截图
+        # import pyautogui
+        # roi = pyautogui.screenshot(region=(500, 800, 900, 820))  # (x1,y1,x2,y2)
+        # roi = cv2.cvtColor(np.array(roi), cv2.COLOR_RGB2BGR)
+        
+        # 测试用静态图（实际脚本删除此行）
+        roi = cv2.imread("game_roi.png")
+        
+        # 3. 调用检测函数（反复调用）
+        has_progress, is_timeout = detector.detect(roi)
+        
+        # 4. 处理检测结果
+        if has_progress:
+            print(f"[{time.strftime('%H:%M:%S')}] 检测到进度条！")
+            # 执行进度条相关逻辑（如等待进度完成）
+            time.sleep(2)  # 模拟等待进度条完成
+            # 主动重置检测器（可选，确保下一次检测干净）
+            detector.reset()
+            break  # 示例：检测到后退出循环，实际脚本可继续
+            
+        if is_timeout:
+            print(f"[{time.strftime('%H:%M:%S')}] 进度条检测超时！")
+            # 超时处理逻辑（如重新触发道具使用）
+            detector.reset()  # 重置后可再次开始检测
+        
+        # 脚本循环间隔（避免CPU占用过高）
+        time.sleep(0.2)
