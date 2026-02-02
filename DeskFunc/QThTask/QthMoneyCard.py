@@ -5,7 +5,7 @@ import time
 from PySide6.QtCore import QThread, Signal, QWaitCondition, QMutex
 
 from DeskFunc.TaskBussinese.MoneyCard import FindGiftCard
-from Utils.FindWindowsImage import WindowsHandle
+from Utils.FindWindowsImage import WindowsHandle, WindowsCapture, PicCapture
 from Utils.ImageUtils.MonitorDisplay import coordinate_change_from_windows
 from Utils.KeyMouseDriver.GhostSoft.get_driver_v3 import SetGhostMouse
 
@@ -25,12 +25,13 @@ class OpenGiftCard(QThread):
         self.cond = QWaitCondition()
 
         self.windows_opt = WindowsHandle()
-
+        self.windows_cap = WindowsCapture()
         self.mutex = QMutex()
         self.windows_handle_list = []
 
         self.find_gift_card = FindGiftCard()
         self.mouse = SetGhostMouse()
+
 
     def __del__(self):
         # 线程状态改为和线程终止
@@ -52,7 +53,7 @@ class OpenGiftCard(QThread):
                 month=current_time.month,
                 day=current_time.day
             )
-            time_ranges.append((target - datetime.timedelta(seconds=3), target + datetime.timedelta(seconds=3)))
+            time_ranges.append((target - datetime.timedelta(seconds=1), target + datetime.timedelta(seconds=3)))
 
         # 判断当前时间是否落入任一区间
         match_flag: bool = False
@@ -132,7 +133,7 @@ class OpenGiftCard(QThread):
                 time.sleep(0.6)
 
                 _index_x, _index_y = 0, 0
-                for run_i in range(20):
+                for run_i in range(50):
 
                     if not self.working:
                         self.sin_out.emit(f"窗口id:{hwnd_i} 因working状态跳出，当前循环: {run_i}")
@@ -154,9 +155,9 @@ class OpenGiftCard(QThread):
                     SetGhostMouse().click_mouse_right_button()
                     time.sleep(0.4)
                     is_loading = self.find_gift_card.find_open_loading(hwnd_i)
+
                     if is_loading:
                         self.sin_out.emit(f"窗口id:{hwnd_i} 已开卡...")
-
                         _open_card_count += 1
                         self.status_bar.emit(_open_card_count)
 
@@ -180,6 +181,8 @@ class OpenGiftCard(QThread):
                         self.sin_out.emit(f"窗口id:{is_ok_h} 开到钱了")
             _is_no_card_hwnd.clear()  # 清理掉
             _is_open_card_hwnd.clear()  # 清理掉
+
+
         self.mutex.unlock()
         self.sin_run_status.emit(False)
         return None
