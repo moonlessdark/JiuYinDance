@@ -18,6 +18,7 @@ from DeskFunc.QThTask.QthWorldMarket import WorldMarketGetGoodsQth
 from DeskFunc.QThTask.QthDaySkillDance import SkillDanceQth
 from DeskFunc.QThTask.QthFarmerPickingCrops import FarmerPickingCropsQth
 from DeskFunc.QThTask.QthChallengePoint2LuckyMoney import ChallengePoint2LuckyMoney
+from DeskFunc.QThTask.QthGetAllGoods import GetAllGoodsQth
 
 
 _windows_hwnd_save: dict = {}
@@ -52,6 +53,7 @@ class TaskConnect(MainUI):
         self.qth_skill_dance = SkillDanceQth()  # 每日演练(跟着NPC出招)
         self.qth_farmer_picking_crops = FarmerPickingCropsQth()  # 自动种地
         self.qth_change_2_book = ChallengePoint2LuckyMoney()  # 挑战点换书页
+        self.qth_get_all_goods = GetAllGoodsQth()  # 获取所有物品
 
         # 线程的信号槽连接
         # 团练授业
@@ -96,6 +98,10 @@ class TaskConnect(MainUI):
         self.qth_change_2_book.sin_out.connect(self.log_print)
         self.qth_change_2_book.status_bar.connect(self.status_bar.update_execute_num)
         self.qth_change_2_book.sin_run_status.connect(self._update_task_run_status)
+        # 获取所有物品
+        self.qth_get_all_goods.sin_out.connect(self.log_print)
+        self.qth_get_all_goods.status_bar.connect(self.status_bar.update_execute_num)
+        self.qth_get_all_goods.sin_run_status.connect(self._update_task_run_status)
 
         # GUI的按钮的信号槽
         self.windows_get.push_button_run_windows.clicked.connect(self.run_task)  # 执行任务
@@ -319,6 +325,9 @@ class TaskConnect(MainUI):
                     return None
                 self.qth_change_2_book.init_task_param(_checked_hwnd_list[0])
                 self.qth_change_2_book.start()
+            elif _widget_radio_enum == TaskEnum.get_all_goods:
+                self.qth_get_all_goods.get_param(_checked_hwnd_list)
+                self.qth_get_all_goods.start()
 
             # 启用鼠标中键的全局监听
             self.toggle_global_mouse_monitoring(True)
@@ -346,6 +355,7 @@ class TaskConnect(MainUI):
         self.qth_skill_dance.stop_execute_init()  # 每日演练(跟随NPC出招)
         self.qth_farmer_picking_crops.stop_execute_init()  # 自动种地
         self.qth_change_2_book.stop_stak()
+        self.qth_get_all_goods.stop_execute_init()
 
     def _update_task_run_status(self, task_status: bool):
         """

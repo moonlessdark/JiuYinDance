@@ -21,6 +21,7 @@ class TaskEnum(Enum):
     day_study_skill = "每日演练"
     farmer_task = "农夫种植"
     challenge_point_2_book = "挑战点兑换书页"
+    get_all_goods = "自动获取所有"
     none_selected = "未选择"
 
 
@@ -104,6 +105,7 @@ class TaskOther(QtWidgets.QWidget):
         self.radio_express_auto_buy = QtWidgets.QRadioButton(TaskEnum.world_market.value, self)
         self.radio_day_study_skill = QtWidgets.QRadioButton(TaskEnum.day_study_skill.value, self)
         self.radio_challenge_point_2_book = QtWidgets.QRadioButton(TaskEnum.challenge_point_2_book.value, self)
+        self.radio_get_all_goods = QtWidgets.QRadioButton(TaskEnum.get_all_goods.value, self)
 
         _lay_out_other_widget_line_1 = QtWidgets.QHBoxLayout()
         _lay_out_other_widget_line_1.addWidget(self.radio_button_game_pic_screen)
@@ -112,6 +114,7 @@ class TaskOther(QtWidgets.QWidget):
 
         _lay_out_other_widget_line_2 = QtWidgets.QHBoxLayout()
         _lay_out_other_widget_line_2.addWidget(self.radio_challenge_point_2_book)
+        _lay_out_other_widget_line_2.addWidget(self.radio_get_all_goods)
 
         _lay_out_other_widget = QtWidgets.QVBoxLayout(self)
         _lay_out_other_widget.addLayout(_lay_out_other_widget_line_1)
