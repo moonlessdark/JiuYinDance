@@ -21,7 +21,7 @@ class TaskEnum(Enum):
     day_study_skill = "每日演练"
     farmer_task = "农夫种植"
     challenge_point_2_book = "挑战点兑换书页"
-    get_all_goods = "自动获取所有"
+    get_all_goods = "清理禁地包裹"
     none_selected = "未选择"
 
 

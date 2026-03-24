@@ -63,6 +63,10 @@ ItemBackpack:
   seed: /Resources/ImageTemplate/PicItemBackpack/种子.png
   # 肥料
   fei_liao: /Resources/ImageTemplate/PicItemBackpack/肥料.png
+  # 禁地包裹(红色的那个)
+  hidden_realm_item_package: /Resources/ImageTemplate/PicItemBackpack/禁地物品包.png
+  # 材料包裹(禁地包裹开出来的那个)
+  material_item_package: /Resources/ImageTemplate/PicItemBackpack/杂物包.png
 
 # 人物状态，右上角的状态或者进度条
 PersonBuff:

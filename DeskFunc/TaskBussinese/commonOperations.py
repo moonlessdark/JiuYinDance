@@ -113,6 +113,7 @@ class CommonOperations:
                                                                               to_gray= False)
         if get_all_button_pos is None:
             return False
+
         return self.mouse_click_pos(hwnd, get_all_button_pos, 0)
 
     def _find_get_all_button_ocr(self, hwnd: int) -> bool:

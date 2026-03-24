@@ -190,7 +190,8 @@ class GetConfig:
         _back_item.material_bag_tag_clicked = self.project_dir + self.__datas["ItemBackpack"]["backPack_cailiao_clicked_status"]
         _back_item.seed = self.project_dir + self.__datas["ItemBackpack"]["seed"]  # 种子
         _back_item.fertilizer = self.project_dir + self.__datas["ItemBackpack"]["fei_liao"]  # 肥料
-
+        _back_item.hidden_realm_item_package = self.project_dir + self.__datas["ItemBackpack"]["hidden_realm_item_package"]  # 禁地物品包
+        _back_item.material_item_package = self.project_dir + self.__datas["ItemBackpack"]["material_item_package"]  # 材料包
         return _back_item
 
     def get_goods_opt_status(self) -> GoodsOptStatus:

@@ -68,6 +68,9 @@ class BackpackItem:
 
     seed: str = dataclasses.field(default_factory=str)  # 种子
     fertilizer: str = dataclasses.field(default_factory=str)  # 肥料
+    material_item_package: str = dataclasses.field(default_factory=str)  # 材料包
+    hidden_realm_item_package: str = dataclasses.field(default_factory=str)  # 禁地物品包
+
 
 @dataclasses.dataclass
 class GoodsOptStatus:
