@@ -1,8 +1,8 @@
-import ctypes
 import sys
 
 from PySide6.QtWidgets import QApplication
-from DeskFunc.QtConnect.connect import TaskConnect
+from DeskFunc.v2.QtConnect import TaskConnect
+from Core.windows.dpi import set_process_dpi_awareness
 import configparser
 import os
 
@@ -149,13 +149,9 @@ def restart_application():
 
 if __name__ == '__main__':
 
-    # 加载配置并设置DPI感知模式
+    # 加载配置并设置DPI感知模式（必须在创建任何窗口之前）
     dpi_mode: int = load_dpi_config()
-
-    try:
-        ctypes.windll.shcore.SetProcessDpiAwareness(dpi_mode)
-    except Exception as e:
-        print(f"设置DPI模式失败: {e}")
+    dpi_api: str = set_process_dpi_awareness(dpi_mode)
 
     app = QApplication(sys.argv)
     app.setStyle("Fusion")
@@ -166,12 +162,16 @@ if __name__ == '__main__':
 
     w.setWindowTitle(f"九阴日常助手({mode_name})")
 
-    w.log_print(f"当前DPI模式: 【{mode_name}】\n请确保游戏游戏设置与此脚本的DPI缩放设置一致。\n")
+    w.log_print(f"当前DPI模式: 【{mode_name}】 (API: {dpi_api})\n"
+                "请确保游戏游戏设置与此脚本的DPI缩放设置一致。\n")
 
-    w.log_print(f"更新日期: 2026-03-24\n"
+    w.log_print(f"更新日期: 2026-10-25\n"
                 "更新内容: \n"
-                "1、自动获取所有物品改为清理禁地包裹\n"
-                "2、支持按鼠标中键停止任务(需以管理员权限运行脚本)")
+                "1、启用 v2 架构：团练授业、上下左右、9点开卡、地图采集\n"
+                "   世界竞拍、挑战点兑换书页、清理禁地包裹\n"
+                "2、v2 全部功能均为纯模板匹配，不再依赖 OCR\n"
+                "3、修复团练授业昼夜切换后识别失效的问题\n"
+                "4、支持按鼠标中键停止任务(需以管理员权限运行脚本)")
 
     w.show()
     app.exec()

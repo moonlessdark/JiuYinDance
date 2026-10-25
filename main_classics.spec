@@ -8,7 +8,7 @@ a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[('./Resources/.', './Resources/.'), ('./Resources/ppocronnx/.', './ppocronnx/.'),('./README.MD', './')],
+    datas=[('./Resources/.', './Resources/.'),('./README.MD', './')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
