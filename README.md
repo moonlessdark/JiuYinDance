@@ -9,6 +9,7 @@
 ----  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;如果该脚本被微软的杀毒软件(Windows Defender)报毒，请按照  **[此教程](https://segmentfault.com/q/1010000039054120/a-1020000039066088)** 或者 **[此打包方法](https://blog.csdn.net/gitblog_07610/article/details/148467320)** 给出的方案处理。
 报毒是打包工具Pyinstaller引起的。  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;当前分支为 AICoding，AI真好用，帮我分析我的屎山代码。
   
 ## 欢迎语：
 ----  
@@ -39,7 +40,7 @@
 <div align=center>“幽灵键鼠”请在淘宝购买，买最便宜的那款就行了。</div>
 
 ### Python  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Python3.8或以上版本  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Python3.12或以上版本  
 
 ### 游戏设置
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;启动脚本前，一定要确认好客户端设置的游戏缩放模式是【经典模式】还是【极致模式】，如果游戏客户端缩放模式与启动的脚本不一致，会导致无法识别到图像的。  
@@ -63,14 +64,8 @@
  - 团练授业  
  - 上下左右(绿色/红色背景的)  
  - 武庆礼卡(9点开卡)，只会开2次卡。侠骨区第三次开卡没钱。
- - 押镖(需要设置打怪技能)
  - 地图物资采集(挖矿、砍树)
- - 玄机秘境自动报名(8点整报名),单纯的报名，没有其他功能。
- - 游戏自动截图  
- - 漠西风涛-挖宝指引,使用方法参考[此帖子](https://tieba.baidu.com/p/9124698712) ，此功能的入口在**菜单栏-小工具**中，不需要“幽灵键鼠”也可以使用。  
  - 世界竞拍  
- - 每日演练(跟随NPC出招)  
- - 自动种地 实现逻辑参考[此项目](https://github.com/HongwSun/JiuYinTool) 
  - 挑战点兑换幸运硬币  
 
 
@@ -88,21 +83,6 @@
 
 * 如果你的电脑双开时有窗口切换失败的问题，请 **[参考此教程](https://blog.csdn.net/qq_26013403/article/details/129122971)** 的方法修改注册表并重启电脑，以管理员权限运行脚本。如果依旧有问题的话我暂时也没撤了，只能进行单开团练授业。  
 
-### 关于押镖任务  
-
-*  押镖地图推荐: 洛阳和燕京。  
-*  暂时只支持单人运镖。  
-*  <b><font color=red>镖车打怪时，请不要用鼠标点击窗口，不然会导致“格挡”NPC技能的按键无效。</font></b>
-*  <font color=red>在使用押镖之前，请先去菜单栏“配置”-“编辑技能”文件修改一下您的技能按键。</font>  
- 
-<div align=center>
-<img src="https://github.com/moonlessdark/JiuYinDance/blob/master/Resources/Readme/%E6%8A%80%E8%83%BD%E8%AE%BE%E7%BD%AE.PNG">
-</div>
-
-* 注意: 怒气招请的优先级请设置为最低。因为没有判断当前角色的“怒气值”是否足够。或者怒气招如果是加BUFF类型的，干脆就不填写此招式。  
-* 如果您也是一个峨眉使用金鼎套路，那么就只需要修改对应的 “Key”(技能对应的键盘按键)即可。 
-* 押镖时建议先按F8屏幕一下其他玩家，减少干扰。  
-* 目前还没有做过多的干扰项判断(比如垃圾四害的干扰)，在打劫镖的NPC时，会受到游戏内的横幅提示的影响。(例如：某某帮会发动了追杀，某某玩家砸蛋出了金丝粉)，横幅会的出现会遮挡劫镖NPC放技能的图标，导致人物无法格挡技能被击飞，影响后续的镖车判断。  
 
 ### 关于物资采集
 <div align=center>
@@ -116,23 +96,6 @@
 *  首次运行新路线时,需要人工监控。  
 *  如果出现坐标在点击小地图时没用采集而是向其他方法移动,说明此坐标地形干扰大。请尝试调整坐标(x或者y轴加减1反复调试)。
 *  如果物资旁边有个NPC,在自动采集时很大概率会自动点击到此NPC,这种坐标请跳过。
-
-### 关于漠西-挖宝指引  
-<div align=center>
-<img src="https://github.com/moonlessdark/JiuYinDance/blob/master/Resources/Readme/%E6%BC%A0%E8%A5%BF%E6%8C%96%E5%AE%9D.png">
-</div>  
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;说明: 由于原来的地图是一张3500X3500分辨率的图片，为了映射到小地图(900X900)，势必会产生精度丢失。所以2条虚线相交并不一定代表挖宝的位置一定准确。  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;到了那附近后还需要根据指引方向寻找一下宝箱。一般差的不远，都是在那附近的。    
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;本功能是图色识别，所以在传送到新的复活点后，必须等右上角的指针加载出来后，才能点击“绘制连线”。
-
-* 第一步: 传送至某个复活点  
-* 第二步: 在窗口右上角，点击“绘制坐标连线”  
-* 第三步: 点击移动至XXX, 具体移动到哪里根据你当前人物所在的复活点  
-* 第四步: 再传送到一个新的复活点，具体是哪里根据绘制的第一条虚线来判断，最好是相对的。  
-* 第五步: 继续绘制一条新的连线，并点击 移动到XXX  
-* 第六步: 让人物角色移动到2条虚线相交的地方。  
-
 
 ### 关于世界竞拍价格设置  
 <div align=center>
