@@ -5,14 +5,15 @@ BUFF 跨帧跟踪。
 同一模板会换行或整体前移，槽位坐标变化但目标没有消失；面板倒计时需要
 以“目标”为单位连续推进。业务上每种 BUFF 同一时刻只会出现一次，因此直接
 按名称关联，给每个目标分配稳定的 track_id，位置只用于展示和排查。
+
+轨迹不会因为漏检被删除：复杂背景或闪烁可能导致连续多帧识别失败，删除后
+重新检测会换新的 track_id，面板就无法沿用原有倒计时。轨迹按名称复用，
+数量只受 BUFF 模板总数限制，重新检测到时直接更新原轨迹。
 """
 from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Optional
-
-# 轨迹连续丢失多少帧后才删除，用于跨过闪烁低谷和换位过程中的短暂漏检
-TRACK_MAX_MISS_FRAMES = 5
 
 
 @dataclass
@@ -46,16 +47,14 @@ class TrackState:
     stack: Optional[int]
     seconds: Optional[int]
     has_countdown: bool
-    misses: int = 0
-    # 本帧是否真正检测到；False 表示仍在丢失容忍期
+    # 本帧是否真正检测到；False 表示本帧漏检，轨迹仍保留供后续复用
     detected: bool = True
 
 
 class BuffTracker:
     """轻量的多目标跟踪器，按名称分配稳定 track_id。"""
 
-    def __init__(self, max_miss_frames: int = TRACK_MAX_MISS_FRAMES) -> None:
-        self._max_miss_frames = max(1, int(max_miss_frames))
+    def __init__(self) -> None:
         self._tracks: dict[str, TrackState] = {}
         self._next_id = 1
 
@@ -64,7 +63,7 @@ class BuffTracker:
         用当前帧检测结果更新轨迹。
 
         :param detections: 本帧所有检测结果，调用后其 track_id 会被回填
-        :return: 本帧活跃轨迹（包含仍在丢失容忍期的轨迹）
+        :return: 全部轨迹；本帧漏检的轨迹 detected 为 False
         """
         seen_names: set[str] = set()
         for detection in detections:
@@ -91,14 +90,10 @@ class BuffTracker:
                 self._tracks[detection.name] = track
             self._apply_detection(track, detection)
 
-        # 未匹配轨迹累计丢失次数，超过容忍上限后删除
-        for name, track in list(self._tracks.items()):
-            if name in seen_names:
-                continue
-            track.misses += 1
-            track.detected = False
-            if track.misses > self._max_miss_frames:
-                del self._tracks[name]
+        # 未匹配轨迹只标记漏检，不删除；重新检测到时沿用原 track_id
+        for name, track in self._tracks.items():
+            if name not in seen_names:
+                track.detected = False
 
         return sorted(self._tracks.values(), key=lambda item: item.track_id)
 
@@ -119,6 +114,5 @@ class BuffTracker:
         track.stack = detection.stack
         track.seconds = detection.seconds
         track.has_countdown = detection.has_countdown
-        track.misses = 0
         track.detected = True
         detection.track_id = track.track_id

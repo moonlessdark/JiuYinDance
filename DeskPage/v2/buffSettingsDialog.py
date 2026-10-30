@@ -5,8 +5,9 @@ BUFF 识别设置对话框。
 功能与原 BUFF 调试工具一致：
 1. 调整状态面板的大图标尺寸、布局模式、属性名显示和背景透明度；
 2. 按“内功 / 武学”勾选需要参与识别的模板组；
-3. 设置修改时实时预览面板效果；
-4. 点击确定后由菜单层写回 buff_config.json。
+3. 选择检测灵敏度，控制漏检多久后判定 BUFF 消失；
+4. 设置修改时实时预览面板效果；
+5. 点击确定后由菜单层写回 buff_config.json。
 
 模板勾选在下次开始 BUFF 监控时生效；面板外观会立即应用到当前面板。
 """
@@ -22,7 +23,9 @@ from PySide6.QtWidgets import (QCheckBox, QComboBox, QDialog,
                                QVBoxLayout, QWidget)
 
 from DeskFunc.v2.TaskBussinese.buffConfig import (
+    DETECT_SENSITIVITY_SECONDS,
     TEMPLATE_CATEGORIES,
+    detect_sensitivity_from_config,
     enabled_template_map,
     is_template_enabled,
 )
@@ -76,6 +79,15 @@ class BuffSettingsDialog(QDialog):
         index = self._layout_combo.findData(settings.layout_mode)
         self._layout_combo.setCurrentIndex(max(0, index))
         form.addRow("图标布局：", self._layout_combo)
+
+        # 检测灵敏度：控制漏检多久后判定 BUFF 消失
+        self._sensitivity_combo = QComboBox(self)
+        for name in DETECT_SENSITIVITY_SECONDS:
+            self._sensitivity_combo.addItem(name, name)
+        current = detect_sensitivity_from_config(self._config)
+        index = self._sensitivity_combo.findData(current)
+        self._sensitivity_combo.setCurrentIndex(max(0, index))
+        form.addRow("检测灵敏度：", self._sensitivity_combo)
 
         form_2 = QFormLayout()
         form_2.setHorizontalSpacing(8)
@@ -181,6 +193,10 @@ class BuffSettingsDialog(QDialog):
             if check.isChecked():
                 result.setdefault(category, []).append(template_name)
         return result
+
+    def detect_sensitivity(self) -> str:
+        """读取当前检测灵敏度档位（灵敏 / 普通 / 缓慢）。"""
+        return str(self._sensitivity_combo.currentData())
 
     def panel_settings(self) -> PanelSettings:
         """读取对话框中当前选择的设置。"""

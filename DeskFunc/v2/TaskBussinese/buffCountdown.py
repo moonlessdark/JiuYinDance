@@ -10,6 +10,10 @@ BUFF 倒计时与叠层数字识别。
 
 数字区域统一取 BGR 三通道最小值转灰度：游戏数字是白色文字，背景可能
 是橙色/红色，直接转普通灰度会把彩色背景也提亮，导致数字匹配度偏低。
+
+闪烁说明：BUFF 剩余秒数小于 FLICKER_SECONDS 后，游戏内大图标开始闪烁，
+倒计时读数会抖动，大数字也可能被误读成个位数。业务层遇到小于该阈值的
+读数时不覆盖已有倒计时，继续用 QTimer 递减；只有不小于阈值的读数才参与对齐。
 """
 from __future__ import annotations
 
@@ -25,6 +29,9 @@ from Core.vision.template import load_template
 
 # 单个数字的默认匹配阈值
 DEFAULT_DIGIT_THRESHOLD = 0.8
+# BUFF 剩余秒数小于该值时大图标进入闪烁状态，倒计时读数容易抖动；
+# 业务层遇到小于该阈值的读数时保持当前 QTimer 秒数，不做重置
+FLICKER_SECONDS = 10
 # BUFF 图标模板的基准高度（像素），用于把文字区域偏移换算到当前缩放比例
 ICON_REFERENCE_HEIGHT = 32.0
 # 倒计时文字相对 BUFF 图标矩形的偏移（基于基准尺寸）

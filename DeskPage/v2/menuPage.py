@@ -87,6 +87,7 @@ class MenuUI(QtWidgets.QMenuBar):
         panel_settings = dialog.panel_settings()
         config["enabled_templates"] = dialog.enabled_templates()
         config["panel"] = dataclasses.asdict(panel_settings)
+        config["detect_sensitivity"] = dialog.detect_sensitivity()
         if not save_buff_config(assets.config_path, config):
             QtWidgets.QMessageBox.warning(
                 self, "BUFF识别设置",

@@ -61,8 +61,6 @@ DEFAULT_COLOR_FLICKER_MAX_RATIO_DIFF = 0.55
 DEFAULT_COLOR_MAX_HUE_DIFF = 0.35
 COLOR_HUE_BINS = 18
 COLOR_HUE_MIN_PIXELS = 20
-# 闪烁丢失容忍帧数
-DEFAULT_FLICKER_MAX_MISS_FRAMES = 2
 
 
 @dataclass
@@ -280,10 +278,8 @@ class BuffRecognizer:
             color_cfg.get("flicker_max_ratio_diff",
                           DEFAULT_COLOR_FLICKER_MAX_RATIO_DIFF))
 
-        self._flicker_max_miss = int(
-            self.config.get("flicker", {}).get(
-                "max_miss_frames", DEFAULT_FLICKER_MAX_MISS_FRAMES))
-        self._tracker = BuffTracker(max_miss_frames=self._flicker_max_miss + 3)
+        # 轨迹不按漏检帧数删除，track_id 始终稳定，面板倒计时才能跨漏检延续
+        self._tracker = BuffTracker()
         self.templates = self._load_templates()
         self.scan_interval_ms = max(
             200, int(self.config.get("scan_interval_ms", 1000)))

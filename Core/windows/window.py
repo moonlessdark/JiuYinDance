@@ -169,6 +169,106 @@ def activate_windows_ex(hwnd: int) -> tuple[bool, str]:
     return False, describe_activation_failure(handle_id)
 
 
+def set_window_topmost(hwnd: int, topmost: bool = True) -> bool:
+    """
+    设置或取消窗口置顶。
+
+    :param hwnd: 窗口句柄
+    :param topmost: True 置顶，False 取消置顶
+    :return: 是否设置成功
+    """
+    try:
+        handle_id = int(hwnd)
+    except (TypeError, ValueError):
+        return False
+    if not win32gui.IsWindow(handle_id):
+        return False
+
+    insert_after = win32con.HWND_TOPMOST if topmost else win32con.HWND_NOTOPMOST
+    try:
+        win32gui.SetWindowPos(
+            handle_id, insert_after, 0, 0, 0, 0,
+            win32con.SWP_NOMOVE | win32con.SWP_NOSIZE
+            | win32con.SWP_NOACTIVATE | win32con.SWP_SHOWWINDOW)
+    except (win32gui.error, OSError):
+        return False
+    return True
+
+
+def set_window_above(hwnd: int, target_hwnd: int) -> bool:
+    """
+    把窗口放到目标窗口的上一层（Z 序紧邻上方），不强制全局置顶。
+
+    与旧实现不同，这里不再无条件把面板放进置顶带，而是让面板的置顶状态
+    跟随目标窗口：目标窗口是普通窗口时面板也保持普通。这样用户切换到其它
+    程序时，该程序会正常盖住面板，只有目标游戏窗口显示在前时面板才贴到它
+    上方，避免面板盖住所有激活窗口。
+
+    :param hwnd: 需要抬升的窗口（例如 BUFF 状态面板）
+    :param target_hwnd: 目标窗口（游戏窗口）
+    :return: 是否抬升成功；窗口句柄无效时返回 False
+    """
+    try:
+        handle_id = int(hwnd)
+        target_id = int(target_hwnd)
+    except (TypeError, ValueError):
+        return False
+    if not win32gui.IsWindow(handle_id) or not win32gui.IsWindow(target_id):
+        return False
+    # 目标最小化时不要调整 Z 序，否则面板会被一起带到后台；
+    # 返回 True 表示绑定仍然有效，避免上层误判为窗口已关闭而解除绑定
+    if win32gui.IsIconic(target_id):
+        return True
+
+    flags = (win32con.SWP_NOMOVE | win32con.SWP_NOSIZE
+             | win32con.SWP_NOACTIVATE | win32con.SWP_SHOWWINDOW)
+    try:
+        # 取目标窗口在 Z 序中的前一个窗口（即紧贴它上方的窗口）。
+        # 把面板插到这个窗口之后，面板就落在目标紧邻上方。
+        previous = win32gui.GetWindow(target_id, win32con.GW_HWNDPREV)
+        if previous == handle_id:
+            # 面板已经在目标正上方，无需重复调整，避免定时刷新 Z 序导致闪烁
+            return True
+
+        target_topmost = _is_topmost_window(target_id)
+        if target_topmost:
+            # 目标在置顶带：面板也必须进置顶带，否则会被目标压住。
+            # 有上方邻居时插到邻居之后，没有则直接放到置顶带顶部。
+            insert_after = previous if previous else win32con.HWND_TOPMOST
+        else:
+            # 目标在普通带：先把面板降回普通带，避免旧的置顶状态让它
+            # 盖住其它窗口。随后插到目标上方邻居之后；若上方邻居是置顶
+            # 窗口（说明目标已是普通带最顶），则放到普通带顶部即可。
+            win32gui.SetWindowPos(
+                handle_id, win32con.HWND_NOTOPMOST, 0, 0, 0, 0, flags)
+            if previous and not _is_topmost_window(previous):
+                insert_after = previous
+            else:
+                insert_after = win32con.HWND_TOP
+
+        win32gui.SetWindowPos(handle_id, insert_after, 0, 0, 0, 0, flags)
+    except (win32gui.error, OSError):
+        return False
+    return True
+
+
+def _is_topmost_window(hwnd: int) -> bool:
+    """判断窗口是否处于置顶带（WS_EX_TOPMOST）。"""
+    try:
+        ex_style = win32gui.GetWindowLong(int(hwnd), win32con.GWL_EXSTYLE)
+    except (TypeError, ValueError, win32gui.error, OSError):
+        return False
+    return bool(ex_style & win32con.WS_EX_TOPMOST)
+
+
+def is_window_alive(hwnd: int) -> bool:
+    """判断窗口句柄是否仍然有效，供调用方区分“窗口已关闭”与临时操作失败。"""
+    try:
+        return bool(win32gui.IsWindow(int(hwnd)))
+    except (TypeError, ValueError, win32gui.error, OSError):
+        return False
+
+
 def describe_activation_failure(hwnd: int) -> str:
     """
     生成激活失败原因。

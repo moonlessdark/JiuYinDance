@@ -5,8 +5,8 @@ BUFF 识别配置读取与模板启用规则。
 配置文件 Resources/ImageTemplate/PicBuff/buff_config.json 采用三级结构：
     模版类型（内功/武学） -> 模版名称（如“峨眉会意功”） -> BUFF 图标信息
 
-设置界面只改写 enabled_templates 和 panel 两组配置，识别线程每次启动
-都会重新读取配置，因此模板勾选在下次开始监控时生效。
+设置界面会改写 enabled_templates、panel 和 detect_sensitivity 配置，识别线程
+每次启动都会重新读取配置，因此模板勾选在下次开始监控时生效。
 """
 from __future__ import annotations
 
@@ -21,6 +21,15 @@ DEFAULT_PANEL_SETTINGS = {
     "show_attr_label": False,
     "background_alpha": 0,
 }
+
+# 检测灵敏度 -> 漏检容忍秒数。
+# 无倒计时和有倒计时的图标共用同一档位，值越小越灵敏（越快判定消失）。
+DETECT_SENSITIVITY_SECONDS = {
+    "灵敏": 0.1,
+    "普通": 0.5,
+    "缓慢": 1.0,
+}
+DEFAULT_DETECT_SENSITIVITY = "普通"
 
 
 def load_buff_config(path: str) -> dict:
@@ -74,6 +83,24 @@ def is_template_enabled(enabled_map: dict[str, set[str]] | None,
     if category not in enabled_map:
         return True
     return template_name in enabled_map[category]
+
+
+def detect_sensitivity_from_config(config: dict) -> str:
+    """
+    读取检测灵敏度档位。
+
+    :param config: buff_config.json 解析后的字典
+    :return: “灵敏 / 普通 / 缓慢”；缺失或非法时回退到“普通”
+    """
+    name = str(config.get("detect_sensitivity", DEFAULT_DETECT_SENSITIVITY))
+    if name not in DETECT_SENSITIVITY_SECONDS:
+        return DEFAULT_DETECT_SENSITIVITY
+    return name
+
+
+def miss_seconds_from_config(config: dict) -> float:
+    """把检测灵敏度换算成漏检容忍秒数。"""
+    return DETECT_SENSITIVITY_SECONDS[detect_sensitivity_from_config(config)]
 
 
 def panel_settings_from_config(config: dict) -> dict:

@@ -22,6 +22,7 @@ from DeskFunc.v2.QthTask.QthMoneyCard import OpenGiftCardTask
 from DeskFunc.v2.QthTask.QthWorldMarket import WorldMarketTask
 from DeskFunc.v2.TaskBussinese.buffConfig import (
     load_buff_config,
+    miss_seconds_from_config,
     panel_settings_from_config,
 )
 from DeskPage.v2.buffPanel import (BuffState, PanelSettings,
@@ -54,6 +55,9 @@ class TaskConnect(MainUI):
         self.windows_get.push_button_run_windows.clicked.connect(self.run_task)
         self.windows_get.push_button_get_windows.clicked.connect(self._init_game_windows_hwnd)
         self.windows_get.push_button_test_windows.clicked.connect(self.test_hwnd)
+        # 选中 BUFF 监控时立即弹出状态面板，无需等待点击开始执行
+        self.task_tab_windows.task_other.radio_button_buff_monitor.toggled.connect(
+            self._on_buff_monitor_toggled)
 
     def _init_task_threads(self):
         """创建全部任务线程并集中登记。"""
@@ -98,12 +102,36 @@ class TaskConnect(MainUI):
         self._buff_panel.setWindowTitle("BUFF 状态面板")
         self._buff_panel.resize(420, 300)
         self._buff_presenter = PanelPresenter(
-            self._buff_panel, icons, {}, "", lambda: self._buff_settings)
+            self._buff_panel, icons, {}, "", lambda: self._buff_settings,
+            miss_seconds=miss_seconds_from_config(config))
 
     def _apply_buff_settings(self, settings: PanelSettings) -> None:
-        """设置对话框保存后立即更新面板外观。"""
+        """设置对话框保存后立即更新面板外观，同时刷新检测灵敏度。"""
         self._buff_settings = settings
         self._buff_panel.set_settings(settings)
+        assets = get_resources().buff_assets
+        config = load_buff_config(assets.config_path)
+        self._buff_presenter.set_miss_seconds(
+            miss_seconds_from_config(config))
+
+    def _on_buff_monitor_toggled(self, checked: bool) -> None:
+        """选中 BUFF 监控时立即弹出面板，取消选中时收起。"""
+        if checked:
+            self._buff_panel.set_overlay_mode(True)
+            # 任务未启动时允许拖动面板，方便先摆到合适位置
+            self._buff_panel.set_draggable(True)
+            checked_hwnd_list = self._get_windows_hwnd_list()
+            if checked_hwnd_list:
+                self._buff_panel.bind_target_window(checked_hwnd_list[0])
+            else:
+                self._buff_panel.unbind_target_window()
+            return
+
+        # 任务执行期间不应触发取消选中，这里只处理普通切换
+        if self._run_task_status:
+            return
+        self._buff_panel.set_overlay_mode(False)
+        self._buff_panel.hide()
 
     def _on_buff_frame(self, detections: list, title: str) -> None:
         """把任务线程的识别结果转换成面板状态并刷新。"""
@@ -233,6 +261,7 @@ class TaskConnect(MainUI):
 
         # 切换到非 BUFF 任务时，隐藏上次监控遗留的状态面板
         if task_enum != TaskEnum.buff_monitor:
+            self._buff_panel.set_overlay_mode(False)
             self._buff_panel.hide()
 
         task_started = False
@@ -292,8 +321,10 @@ class TaskConnect(MainUI):
                 self.log_print("BUFF 监控暂时只支持一个游戏窗口，请去掉多余的窗口")
                 return None
             self.qth_buff.init_task_param(checked_hwnd_list)
-            # 面板无边框置顶，方便叠在游戏窗口右上角查看
+            # 面板无边框置顶并锁定到勾选的游戏窗口上方，执行中禁止拖动
             self._buff_panel.set_overlay_mode(True)
+            self._buff_panel.bind_target_window(checked_hwnd_list[0])
+            self._buff_panel.set_draggable(False)
             self.qth_buff.start()
             task_started = True
         else:
@@ -311,6 +342,8 @@ class TaskConnect(MainUI):
 
     def _update_task_run_status(self, task_status: bool):
         """根据线程状态更新执行按钮和任务选项。"""
+        # 任务执行中锁定面板位置，结束后恢复拖动
+        self._buff_panel.set_draggable(not task_status)
         if task_status:
             self.windows_get.push_button_run_windows.setText("停止执行")
             self.windows_get.push_button_run_windows.setEnabled(True)
@@ -325,5 +358,5 @@ class TaskConnect(MainUI):
             self.task_tab_windows.update_radio_enable(True)
             # 任务自然结束时也要关闭中键监听，避免监听线程长期占用
             self.toggle_global_mouse_monitoring(False)
-            # BUFF 监控结束后恢复普通窗口外观，保留最后一份识别结果
-            self._buff_panel.set_overlay_mode(False)
+            # BUFF 监控结束后保持无边框叠加窗口，保留最后一份识别结果；
+            # 拖动已在方法开头随任务状态恢复，这里不恢复系统标题栏

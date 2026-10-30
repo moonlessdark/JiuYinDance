@@ -135,7 +135,7 @@ class PanelSettings:
     icon_size: int = _ICON_SIZE
     layout_mode: str = "rows"
     show_attr_label: bool = False
-    background_alpha: int = 0
+    background_alpha: int = 50
 
 
 @dataclass(frozen=True)

@@ -14,7 +14,7 @@
     "icon_size": 60,
     "layout_mode": "rows",
     "show_attr_label": false,
-    "background_alpha": 0
+    "background_alpha": 153
   },
   "flicker": {
     "max_miss_frames": 2
