@@ -1,0 +1,89 @@
+{
+  "roi": [
+    0.7,
+    0.0,
+    0.98,
+    0.2
+  ],
+  "threshold": 0.7,
+  "digit_threshold": 0.8,
+  "digit_template_dir": "Resources/ImageTemplate/PicBuff/number",
+  "showbuff_dir": "Resources/ImageTemplate/PicBuff/ShowBuff",
+  "scan_interval_ms": 1000,
+  "panel": {
+    "icon_size": 60,
+    "layout_mode": "rows",
+    "show_attr_label": false,
+    "background_alpha": 0
+  },
+  "flicker": {
+    "max_miss_frames": 2
+  },
+  "buffs": {
+    "武学": {
+      "春秋天远决": {
+        "云天": {
+          "template": "Resources/ImageTemplate/PicBuff/buff/春秋天远决/云天.png",
+          "order": 0,
+          "attribute": "增伤",
+          "countdown": true,
+          "threshold": 0.65
+        },
+        "仓海": {
+          "template": "Resources/ImageTemplate/PicBuff/buff/春秋天远决/仓海.png",
+          "order": 1,
+          "attribute": "叠层",
+          "countdown": true,
+          "threshold": 0.65
+        }
+      }
+    },
+    "内功": {
+      "峨眉会意功": {
+        "花开": {
+          "template": "Resources/ImageTemplate/PicBuff/buff/峨眉会意功/花开.png",
+          "order": 0,
+          "attribute": "叠层",
+          "countdown": false,
+          "threshold": 0.75
+        },
+        "花落": {
+          "template": "Resources/ImageTemplate/PicBuff/buff/峨眉会意功/花落.png",
+          "order": 1,
+          "attribute": "叠层",
+          "countdown": false,
+          "threshold": 0.75
+        },
+        "花开有时": {
+          "template": "Resources/ImageTemplate/PicBuff/buff/峨眉会意功/花开有时.png",
+          "order": 2,
+          "attribute": "增伤",
+          "countdown": false,
+          "threshold": 0.75
+        },
+        "花落无期": {
+          "template": "Resources/ImageTemplate/PicBuff/buff/峨眉会意功/花落无期.png",
+          "order": 3,
+          "attribute": "防御",
+          "countdown": false,
+          "threshold": 0.75
+        }
+      }
+    }
+  },
+  "enabled_templates": {
+    "内功": [
+      "峨眉会意功"
+    ],
+    "武学": [
+      "春秋天远决"
+    ]
+  },
+  "color_check": {
+    "enabled": true,
+    "saturation_threshold": 60,
+    "max_ratio_diff": 0.5,
+    "max_hue_diff": 0.35,
+    "flicker_max_ratio_diff": 0.55
+  }
+}

@@ -10,6 +10,7 @@ v2 任务选择界面。
 5. 世界竞拍
 6. 挑战点兑换书页
 7. 清理禁地包裹
+8. BUFF 实时监控（屏幕截图识别）
 
 任务分发按单选框文本匹配 TaskEnum.value，新增任务时保持两边一致。
 """
@@ -31,6 +32,7 @@ class TaskEnum(Enum):
     world_market = "世界竞拍"
     challenge_point_2_book = "挑战点兑换书页"
     get_all_goods = "清理禁地包裹"
+    buff_monitor = "BUFF监控"
     none_selected = "未选择"
 
 
@@ -119,9 +121,12 @@ class TaskOther(QtWidgets.QWidget):
             TaskEnum.challenge_point_2_book.value, self)
         self.radio_button_get_all_goods = QtWidgets.QRadioButton(
             TaskEnum.get_all_goods.value, self)
+        self.radio_button_buff_monitor = QtWidgets.QRadioButton(
+            TaskEnum.buff_monitor.value, self)
 
         line_1 = QtWidgets.QHBoxLayout()
         line_1.addWidget(self.radio_button_world_market)
+        line_1.addWidget(self.radio_button_buff_monitor)
 
         line_2 = QtWidgets.QHBoxLayout()
 

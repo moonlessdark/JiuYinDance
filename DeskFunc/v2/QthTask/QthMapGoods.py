@@ -72,70 +72,69 @@ class MapGoodsTask(BaseTaskThread):
             self.sin_out.emit("地图初始化...")
             self._find_map_goods.plus_map(self._windows_handle)
 
-            while not self.working:
-                return None
+            while self.working:
 
-            for point in self._map_goods_point_list:
-                if not self.working:
-                    break
+                for point in self._map_goods_point_list:
+                    if not self.working:
+                        break
 
-                coordinates = str(point).split(",")
-                if len(coordinates) < 2:
-                    self.sin_out.emit(f"坐标格式错误: {point}")
-                    continue
-                point_x, point_y = coordinates[0], coordinates[1]
-
-                self.sin_out.emit(f"开始执行坐标:({point_x},{point_y})的物资采集")
-                self._find_map_goods.search_goods_point(
-                    point_x, point_y, self._windows_handle,
-                    is_running=lambda: self.working,
-                )
-
-                while self.working:
-                    self.status_bar.emit(run_count)
-                    self.check_time_out(_CHECK_INTERVAL)
-
-                    if not self._time_out:
-                        time.sleep(1)
+                    coordinates = str(point).split(",")
+                    if len(coordinates) < 2:
+                        self.sin_out.emit(f"坐标格式错误: {point}")
                         continue
+                    point_x, point_y = coordinates[0], coordinates[1]
 
-                    self.sin_out.emit("10秒后确认人物移动状态")
-                    if not self._find_map_goods.check_person_move_status(self._windows_handle):
-                        # 仍在移动，继续等待
-                        continue
+                    self.sin_out.emit(f"开始执行坐标:({point_x},{point_y})的物资采集")
+                    self._find_map_goods.search_goods_point(
+                        point_x, point_y, self._windows_handle,
+                        is_running=lambda: self.working,
+                    )
 
-                    self.sin_out.emit("检测到人物已停止移动")
-
-                    # 第一次判断：自动寻路是否直接触发了采集
-                    time.sleep(0.5)
-                    for _ in range(8):
-                        if not self.working:
-                            break
-                        if not self._find_map_goods.find_open_loading(self._windows_handle):
-                            continue
-                        if not self._find_map_goods.click_ok(self._windows_handle):
-                            continue
-                        run_count += 1
-                        self.status_bar.emit(run_count)
-                        self.sin_out.emit("采集成功...")
-                        time.sleep(0.5)
-
-                    # 第二次判断：点击小地图再次尝试采集
                     while self.working:
-                        if self.check_and_get_goods():
+                        self.status_bar.emit(run_count)
+                        self.check_time_out(_CHECK_INTERVAL)
+
+                        if not self._time_out:
+                            time.sleep(1)
+                            continue
+
+                        self.sin_out.emit("10秒后确认人物移动状态")
+                        if not self._find_map_goods.check_person_move_status(self._windows_handle):
+                            # 仍在移动，继续等待
+                            continue
+
+                        self.sin_out.emit("检测到人物已停止移动")
+
+                        # 第一次判断：自动寻路是否直接触发了采集
+                        time.sleep(0.5)
+                        for _ in range(8):
+                            if not self.working:
+                                break
+                            if not self._find_map_goods.find_open_loading(self._windows_handle):
+                                continue
+                            if not self._find_map_goods.click_ok(self._windows_handle):
+                                continue
                             run_count += 1
                             self.status_bar.emit(run_count)
-                            continue
+                            self.sin_out.emit("采集成功...")
+                            time.sleep(0.5)
 
-                        if not self._find_map_goods.check_person_move_status(self._windows_handle):
-                            # 仍然在移动，说明这个坐标无法正常寻路
-                            SetGhostBoards().click_press_and_release_by_key_name("S")
-                            self.sin_out.emit(
-                                f"坐标({point_x},{point_y})地形不适合自动寻路,请优化坐标")
-                        else:
-                            self.sin_out.emit(f"坐标({point_x},{point_y})采集结束,继续执行")
+                        # 第二次判断：点击小地图再次尝试采集
+                        while self.working:
+                            if self.check_and_get_goods():
+                                run_count += 1
+                                self.status_bar.emit(run_count)
+                                continue
+
+                            if not self._find_map_goods.check_person_move_status(self._windows_handle):
+                                # 仍然在移动，说明这个坐标无法正常寻路
+                                SetGhostBoards().click_press_and_release_by_key_name("S")
+                                self.sin_out.emit(
+                                    f"坐标({point_x},{point_y})地形不适合自动寻路,请优化坐标")
+                            else:
+                                self.sin_out.emit(f"坐标({point_x},{point_y})采集结束,继续执行")
+                            break
                         break
-                    break
         finally:
             self.sin_run_status.emit(False)
             self.sin_out.emit("地图采集已停止...")

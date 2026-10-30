@@ -1,0 +1,36 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredPackages">
+        <list>
+          <option value="python-qt5" />
+          <option value="numpy" />
+          <option value="comtypes" />
+          <option value="pywin32" />
+          <option value="opencv-python" />
+          <option value="pyinstaller" />
+          <option value="PyYaml" />
+          <option value="psutil" />
+          <option value="screeninfo" />
+          <option value="ppocr-onnx" />
+          <option value="markdown" />
+        </list>
+      </option>
+    </inspection_tool>
+    <inspection_tool class="PyPep8NamingInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true">
+      <option name="ignoredErrors">
+        <list>
+          <option value="N806" />
+        </list>
+      </option>
+    </inspection_tool>
+    <inspection_tool class="PyUnresolvedReferencesInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredIdentifiers">
+        <list>
+          <option value="win32api.*" />
+        </list>
+      </option>
+    </inspection_tool>
+  </profile>
+</component>

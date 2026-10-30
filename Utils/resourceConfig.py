@@ -16,6 +16,7 @@ from typing import Optional
 
 from Utils.dataClass import (
     BackpackItem,
+    BuffAssets,
     ChallengePoint2LuckyMoney,
     DancePicGreen,
     DancePicGrey,
@@ -113,6 +114,14 @@ class ResourcesConfig:
             fertilizer=_res("/Resources/ImageTemplate/PicItemBackpack/肥料.png"),
             hidden_realm_item_package=_res("/Resources/ImageTemplate/PicItemBackpack/禁地物品包.png"),
             material_item_package=_res("/Resources/ImageTemplate/PicItemBackpack/杂物包.png"),
+        )
+
+        # BUFF 实时识别（模板、数字、状态面板大图标）
+        self.buff_assets = BuffAssets(
+            config_path=_res("/Resources/ImageTemplate/PicBuff/buff_config.json"),
+            buff_dir=_res("/Resources/ImageTemplate/PicBuff/buff"),
+            digit_dir=_res("/Resources/ImageTemplate/PicBuff/number"),
+            showbuff_dir=_res("/Resources/ImageTemplate/PicBuff/ShowBuff"),
         )
 
         # 人物状态和 buff

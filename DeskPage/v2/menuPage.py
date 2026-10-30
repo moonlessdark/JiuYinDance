@@ -7,20 +7,32 @@ v2 菜单栏。
 2. 编辑地图采集路线；
 3. 访问项目主页。
 """
+import dataclasses
 import os
+from typing import Callable, Optional
 
 from PySide6 import QtWidgets, QtGui, QtCore
 
 from Core.config.paths import PathUtil
+from DeskFunc.v2.TaskBussinese.buffConfig import (
+    load_buff_config,
+    panel_settings_from_config,
+    save_buff_config,
+)
+from DeskPage.v2.buffPanel import PanelSettings
+from DeskPage.v2.buffSettingsDialog import BuffSettingsDialog
 from DeskPage.v2.mapPointDialog import MapPointTable
+from Utils.resourceConfig import get_resources
 
 
 class MenuUI(QtWidgets.QMenuBar):
     """顶部菜单栏。"""
 
-    def __init__(self):
+    def __init__(self, on_buff_settings_changed:
+                 Optional[Callable[[PanelSettings], None]] = None):
         super().__init__()
         self._map_point_dialog: MapPointTable | None = None
+        self._on_buff_settings_changed = on_buff_settings_changed
 
         file_menu = QtWidgets.QMenu("&配置", self)
         about_menu = QtWidgets.QMenu("&帮助", self)
@@ -30,6 +42,10 @@ class MenuUI(QtWidgets.QMenuBar):
         action_open_config_file = QtGui.QAction("资源目录", self)
         file_menu.addAction(action_open_config_file)
         action_open_config_file.triggered.connect(self.open_config_file)
+
+        action_buff_settings = QtGui.QAction("BUFF识别设置", self)
+        file_menu.addAction(action_buff_settings)
+        action_buff_settings.triggered.connect(self.open_buff_settings)
 
         action_edit_map_goods_point = QtGui.QAction("地图采集", self)
         file_menu.addAction(action_edit_map_goods_point)
@@ -51,6 +67,34 @@ class MenuUI(QtWidgets.QMenuBar):
     def open_url_project(self, _checked: bool = False):
         """打开项目主页。"""
         QtGui.QDesktopServices.openUrl(QtCore.QUrl("https://github.com/moonlessdark/JiuYinDance"))
+
+    def open_buff_settings(self, _checked: bool = False):
+        """打开 BUFF 识别设置，保存后立即应用面板外观。"""
+        assets = get_resources().buff_assets
+        config = load_buff_config(assets.config_path)
+        if not config:
+            QtWidgets.QMessageBox.warning(
+                self, "BUFF识别设置",
+                f"配置文件读取失败：\n{assets.config_path}")
+            return
+
+        settings = PanelSettings(**panel_settings_from_config(config))
+        dialog = BuffSettingsDialog(
+            settings, config, assets.showbuff_dir, self)
+        if dialog.exec() != QtWidgets.QDialog.Accepted:
+            return
+
+        panel_settings = dialog.panel_settings()
+        config["enabled_templates"] = dialog.enabled_templates()
+        config["panel"] = dataclasses.asdict(panel_settings)
+        if not save_buff_config(assets.config_path, config):
+            QtWidgets.QMessageBox.warning(
+                self, "BUFF识别设置",
+                f"配置保存失败：\n{assets.config_path}")
+            return
+
+        if self._on_buff_settings_changed is not None:
+            self._on_buff_settings_changed(panel_settings)
 
     def open_map_goods_point(self):
         """打开地图采集路线编辑器。"""

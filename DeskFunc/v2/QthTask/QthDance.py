@@ -80,39 +80,38 @@ class DanceTask(BaseTaskThread):
         try:
             self.sin_run_status.emit(True)
 
-            while not self.working:
-                return None
+            while self.working:
 
-            self.status_bar.emit(find_button_count)
-            for hwnd in self._hwnd_list:
-                if not self.working:
-                    break
+                self.status_bar.emit(find_button_count)
+                for hwnd in self._hwnd_list:
+                    if not self.working:
+                        break
 
-                capture: PicCapture = self._capture.capture(hwnd)
-                if capture is None:
-                    continue
+                    capture: PicCapture = self._capture.capture(hwnd)
+                    if capture is None:
+                        continue
 
-                if self._dance_type == DANCE_TYPE_GREEN:
-                    button_list = self._find_button.find_button_green(capture.pic_content)
-                else:
-                    button_list = self._find_button.find_button(capture.pic_content)
+                    if self._dance_type == DANCE_TYPE_GREEN:
+                        button_list = self._find_button.find_button_green(capture.pic_content)
+                    else:
+                        button_list = self._find_button.find_button(capture.pic_content)
 
-                if not button_list:
-                    continue
+                    if not button_list:
+                        continue
 
-                if not self._windows_opt.activate_windows(hwnd):
-                    self.sin_out.emit(f"窗口: {hwnd} 激活失败,任务停止执行")
-                    self.working = False
-                    break
+                    if not self._windows_opt.activate_windows(hwnd):
+                        self.sin_out.emit(f"窗口: {hwnd} 激活失败,任务停止执行")
+                        self.working = False
+                        break
 
-                input_key_by_ghost(button_list)
-                find_button_count += 1
-                self.sin_out.emit(
-                    f"按钮: {''.join(_LOG_NAME_MAP.get(key, key) for key in button_list)}")
+                    input_key_by_ghost(button_list)
+                    find_button_count += 1
+                    self.sin_out.emit(
+                        f"按钮: {''.join(_LOG_NAME_MAP.get(key, key) for key in button_list)}")
 
-                if len(self._hwnd_list) == 1:
-                    # 单窗口连续识别太快容易重复按同一轮，稍微停顿
-                    time.sleep(0.5)
+                    if len(self._hwnd_list) == 1:
+                        # 单窗口连续识别太快容易重复按同一轮，稍微停顿
+                        time.sleep(0.5)
         finally:
             self.sin_run_status.emit(False)
             self.mutex.unlock()

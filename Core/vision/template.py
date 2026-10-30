@@ -6,24 +6,26 @@
 2. 统一通道、dtype 和空图校验，异常场景返回空结果而不是直接崩溃；
 3. 增加模板文件缓存，避免业务层每一轮识别都从磁盘重新读取模板；
 4. 用候选点 + 非极大值抑制（NMS）替代反复 minMaxLoc 全图扫描，减少重复计算；
-5. 支持带 alpha 通道的透明模板（按需开启），并保留原有 edge / auto_scale 行为。
+5. 带 alpha 通道的透明模板默认把透明区填充成模板均值色，避免叠层数字、
+   残留像素干扰相关计算；显式开启 use_alpha_mask 时才走掩码匹配。
 
 对上层保持兼容：find_all_template 的函数签名和返回结构不变。
 """
-__version__ = '0.3.0'
+__version__ = '0.3.1'
 
 import os
 from functools import lru_cache
-from typing import Optional
+from typing import Optional, Any
 
 import cv2
 import numpy as np
 from numpy import ndarray
 
-# 模板文件缓存上限。项目内模板数量有限，512 足够覆盖全部资源并留出扩展空间。
-_TEMPLATE_CACHE_SIZE = 512
-# 单次匹配最多处理多少个候选点，避免低阈值 + 大图时排序耗时失控。
-_MAX_CANDIDATES = 5000
+# 模板文件缓存上限。项目内模板数量有限，512 足以覆盖并留出扩展空间
+TEMPLATE_CACHE_SIZE = 512
+
+# 单次匹配最多保留的候选点数量，避免低阈值 + 大图时排序耗时失控
+MAX_MATCH_CANDIDATES = 5000
 
 
 def load_template(template_path: str) -> Optional[ndarray]:
@@ -41,7 +43,7 @@ def load_template(template_path: str) -> Optional[ndarray]:
     return _load_template_cached(os.path.normpath(template_path))
 
 
-@lru_cache(maxsize=_TEMPLATE_CACHE_SIZE)
+@lru_cache(maxsize=TEMPLATE_CACHE_SIZE)
 def _load_template_cached(template_path: str) -> Optional[ndarray]:
     """带缓存的模板读取实现，路径必须是已规范化的绝对路径。"""
     try:
@@ -59,6 +61,48 @@ def _load_template_cached(template_path: str) -> Optional[ndarray]:
 def clear_template_cache():
     """清空模板缓存，主要用于调试或模板文件被外部修改后重新加载。"""
     _load_template_cached.cache_clear()
+
+
+def preprocess_gray_template(im_template: ndarray) -> Optional[ndarray]:
+    """
+    把模板预处理成可直接复用的灰度匹配图。
+
+    处理内容与 _prepare_images 完全一致：透明区填充均值色、统一通道、转灰度。
+    业务层在加载模板时调用一次并缓存，避免每一帧、每一个模板重复处理。
+
+    :param im_template: 原始模板图（BGR/BGRA/灰度）
+    :return: 灰度模板；无效输入返回 None
+    """
+    if not isinstance(im_template, np.ndarray) or im_template.size == 0:
+        return None
+    template = _ensure_valid_dtype(np.asarray(im_template))
+    template = _fill_transparent(template)
+    return _to_gray(template)
+
+
+def find_matches_gray(source_gray: ndarray, template_gray: ndarray,
+                      threshold: float, max_cnt: int = 0) -> tuple[list[Any], float] | list[Any]:
+    """
+    在已灰度化的 ROI 上匹配已预处理的灰度模板，一次返回全部候选和最高分。
+
+    与 find_all_template 的区别：
+    - 不做源图/模板预处理，调用方负责每帧只转一次灰度；
+    - 返回 (匹配列表, 最高分)，最高分即使低于阈值也会返回，便于统计未命中帧；
+    - 候选收集使用传入阈值，不再使用 0 阈值，避免产生大量无效候选。
+
+    :param source_gray: 已灰度化的 ROI
+    :param template_gray: preprocess_gray_template 处理后的模板
+    :param threshold: 候选收集阈值，通常为 BUFF 配置阈值
+    :param max_cnt: 最多返回多少个命中位置，0 表示不限制
+    :return: (匹配结果列表, 全图最高分)；无效输入返回 ([], 0.0)
+    """
+    if not isinstance(source_gray, np.ndarray) or source_gray.size == 0:
+        return [], 0.0
+    if not isinstance(template_gray, np.ndarray) or template_gray.size == 0:
+        return [], 0.0
+    if source_gray.ndim != 2 or template_gray.ndim != 2:
+        return [], 0.0
+    return _internal_find(source_gray, template_gray, max_cnt, threshold, None, with_best=True)
 
 
 def find_all_template(im_source: ndarray, im_template: ndarray,
@@ -81,7 +125,11 @@ def find_all_template(im_source: ndarray, im_template: ndarray,
         edge: 是否先做 Canny 边缘提取再匹配
         to_gray: 是否转灰度匹配（速度更快，精度略低）
         use_alpha_mask: 模板含 alpha 通道时，是否按透明区域做掩码匹配；
-                        默认关闭以保持旧调用方的阈值语义
+                        默认关闭：先把透明区填充成模板均值色，再走
+                        TM_CCOEFF_NORMED，对亮度/颜色更鲁棒，不易把亮色块误判；
+                        打开后改用 TM_CCORR_NORMED + mask，虽能精确屏蔽透明区，
+                        但对亮度敏感，目标区域过亮时容易高分误检；
+                        edge=True 时忽略该参数，统一使用填充后的模板。
 
     Returns:
         匹配结果列表，每项包含：
@@ -132,6 +180,93 @@ def find_all_template(im_source: ndarray, im_template: ndarray,
     return result
 
 
+def find_all_template_multi(im_source: ndarray, im_templates: list[ndarray] | tuple[ndarray, ...],
+                            threshold: float = 0.5,
+                            max_cnt: int = 0,
+                            auto_scale: tuple[float, float, float] = None,
+                            edge: bool = False,
+                            to_gray: bool = True,
+                            use_alpha_mask: bool = False) -> list:
+    """
+    在多个模板中查找匹配结果，适用于同一目标存在多种视觉状态的情况。
+
+    典型场景：BUFF 剩余时间不足时图标会周期性变暗/闪烁，单个模板在变暗帧上
+    匹配度会明显下降。把正常态和变暗态分别做成模板组成“模板组”，逐个匹配后
+    按位置合并取最高分，就能稳定识别闪烁中的目标。
+
+    Args:
+        im_source: 源图（大图）
+        im_templates: 模板列表，同一个目标的不同状态；顺序不影响结果
+        threshold: 匹配阈值
+        max_cnt: 合并后最多返回多少个结果，0 表示不限制
+        其余参数含义与 find_all_template 完全一致
+
+    Returns:
+        合并后的匹配结果列表，结构同 find_all_template，额外增加：
+        template_index: 命中的模板在 im_templates 中的下标
+        结果按 confidence 从高到低排序
+
+    """
+    if not im_templates:
+        return []
+
+    # 过滤无效模板，避免把 None / 空图传进底层匹配
+    valid_templates = [
+        template for template in im_templates
+        if isinstance(template, np.ndarray) and template.size > 0
+    ]
+    if not valid_templates:
+        return []
+
+    merged: list[dict] = []
+    for index, template in enumerate(valid_templates):
+        matches = find_all_template(
+            im_source=im_source,
+            im_template=template,
+            threshold=threshold,
+            max_cnt=max_cnt,
+            auto_scale=auto_scale,
+            edge=edge,
+            to_gray=to_gray,
+            use_alpha_mask=use_alpha_mask,
+        )
+        for match in matches:
+            # 复制一份再补充字段，避免修改底层返回的字典
+            item = dict(match)
+            item["template_index"] = index
+            _merge_one_match(merged, item)
+
+    merged.sort(key=lambda item: item["confidence"], reverse=True)
+    if max_cnt:
+        return merged[:max_cnt]
+    return merged
+
+
+def _merge_one_match(merged: list[dict], candidate: dict) -> None:
+    """
+    把一个候选结果合并进结果列表：同一位置只保留匹配度最高的那个。
+
+    不同闪烁状态可能在同一位置重复命中，这里用中心点距离做去重。
+    去重半径按模板尺寸的 1/4 计算，既能合并同位置结果，又不会误删相邻图标。
+    """
+    candidate_center = candidate["result"]
+    left, top = candidate["rectangle"][0]
+    right, bottom = candidate["rectangle"][3]
+    tolerance = max(2.0, min(right - left, bottom - top) * 0.25)
+
+    for kept in merged:
+        kept_center = kept["result"]
+        if (abs(candidate_center[0] - kept_center[0]) <= tolerance
+                and abs(candidate_center[1] - kept_center[1]) <= tolerance):
+            # 同位置只保留分数更高的模板结果
+            if candidate["confidence"] > kept["confidence"]:
+                kept.clear()
+                kept.update(candidate)
+            return
+
+    merged.append(candidate)
+
+
 def _parse_auto_scale(auto_scale: tuple) -> tuple[float, float, float]:
     """
     解析和校验自动缩放参数，避免传入空元组或非法值导致异常。
@@ -170,18 +305,24 @@ def _prepare_images(im_source: ndarray, im_template: ndarray,
         return None, None, None
 
     mask: Optional[ndarray] = None
-    if not to_gray and not edge:
-        # 普通彩色匹配必须保证源图和模板通道数一致
-        if use_alpha_mask:
-            template, mask = _split_alpha_mask(template)
-        else:
-            template = _ensure_bgr(template)
-        source = _ensure_bgr(source)
+    # 模板 alpha 统一预处理：
+    # - 默认把透明区填充成均值色，透明像素不再参与相关计算，同时保留 CCOEFF
+    #   的亮度/对比度不变性，避免掩码匹配把亮色块误判成目标；
+    # - 显式要求掩码匹配时才拆分 alpha，此时对亮度更敏感；
+    # - edge 模式无法携带掩码，统一使用填充后的模板。
+    if use_alpha_mask and not edge:
+        template, mask = _split_alpha_mask(template)
+    else:
+        template = _fill_transparent(template)
 
     if to_gray or edge:
         source = _to_gray(source)
         template = _to_gray(template)
-        mask = None
+        if edge:
+            mask = None
+    else:
+        source = _ensure_bgr(source)
+        template = _ensure_bgr(template)
 
     if edge:
         source = cv2.Canny(source.astype(np.uint8), 100, 200)
@@ -234,6 +375,39 @@ def _to_gray(image: ndarray) -> ndarray:
     raise RuntimeError(f"查询的图片通道数({channel})不支持进行灰度处理")
 
 
+def _fill_transparent(template: ndarray) -> ndarray:
+    """
+    把 4 通道模板的透明区填充成非透明区域的平均色，返回 3 通道 BGR 模板。
+
+    背景：游戏截图通常是 3 通道，而模板为了避免右下角叠层数字、闪烁元素等
+    变化区域干扰，会被做成 4 通道并把这些问题区域 alpha 置 0。
+    如果直接丢弃 alpha，透明区会残留原始 BGR（通常是纯黑），在
+    TM_CCOEFF_NORMED 中仍参与相关计算：当目标帧对应区域出现亮色叠层数字时，
+    黑色模板块会与亮色产生强负相关，导致分数从 0.9 掉到 0.7 左右。
+
+    处理方式：用非透明像素的平均色填充透明区。填充色在去均值后接近 0，
+    既不给相关计算带来额外干扰，又保留 CCOEFF 对亮度/颜色变化的鲁棒性，
+    比改用 TM_CCORR_NORMED + mask 更不容易把亮色块误判成目标。
+
+    注意：这里仅把 alpha==0 视为透明；边缘抗锯齿产生的半透明像素保留原值，
+    避免把模板有效边缘也填掉。
+
+    :param template: 模板图，BGR/BGRA/灰度
+    :return: BGR 模板；非 4 通道或无透明像素时按原样转换返回
+    """
+    if template.ndim != 3 or template.shape[2] != 4:
+        return template
+
+    alpha = template[:, :, 3]
+    bgr = cv2.cvtColor(template, cv2.COLOR_BGRA2BGR)
+    opaque = alpha > 0
+    transparent = ~opaque
+    # 全透明属于无效模板，保持原色交给上层处理
+    if np.any(transparent) and np.any(opaque):
+        bgr[transparent] = bgr[opaque].mean(axis=0)
+    return bgr
+
+
 def _ensure_valid_dtype(image: ndarray) -> ndarray:
     """
     确保图像数据类型符合 OpenCV 要求，并统一通道顺序（不改变 BGR 排列）。
@@ -263,20 +437,23 @@ def _is_constant_image(image: ndarray) -> bool:
 
 
 def _internal_find(source: ndarray, template: ndarray, max_cnt: int, threshold: float,
-                   mask: Optional[ndarray] = None) -> list:
+                   mask: Optional[ndarray] = None,
+                   with_best: bool = False):
     """
     执行模板匹配并做非极大值抑制。
 
     对普通模板使用 TM_CCOEFF_NORMED（对亮度变化更鲁棒）；
     对带掩码的透明模板使用 TM_CCORR_NORMED + mask（OpenCV 支持该组合）。
+
+    :param with_best: 为 True 时返回 (结果列表, 全图最高分)，否则只返回结果列表
     """
     if source is None or template is None:
-        return []
+        return ([], 0.0) if with_best else []
 
     template_height, template_width = template.shape[:2]
     source_height, source_width = source.shape[:2]
     if template_height > source_height or template_width > source_width:
-        return []
+        return ([], 0.0) if with_best else []
 
     # 常量模板在 TM_CCOEFF_NORMED 下会出现 NaN，改用平方差匹配
     method = cv2.TM_CCOEFF_NORMED
@@ -293,7 +470,7 @@ def _internal_find(source: ndarray, template: ndarray, max_cnt: int, threshold: 
         else:
             res = cv2.matchTemplate(source, template, method)
     except cv2.error:
-        return []
+        return ([], 0.0) if with_best else []
 
     if invert_result:
         # 平方差匹配越小越好，转换为越大越好，便于统一阈值处理
@@ -302,14 +479,15 @@ def _internal_find(source: ndarray, template: ndarray, max_cnt: int, threshold: 
     # 掩码匹配在整片同色区域可能出现 inf/nan，统一清理成不可能命中的值
     res = np.nan_to_num(res, nan=-1.0, posinf=-1.0, neginf=-1.0)
     res_height, res_width = res.shape[:2]
+    best_score = float(res.max()) if res.size else 0.0
 
     ys, xs = np.where(res >= float(threshold))
     if len(xs) == 0:
-        return []
+        return ([], best_score) if with_best else []
 
     scores = res[ys, xs]
     # 低阈值时候选可能极多，先按分数保留有限数量，防止排序占用过多时间
-    limit = max_cnt * 50 if max_cnt else _MAX_CANDIDATES
+    limit = max_cnt * 50 if max_cnt else MAX_MATCH_CANDIDATES
     if len(scores) > limit:
         top_index = np.argpartition(scores, -limit)[-limit:]
         xs = xs[top_index]
@@ -349,4 +527,4 @@ def _internal_find(source: ndarray, template: ndarray, max_cnt: int, threshold: 
         y2 = min(res_height, top + template_height)
         suppressed[y1:y2, x1:x2] = True
 
-    return result
+    return (result, best_score) if with_best else result

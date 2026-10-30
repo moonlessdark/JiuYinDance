@@ -308,6 +308,15 @@ class MarketPic:
 
 
 @dataclasses.dataclass
+class BuffAssets:
+    """BUFF 识别资源。"""
+    config_path: str = dataclasses.field(default_factory=str)  # 识别配置
+    buff_dir: str = dataclasses.field(default_factory=str)  # BUFF 图标模板
+    digit_dir: str = dataclasses.field(default_factory=str)  # 0~9 数字模板
+    showbuff_dir: str = dataclasses.field(default_factory=str)  # 状态面板大图标
+
+
+@dataclasses.dataclass
 class ChallengePoint2LuckyMoney:
     # 挑战点兑换幸运硬币
     challenge_point_shop_book: str = dataclasses.field(default_factory=str)  # 页面左侧的夺魄勾心刺

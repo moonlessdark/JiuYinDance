@@ -5,6 +5,7 @@ v2 主窗口。
 负责组装任务页、窗口选择、日志、状态栏和菜单栏。
 """
 import sys
+from typing import Any, Callable, Optional
 
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtWidgets import QApplication
@@ -19,7 +20,8 @@ from DeskPage.v2.windowsMonitorPage import WindowsButton
 class MainUI(QtWidgets.QMainWindow):
     """主界面。"""
 
-    def __init__(self):
+    def __init__(self,
+                 buff_settings_changed: Optional[Callable[[Any], None]] = None):
         super().__init__()
         self.setFixedSize(300, 450)
         self.setWindowIcon(QtGui.QIcon(
@@ -44,7 +46,7 @@ class MainUI(QtWidgets.QMainWindow):
         self.status_bar = StatusBarProcess()
         self.setStatusBar(self.status_bar)
 
-        self.setMenuBar(MenuUI())
+        self.setMenuBar(MenuUI(buff_settings_changed))
 
     def log_print(self, text: str):
         """追加一条带时间的日志。"""

@@ -13,12 +13,20 @@ import time
 from Core.input.ghost import GetGhostDriver, SetGhostBoards, SetGhostMouse
 from Core.input.global_mouse import GlobalMouseListener
 from Core.windows.window import WindowsHandle, is_window_capturable
+from DeskFunc.v2.QthTask.QthBuffMonitor import BuffMonitorTask
 from DeskFunc.v2.QthTask.QthChallengePoint import ChallengePointTask
 from DeskFunc.v2.QthTask.QthDance import DanceTask
 from DeskFunc.v2.QthTask.QthGetAllGoods import GetAllGoodsTask
 from DeskFunc.v2.QthTask.QthMapGoods import MapGoodsTask
 from DeskFunc.v2.QthTask.QthMoneyCard import OpenGiftCardTask
 from DeskFunc.v2.QthTask.QthWorldMarket import WorldMarketTask
+from DeskFunc.v2.TaskBussinese.buffConfig import (
+    load_buff_config,
+    panel_settings_from_config,
+)
+from DeskPage.v2.buffPanel import (BuffState, PanelSettings,
+                                   load_show_icons)
+from DeskPage.v2.buffPanelWindow import PanelPresenter, StatePanelWidget
 from DeskPage.v2.fuctionPage import TaskEnum
 from DeskPage.v2.mainPage import MainUI
 from Utils.loadResources import get_map_goods_point_list_by_selected
@@ -29,7 +37,7 @@ class TaskConnect(MainUI):
     """页面按钮和任务的关联类。"""
 
     def __init__(self):
-        super().__init__()
+        super().__init__(buff_settings_changed=self._apply_buff_settings)
 
         self._windows_hwnd_save: dict[str, int] = {}
         self._run_task_status = False
@@ -41,6 +49,7 @@ class TaskConnect(MainUI):
 
         self._init_task_threads()
         self._bind_task_signals()
+        self._init_buff_panel()
 
         self.windows_get.push_button_run_windows.clicked.connect(self.run_task)
         self.windows_get.push_button_get_windows.clicked.connect(self._init_game_windows_hwnd)
@@ -54,6 +63,7 @@ class TaskConnect(MainUI):
         self.qth_market = WorldMarketTask()
         self.qth_challenge = ChallengePointTask()
         self.qth_get_all_goods = GetAllGoodsTask()
+        self.qth_buff = BuffMonitorTask()
 
         self._task_threads = [
             self.qth_dance,
@@ -62,6 +72,7 @@ class TaskConnect(MainUI):
             self.qth_market,
             self.qth_challenge,
             self.qth_get_all_goods,
+            self.qth_buff,
         ]
 
     def _bind_task_signals(self):
@@ -70,6 +81,47 @@ class TaskConnect(MainUI):
             thread.sin_out.connect(self.log_print)
             thread.status_bar.connect(self.status_bar.update_execute_num)
             thread.sin_run_status.connect(self._update_task_run_status)
+        # BUFF 任务额外把每帧识别结果交给主线程刷新独立面板
+        self.qth_buff.buff_frame.connect(self._on_buff_frame)
+
+    def _init_buff_panel(self) -> None:
+        """创建独立的 BUFF 状态面板，任务开始前保持隐藏。"""
+        assets = get_resources().buff_assets
+        config = load_buff_config(assets.config_path)
+        self._buff_settings = PanelSettings(
+            **panel_settings_from_config(config))
+        icons = load_show_icons(assets.showbuff_dir)
+        if not icons:
+            self.log_print("未读取到 BUFF 状态大图标，面板只能显示文字")
+
+        self._buff_panel = StatePanelWidget()
+        self._buff_panel.setWindowTitle("BUFF 状态面板")
+        self._buff_panel.resize(420, 300)
+        self._buff_presenter = PanelPresenter(
+            self._buff_panel, icons, {}, "", lambda: self._buff_settings)
+
+    def _apply_buff_settings(self, settings: PanelSettings) -> None:
+        """设置对话框保存后立即更新面板外观。"""
+        self._buff_settings = settings
+        self._buff_panel.set_settings(settings)
+
+    def _on_buff_frame(self, detections: list, title: str) -> None:
+        """把任务线程的识别结果转换成面板状态并刷新。"""
+        states = [
+            BuffState(
+                name=item.name,
+                category=item.category,
+                attribute=item.attribute,
+                stack=item.stack,
+                seconds=item.seconds,
+                has_countdown=item.has_countdown,
+                track_id=item.track_id,
+                position=item.position,
+                score=item.score,
+            )
+            for item in detections
+        ]
+        self._buff_presenter.update_frame(states, title)
 
     def _init_driver(self) -> bool:
         """初始化幽灵键鼠驱动。"""
@@ -85,7 +137,8 @@ class TaskConnect(MainUI):
         else:
             self.log_print("幽灵键鼠驱动加载失败,请确认是否缺失了驱动文件,请检查后重试\n")
 
-        self.windows_get.push_button_run_windows.setEnabled(False)
+        # 不直接禁用开始按钮：BUFF 监控只截图、不需要幽灵键鼠，
+        # 其它任务在 run_task 中单独校验驱动状态。
         return False
 
     def toggle_global_mouse_monitoring(self, enable: bool):
@@ -122,7 +175,7 @@ class TaskConnect(MainUI):
             return
 
         self.windows_get.push_button_test_windows.setEnabled(True)
-        self.windows_get.push_button_run_windows.setEnabled(self._driver_ready)
+        self.windows_get.push_button_run_windows.setEnabled(True)
         for index, hwnd in enumerate(windows_list):
             self._windows_hwnd_save[f"窗口:{index + 1}"] = hwnd
         self.windows_get.get_windows(self._windows_hwnd_save.keys())
@@ -170,8 +223,17 @@ class TaskConnect(MainUI):
             self.log_print("请勾选需要执行的窗口")
             return False
 
+        # BUFF 监控只需要截图；其余任务依赖幽灵键鼠发送按键
+        if task_enum != TaskEnum.buff_monitor and not self._driver_ready:
+            self.log_print("幽灵键鼠未就绪，当前任务无法执行")
+            return None
+
         self.log_clear()
         self.log_print(f"任务 {task_enum.value} 开始执行...")
+
+        # 切换到非 BUFF 任务时，隐藏上次监控遗留的状态面板
+        if task_enum != TaskEnum.buff_monitor:
+            self._buff_panel.hide()
 
         task_started = False
 
@@ -225,6 +287,15 @@ class TaskConnect(MainUI):
             self.qth_get_all_goods.get_param(checked_hwnd_list)
             self.qth_get_all_goods.start()
             task_started = True
+        elif task_enum == TaskEnum.buff_monitor:
+            if len(checked_hwnd_list) > 1:
+                self.log_print("BUFF 监控暂时只支持一个游戏窗口，请去掉多余的窗口")
+                return None
+            self.qth_buff.init_task_param(checked_hwnd_list)
+            # 面板无边框置顶，方便叠在游戏窗口右上角查看
+            self._buff_panel.set_overlay_mode(True)
+            self.qth_buff.start()
+            task_started = True
         else:
             self.log_print("请选择需要执行的任务")
             return None
@@ -254,3 +325,5 @@ class TaskConnect(MainUI):
             self.task_tab_windows.update_radio_enable(True)
             # 任务自然结束时也要关闭中键监听，避免监听线程长期占用
             self.toggle_global_mouse_monitoring(False)
+            # BUFF 监控结束后恢复普通窗口外观，保留最后一份识别结果
+            self._buff_panel.set_overlay_mode(False)
