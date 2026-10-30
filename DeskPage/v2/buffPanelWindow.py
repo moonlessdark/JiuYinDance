@@ -25,8 +25,8 @@ from PySide6.QtCore import QTimer, Qt
 from PySide6.QtGui import QColor, QImage, QPainter
 from PySide6.QtWidgets import QSizePolicy, QWidget
 
-from Core.windows.window import (is_window_alive, set_window_above,
-                                 set_window_topmost)
+from Core.windows.window import (activate_windows_ex, is_window_alive,
+                                 set_window_above, set_window_topmost)
 from DeskFunc.v2.TaskBussinese.buffCountdown import FLICKER_SECONDS
 from DeskPage.v2.buffPanel import (CATEGORY_ORDER, BuffState, PanelSettings,
                                    bgr_to_qimage, render_state_panel,
@@ -95,9 +95,13 @@ class StatePanelWidget(QWidget):
         这里不再使用 WindowStaysOnTopHint 全局置顶，面板是否显示在其它窗口
         之上由目标窗口的 Z 序决定：只贴在目标游戏窗口上方，用户切到其它
         程序时会被正常盖住。
+
+        注意：这里只负责显示，不启动 Z 序跟随。预览阶段（刚点击“BUFF监控”
+        但还没开始执行）应让面板作为普通激活窗口展示在最前；只有任务真正
+        开始执行、调用 bind_target_window 后才开始跟随游戏窗口。
+
         关闭时只解除置顶和目标窗口绑定，始终保持无边框样式，
         避免停止任务后重新出现系统标题栏或任务栏按钮。
-        重复开启时也会强制显示并重新抬升，避免面板被切到后台后无法立即出现。
         """
         if enabled:
             if not self._overlay_mode:
@@ -105,9 +109,6 @@ class StatePanelWidget(QWidget):
                 self.setWindowFlags(Qt.FramelessWindowHint | Qt.Tool)
             self.show()
             self.raise_()
-            self._keep_above_target()
-            if not self._above_target_timer.isActive():
-                self._above_target_timer.start()
             return
 
         was_visible = self.isVisible()
@@ -117,9 +118,23 @@ class StatePanelWidget(QWidget):
         if was_visible:
             set_window_topmost(int(self.winId()), False)
 
+    def activate_panel(self) -> None:
+        """
+        把面板设为当前激活（前台）窗口。
+
+        用于刚点击“BUFF监控”、面板首次弹出时：此时任务还没开始执行，
+        不需要跟随游戏窗口，先把面板正常举到最前，方便用户查看和拖动。
+        """
+        self.show()
+        self.raise_()
+        self.activateWindow()
+        activate_windows_ex(int(self.winId()))
+
     def bind_target_window(self, hwnd: int) -> None:
         """
         绑定目标游戏窗口，让面板始终显示在该窗口的上一层。
+
+        只有任务开始执行后才会调用，调用后启动 Z 序跟随定时器。
 
         :param hwnd: 目标游戏窗口句柄
         """
@@ -129,10 +144,13 @@ class StatePanelWidget(QWidget):
             return
         self._target_hwnd = target_hwnd
         self._keep_above_target()
+        if self._overlay_mode and not self._above_target_timer.isActive():
+            self._above_target_timer.start()
 
     def unbind_target_window(self) -> None:
-        """解除目标窗口绑定，不再刷新 Z 序。"""
+        """解除目标窗口绑定，停止 Z 序跟随。"""
         self._target_hwnd = 0
+        self._above_target_timer.stop()
 
     def set_draggable(self, enabled: bool) -> None:
         """设置是否允许拖动面板位置，任务执行中应关闭。"""

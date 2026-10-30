@@ -115,16 +115,15 @@ class TaskConnect(MainUI):
             miss_seconds_from_config(config))
 
     def _on_buff_monitor_toggled(self, checked: bool) -> None:
-        """选中 BUFF 监控时立即弹出面板，取消选中时收起。"""
+        """选中 BUFF 监控时弹出面板并激活，取消选中时收起。"""
         if checked:
             self._buff_panel.set_overlay_mode(True)
             # 任务未启动时允许拖动面板，方便先摆到合适位置
             self._buff_panel.set_draggable(True)
-            checked_hwnd_list = self._get_windows_hwnd_list()
-            if checked_hwnd_list:
-                self._buff_panel.bind_target_window(checked_hwnd_list[0])
-            else:
-                self._buff_panel.unbind_target_window()
+            # 预览阶段不跟随目标窗口：先解除绑定并把面板设为激活窗口，
+            # 等点击“开始执行”后再绑定目标窗口并开始跟随。
+            self._buff_panel.unbind_target_window()
+            self._buff_panel.activate_panel()
             return
 
         # 任务执行期间不应触发取消选中，这里只处理普通切换
