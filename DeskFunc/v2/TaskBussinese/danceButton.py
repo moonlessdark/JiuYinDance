@@ -12,13 +12,16 @@
 
 v2 的做法：
 - 不再调用 FindWindowsImageTemplate / GetConfig 这类旧封装，直接使用 Core 的截图、模板读取、模板匹配原语；
-- 每个模板按“灰度直接匹配 -> 自适应阈值边缘匹配 -> 直方图均衡匹配”的顺序逐级兜底，白天用最快的第一级，夜间第一级失效时自动进入对亮度不敏感的边缘/均衡匹配；
+- 截图只裁剪按键实际出现的“中间偏下”区域，搜索面积约为整个客户区的 25%，匹配耗时随面积同比下降；
+- 按“整级”决定策略：先对所有模板跑灰度直接匹配，只要有一个按键命中，就认为本帧灰度匹配可用，
+  未命中的模板按“画面中不存在该按键”处理；只有整级一个都没命中时才整体进入边缘级/均衡级，
+  避免未出现的按键模板每一帧都重复跑兜底；
 - 自适应 Canny 的阈值跟随图像中位数变化，亮度整体变暗时阈值同步下降，夜间不会丢失边缘；
 - 模板只在初始化时预处理一次，识别过程中不再修改模板，避免缓存对象被意外污染。
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Optional, Union
 
 import cv2
@@ -26,11 +29,39 @@ import numpy as np
 
 from Core.vision.template import find_all_template, load_template
 from Core.windows.capture import PicCapture, WindowsCapture
+from Core.windows.geometry import get_client_size
 from Utils.resourceConfig import get_resources
 
 # 按键类型：灰色按钮用于团练授业，绿色按钮用于漠西风涛等玩法
 DANCE_TYPE_GREY = "grey"
 DANCE_TYPE_GREEN = "green"
+
+# 按键提示只出现在游戏窗口的“中间偏下”区域：
+# 左右各裁掉 25%，再裁掉上半 50%，实际搜索面积约为整个客户区的 25%。
+_ROI_LEFT_RATIO = 0.25
+_ROI_RIGHT_RATIO = 0.25
+_ROI_TOP_RATIO = 0.5
+
+
+def _search_region(hwnd: int) -> Optional[tuple[int, int, int, int]]:
+    """
+    计算按键搜索区域（客户区坐标）。
+
+    :param hwnd: 窗口句柄
+    :return: (左上角 x, 左上角 y, 宽度, 高度)；窗口无效时返回 None
+    """
+    width, height = get_client_size(hwnd)
+    if width <= 0 or height <= 0:
+        return None
+    left = int(width * _ROI_LEFT_RATIO)
+    right = width - int(width * _ROI_RIGHT_RATIO)
+    top = int(height * _ROI_TOP_RATIO)
+    region_width = right - left
+    region_height = height - top
+    if region_width <= 0 or region_height <= 0:
+        return None
+    return left, top, region_width, region_height
+
 
 # 资源字段与按键名的对应关系，顺序同时决定同一横坐标下的返回顺序（与 v1 保持一致）
 _GREY_BUTTON_FIELDS: tuple[tuple[str, str], ...] = (
@@ -206,24 +237,34 @@ class FindDanceButton:
 
     def find_button_in_window(self, hwnd: int,
                               dance_type: str = DANCE_TYPE_GREY) -> list[str]:
-        """截图并识别指定窗口中的按键，返回从左到右的按键名列表。"""
+        """截取按键搜索区域并识别，返回从左到右的按键名列表。"""
         return [match.name for match in self.find_button_matches_in_window(hwnd, dance_type)]
 
     def find_button_matches_in_window(self, hwnd: int,
                                       dance_type: str = DANCE_TYPE_GREY) -> list[DanceButtonMatch]:
-        """截图并返回完整的命中结果（包含客户区坐标和命中所用策略）。"""
-        capture = self._capture.capture(hwnd)
+        """
+        截取按键搜索区域并识别。
+
+        只截取客户区中间偏下的区域，匹配坐标会加回区域偏移，
+        返回值中的 x、y 仍然是窗口客户区坐标。
+        """
+        region = _search_region(hwnd)
+        if region is None:
+            return []
+        left, top, width, height = region
+        capture = self._capture.capture_window_region(hwnd, left, top, width, height)
         if capture is None:
             return []
-        return self.find_button_matches(capture.pic_content, dance_type)
+        matches = self.find_button_matches(capture.pic_content, dance_type)
+        return [replace(match, x=match.x + left, y=match.y + top) for match in matches]
 
     def find_button_matches(self, image: ImageLike,
                             dance_type: str = DANCE_TYPE_GREY) -> list[DanceButtonMatch]:
         """
         在给定截图中识别按键。
 
-        :param image: 客户区截图（ndarray 或 PicCapture）；
-        :param dance_type: grey / green；
+        :param image: 截图（ndarray 或 PicCapture），可以是全屏也可以是已经裁剪过的搜索区域；
+        :param dance_type: grey / green，两种玩法使用各自的模板，不能混用；
         :return: 按横坐标升序排列的命中结果；识别失败返回空列表
         """
         gray = _to_gray(_extract_image(image))
@@ -232,41 +273,57 @@ class FindDanceButton:
 
         templates = self._templates_for(dance_type)
 
-        # 边缘图和均衡图只在需要兜底时才计算，白天走第一级匹配时不会产生额外开销
-        normalized: Optional[np.ndarray] = None
-        edge_source: Optional[np.ndarray] = None
-        equalized_source: Optional[np.ndarray] = None
+        # 决策逻辑按“整级”执行，而不是每个模板各自跑完三级：
+        # 同一帧中所有按键的光照条件一致，第一级只要命中任意一个按键，
+        # 就说明当前画面灰度匹配可用，未命中的模板视为画面中不存在该按键，
+        # 不再为它们单独跑边缘/均衡兜底，避免每帧成倍的区域匹配。
+        matches, pending = self._match_stage(gray, templates, self._threshold, "gray")
 
-        matches: list[DanceButtonMatch] = []
-        for template in templates:
-            # 第一级：普通灰度匹配，速度最快，正常白天画面由它完成识别
-            found = self._match_template(gray, template.gray, template.name,
-                                         self._threshold, "gray")
+        if pending and not matches:
+            # 第一级整级零命中：整体切到边缘级，只处理仍未命中的模板。
+            # 白天到黑夜后整体亮度、半透明背景都会变化，但按键轮廓仍然存在，
+            # 用相对阈值提取边缘可以稳定命中。
+            edge_source = _auto_canny(_normalize_light(gray))
+            edge_matches, pending = self._match_stage(
+                edge_source, pending, self._edge_threshold, "edge")
+            matches.extend(edge_matches)
 
-            # 第二级：自适应边缘匹配。白天到黑夜后整体亮度、半透明背景都会变化，
-            # 但按键轮廓仍然存在，用相对阈值提取边缘可以稳定命中。
-            if not found:
-                if edge_source is None:
-                    if normalized is None:
-                        normalized = _normalize_light(gray)
-                    edge_source = _auto_canny(normalized)
-                found = self._match_template(edge_source, template.edge, template.name,
-                                             self._edge_threshold, "edge")
-
-            # 第三级：直方图均衡匹配。极端偏暗/偏亮、对比度被压缩时，均衡后重新拉开灰度分布。
-            if not found:
-                if equalized_source is None:
-                    equalized_source = cv2.equalizeHist(gray)
-                found = self._match_template(equalized_source, template.equalized, template.name,
-                                             self._equalized_threshold, "equalized")
-
-            matches.extend(found)
+        if pending and not matches:
+            # 边缘级仍然零命中：极端偏暗/偏亮、对比度被压缩时，
+            # 均衡后重新拉开灰度分布再做最后一次尝试。
+            equalized_source = cv2.equalizeHist(gray)
+            equalized_matches, _ = self._match_stage(
+                equalized_source, pending, self._equalized_threshold, "equalized")
+            matches.extend(equalized_matches)
 
         # 上下左右四个模板的外圈按钮底图非常相似，同一个按键可能被多个模板同时命中。
         # 先按匹配度去重，保证一个画面位置只输出一个按键，再接 v1 的横坐标排序。
         matches = self._deduplicate_matches(matches)
         matches.sort(key=lambda item: item.x)
         return matches
+
+    def _match_stage(self, source: np.ndarray, templates: tuple[_DanceTemplate, ...],
+                     threshold: float, strategy: str
+                     ) -> tuple[list[DanceButtonMatch], list[_DanceTemplate]]:
+        """
+        对所有模板执行同一级匹配。
+
+        :param source: 本级的源图（灰度图 / 边缘图 / 均衡图）；
+        :param templates: 需要匹配的模板集合；
+        :param threshold: 本级阈值；
+        :param strategy: gray / edge / equalized，同时作为模板图像字段名；
+        :return: (本级命中结果, 本级未命中的模板)
+        """
+        matched: list[DanceButtonMatch] = []
+        pending: list[_DanceTemplate] = []
+        for template in templates:
+            found = self._match_template(source, getattr(template, strategy),
+                                         template.name, threshold, strategy)
+            if found:
+                matched.extend(found)
+            else:
+                pending.append(template)
+        return matched, pending
 
     def _deduplicate_matches(self, matches: list[DanceButtonMatch]) -> list[DanceButtonMatch]:
         """
@@ -291,7 +348,13 @@ class FindDanceButton:
         return kept
 
     def _templates_for(self, dance_type: str) -> tuple[_DanceTemplate, ...]:
-        """按类型取模板集合，未知类型直接报错，避免静默返回空结果掩盖配置问题。"""
+        """
+        按类型取模板集合。
+
+        团练/授业的“上下左右”与红/绿的“上下左右”图片模板不同，
+        两种类型必须使用各自的模板集合，不能混用；
+        未知类型直接报错，避免静默返回空结果掩盖配置问题。
+        """
         if dance_type == DANCE_TYPE_GREY:
             return self._grey_templates
         if dance_type == DANCE_TYPE_GREEN:

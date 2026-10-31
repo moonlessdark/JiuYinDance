@@ -3,19 +3,16 @@
 团练授业 / 上下左右（绿/红）任务线程。
 
 识别由 v2 FindDanceButton 完成，本线程只负责：
-1. 截图；
-2. 识别按键顺序；
-3. 激活窗口并通过幽灵键鼠发送按键；
-4. 多窗口轮询与停止控制。
+1. 调用 FindDanceButton 完成区域截图与按键识别；
+2. 激活窗口并通过幽灵键鼠发送按键；
+3. 多窗口轮询与停止控制。
 """
 import time
 
 from Core.input.ghost import SetGhostBoards, get_random_time
-from Core.windows.capture import PicCapture, WindowsCapture
 from Core.windows.window import WindowsHandle
 from DeskFunc.v2.QthTask.baseTask import BaseTaskThread
 from DeskFunc.v2.TaskBussinese.danceButton import (
-    DANCE_TYPE_GREEN,
     DANCE_TYPE_GREY,
     FindDanceButton,
 )
@@ -59,7 +56,6 @@ class DanceTask(BaseTaskThread):
         super().__init__()
         self._hwnd_list: list[int] = []
         self._dance_type = DANCE_TYPE_GREY
-        self._capture = WindowsCapture()
         self._windows_opt = WindowsHandle()
         self._find_button = FindDanceButton()
 
@@ -87,15 +83,8 @@ class DanceTask(BaseTaskThread):
                     if not self.working:
                         break
 
-                    capture: PicCapture = self._capture.capture(hwnd)
-                    if capture is None:
-                        continue
-
-                    if self._dance_type == DANCE_TYPE_GREEN:
-                        button_list = self._find_button.find_button_green(capture.pic_content)
-                    else:
-                        button_list = self._find_button.find_button(capture.pic_content)
-
+                    # 截图和识别都由 FindDanceButton 内部完成，只截取按键出现的区域
+                    button_list = self._find_button.find_button_in_window(hwnd, self._dance_type)
                     if not button_list:
                         continue
 
