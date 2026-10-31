@@ -111,7 +111,7 @@ class ChallengePointTask(BaseTaskThread):
                     break
 
                 self.sin_out.emit(f"窗口:{self._hwnd} 幸运币兑换成功")
-                time.sleep(1.5)
+                time.sleep(0.5)
                 exchange_count += 1
         finally:
             self.sin_run_status.emit(False)
