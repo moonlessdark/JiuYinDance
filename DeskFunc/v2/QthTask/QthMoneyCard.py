@@ -3,7 +3,7 @@
 9 点开卡任务线程。
 
 逻辑与 v1 一致：
-1. 只在 20:59:55 / 21:03:55 前后执行；
+1. 只在 20:59:55 / 21:03:55 / "21:07:55" 前后执行；
 2. 逐个窗口打开背包、找到礼卡、右键开卡；
 3. 开完后点击“全部拾取”，并记录开卡次数。
 """
@@ -31,7 +31,7 @@ class OpenGiftCardTask(BaseTaskThread):
     def check_local_time() -> bool:
         """判断当前时间是否落在开卡时间窗口内。"""
         current_time = datetime.datetime.now().replace(microsecond=0)
-        target_times = ["20:59:55", "21:03:55"]
+        target_times = ["20:59:55", "21:03:55", "21:07:55"]
 
         for text in target_times:
             target = datetime.datetime.strptime(text, "%H:%M:%S").replace(
