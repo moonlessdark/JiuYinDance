@@ -14,15 +14,15 @@ from typing import Callable, Optional
 from PySide6 import QtWidgets, QtGui, QtCore
 
 from Core.config.paths import PathUtil
-from DeskFunc.v2.TaskBussinese.buffConfig import (
+from DeskFunc.v2.TaskBussinese.buff_config import (
     load_buff_config,
     panel_settings_from_config,
     save_buff_config,
 )
-from DeskPage.v2.buffPanel import PanelSettings
-from DeskPage.v2.buffSettingsDialog import BuffSettingsDialog
-from DeskPage.v2.mapPointDialog import MapPointTable
-from Utils.resourceConfig import get_resources
+from DeskPage.v2.buff_panel import PanelSettings
+from DeskPage.v2.buff_settings_dialog import BuffSettingsDialog
+from DeskPage.v2.map_point_dialog import MapPointTable
+from Utils.resource_config import get_resources
 
 
 class MenuUI(QtWidgets.QMenuBar):

@@ -34,7 +34,7 @@ _DPI_MODE_TO_CONTEXT = {
 }
 
 # 旧 API shcore.SetProcessDpiAwareness 的取值
-_DPI_MODE_TO_SHcore = {
+_dpi_mode_to_shcore = {
     0: 0,  # PROCESS_DPI_UNAWARE
     1: 1,  # PROCESS_SYSTEM_DPI_AWARE
     2: 2,  # PROCESS_PER_MONITOR_DPI_AWARE
@@ -64,7 +64,7 @@ def set_process_dpi_awareness(dpi_mode: int = 2) -> str:
             pass
 
     try:
-        if ctypes.windll.shcore.SetProcessDpiAwareness(_DPI_MODE_TO_SHcore.get(int(dpi_mode), 2)) == 0:
+        if ctypes.windll.shcore.SetProcessDpiAwareness(_dpi_mode_to_shcore.get(int(dpi_mode), 2)) == 0:
             return "SetProcessDpiAwareness"
     except (AttributeError, OSError):
         pass

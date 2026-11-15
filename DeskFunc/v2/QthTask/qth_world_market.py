@@ -10,8 +10,8 @@ from Core.input.ghost import SetGhostMouse
 from Core.windows.capture import PicCapture, WindowsCapture
 from Core.windows.geometry import client_to_screen
 from Core.windows.window import WindowsHandle
-from DeskFunc.v2.QthTask.baseTask import BaseTaskThread
-from DeskFunc.v2.TaskBussinese.auctionMarket import FindAuctionMarket, MarketProduct
+from DeskFunc.v2.QthTask.base_task import BaseTaskThread
+from DeskFunc.v2.TaskBussinese.auction_market import FindAuctionMarket, MarketProduct
 
 
 class WorldMarketTask(BaseTaskThread):

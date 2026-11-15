@@ -12,8 +12,8 @@ import time
 from datetime import datetime, timedelta
 
 from Core.input.ghost import SetGhostBoards
-from DeskFunc.v2.QthTask.baseTask import BaseTaskThread
-from DeskFunc.v2.TaskBussinese.mapGoodsPoint import FindMapGoodsPoint
+from DeskFunc.v2.QthTask.base_task import BaseTaskThread
+from DeskFunc.v2.TaskBussinese.map_goods_point import FindMapGoodsPoint
 
 # 每隔多少秒检查一次人物坐标
 _CHECK_INTERVAL = 10

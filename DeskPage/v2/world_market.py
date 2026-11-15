@@ -23,7 +23,7 @@ from PySide6.QtWidgets import (
 )
 
 from Core.config.paths import PathUtil
-from DeskFunc.v2.TaskBussinese.auctionMarket import get_product_names
+from DeskFunc.v2.TaskBussinese.auction_market import get_product_names
 
 
 class AutoWorldMarket(QWidget):

@@ -27,8 +27,8 @@ from PySide6.QtWidgets import QSizePolicy, QWidget
 
 from Core.windows.window import (activate_windows_ex, is_window_alive,
                                  set_window_above, set_window_topmost)
-from DeskFunc.v2.TaskBussinese.buffCountdown import FLICKER_SECONDS
-from DeskPage.v2.buffPanel import (CATEGORY_ORDER, BuffState, PanelSettings,
+from DeskFunc.v2.TaskBussinese.buff_countdown import FLICKER_SECONDS
+from DeskPage.v2.buff_panel import (CATEGORY_ORDER, BuffState, PanelSettings,
                                    bgr_to_qimage, render_state_panel,
                                    write_bgr_image)
 

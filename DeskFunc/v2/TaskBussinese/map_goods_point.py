@@ -22,10 +22,10 @@ from Core.vision.target import TargetSpec
 from Core.windows.capture import WindowsCapture
 from Core.windows.geometry import client_to_screen
 from Core.windows.window import WindowsHandle
-from Utils.resourceConfig import get_resources
+from Utils.resource_config import get_resources
 
-from DeskFunc.v2.TaskBussinese.commonOperations import CommonOperations
-from DeskFunc.v2.TaskBussinese.personPoint import FindPersonPoint
+from DeskFunc.v2.TaskBussinese.common_operations import CommonOperations
+from DeskFunc.v2.TaskBussinese.person_point import FindPersonPoint
 
 # 等待地图搜索按钮出现的最长时间（秒）
 _WAIT_BUTTON_TIMEOUT = 30

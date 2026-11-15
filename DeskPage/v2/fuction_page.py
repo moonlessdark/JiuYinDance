@@ -20,8 +20,8 @@ from enum import Enum
 from PySide6 import QtCore, QtWidgets
 from PySide6.QtWidgets import QApplication
 
-from DeskPage.v2.worldMarket import AutoWorldMarket
-from Utils.loadResources import get_map_goods_point_list, update_map_goods_point_list
+from DeskPage.v2.world_market import AutoWorldMarket
+from Utils.load_resources import get_map_goods_point_list, update_map_goods_point_list
 
 
 class TaskEnum(Enum):

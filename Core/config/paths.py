@@ -14,7 +14,7 @@ from __future__ import annotations
 import os
 import sys
 
-_ROOT_OVERRIDE: str | None = None
+_root_override: str | None = None
 
 
 def set_project_root(root_path: str | None) -> None:
@@ -23,11 +23,11 @@ def set_project_root(root_path: str | None) -> None:
 
     :param root_path: 项目根绝对路径；传 None 表示恢复自动推导
     """
-    global _ROOT_OVERRIDE
+    global _root_override
     if root_path is None:
-        _ROOT_OVERRIDE = None
+        _root_override = None
         return
-    _ROOT_OVERRIDE = os.path.normpath(root_path).replace("\\", "/")
+    _root_override = os.path.normpath(root_path).replace("\\", "/")
 
 
 def _is_frozen() -> bool:
@@ -68,7 +68,7 @@ class PathUtil:
     """路径处理工具类。"""
 
     def __init__(self):
-        self.rootPath = _ROOT_OVERRIDE or _detect_root()
+        self.root_path = _root_override or _detect_root()
 
     def get_root_path(self) -> str:
         """
@@ -77,12 +77,12 @@ class PathUtil:
         源码模式返回项目根；PyInstaller 返回 _MEIPASS
         （onedir 下即 <exe目录>/_internal）。
         """
-        if _ROOT_OVERRIDE:
-            return "%s/" % _ROOT_OVERRIDE
+        if _root_override:
+            return "%s/" % _root_override
         resource_root = _detect_resource_root()
         if resource_root:
             return "%s/" % resource_root
-        return "%s/" % self.rootPath
+        return "%s/" % self.root_path
 
     def get_app_dir(self) -> str:
         """
@@ -91,9 +91,9 @@ class PathUtil:
         源码模式返回项目根，打包后返回 exe 所在目录，
         与启动时的工作目录无关。
         """
-        if _ROOT_OVERRIDE:
-            return _ROOT_OVERRIDE
-        return self.rootPath
+        if _root_override:
+            return _root_override
+        return self.root_path
 
     def get_path_from_resources(self, file_name: str) -> str:
         """

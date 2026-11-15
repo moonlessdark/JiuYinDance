@@ -6,13 +6,13 @@ class DancePicGrey:
     """
     团练图标
     """
-    dance_J: str = dataclasses.field(default_factory=str)
-    dance_K: str = dataclasses.field(default_factory=str)
-    dance_L: str = dataclasses.field(default_factory=str)
-    dance_Down: str = dataclasses.field(default_factory=str)
-    dance_Up: str = dataclasses.field(default_factory=str)
-    dance_Left: str = dataclasses.field(default_factory=str)
-    dance_Right: str = dataclasses.field(default_factory=str)
+    dance_j: str = dataclasses.field(default_factory=str)
+    dance_k: str = dataclasses.field(default_factory=str)
+    dance_l: str = dataclasses.field(default_factory=str)
+    dance_down: str = dataclasses.field(default_factory=str)
+    dance_up: str = dataclasses.field(default_factory=str)
+    dance_left: str = dataclasses.field(default_factory=str)
+    dance_right: str = dataclasses.field(default_factory=str)
 
 
 @dataclasses.dataclass
@@ -20,10 +20,10 @@ class DancePicGreen:
     """
     绿色的团练图标，用于修罗刀和隐士。势力的按钮
     """
-    dance_Down: str = dataclasses.field(default_factory=str)
-    dance_Up: str = dataclasses.field(default_factory=str)
-    dance_Left: str = dataclasses.field(default_factory=str)
-    dance_Right: str = dataclasses.field(default_factory=str)
+    dance_down: str = dataclasses.field(default_factory=str)
+    dance_up: str = dataclasses.field(default_factory=str)
+    dance_left: str = dataclasses.field(default_factory=str)
+    dance_right: str = dataclasses.field(default_factory=str)
 
 
 @dataclasses.dataclass
@@ -31,10 +31,10 @@ class DancePicWhz:
     """
     绿色的团练图标，用于修罗刀和隐士。势力的按钮
     """
-    dance_whz_Down: str = dataclasses.field(default_factory=str)
-    dance_whz_Up: str = dataclasses.field(default_factory=str)
-    dance_whz_Left: str = dataclasses.field(default_factory=str)
-    dance_whz_Right: str = dataclasses.field(default_factory=str)
+    dance_whz_down: str = dataclasses.field(default_factory=str)
+    dance_whz_up: str = dataclasses.field(default_factory=str)
+    dance_whz_left: str = dataclasses.field(default_factory=str)
+    dance_whz_right: str = dataclasses.field(default_factory=str)
 
 
 @dataclasses.dataclass
@@ -128,32 +128,32 @@ class TruckCarReceiveTask:
     break_npc_talk: str = dataclasses.field(default_factory=str)  # 退出NPC对话界面
 
     # 成都
-    task_chengdu_GaiBang: str = dataclasses.field(default_factory=str)  # 选择目的地：成都丐帮
-    task_chengdu_NanGongShiJia: str = dataclasses.field(default_factory=str)  # 选择目的地：南宫世家
-    task_chengdu_QianDengZheng: str = dataclasses.field(default_factory=str)  # 选择目的地：千灯镇
-    task_chengdu_ShenJiaBao: str = dataclasses.field(default_factory=str)  # 选择目的地：沈家堡
+    task_chengdu_gai_bang: str = dataclasses.field(default_factory=str)  # 选择目的地：成都丐帮
+    task_chengdu_nan_gong_shi_jia: str = dataclasses.field(default_factory=str)  # 选择目的地：南宫世家
+    task_chengdu_qian_deng_zheng: str = dataclasses.field(default_factory=str)  # 选择目的地：千灯镇
+    task_chengdu_shen_jia_bao: str = dataclasses.field(default_factory=str)  # 选择目的地：沈家堡
 
     # 燕京
-    task_yanjing_DongFangShiJia: str = dataclasses.field(default_factory=str)  # 选择目的地：东方世家
-    task_yanjing_JiMingYi: str = dataclasses.field(default_factory=str)  # 选择目的地：鸡鸣驿
-    task_yanjing_JunMaChang: str = dataclasses.field(default_factory=str)  # 选择目的地：军马场
-    task_yanjing_YiRenZhuang: str = dataclasses.field(default_factory=str)  # 选择目的地：异人庄
+    task_yanjing_dong_fang_shi_jia: str = dataclasses.field(default_factory=str)  # 选择目的地：东方世家
+    task_yanjing_ji_ming_yi: str = dataclasses.field(default_factory=str)  # 选择目的地：鸡鸣驿
+    task_yanjing_jun_ma_chang: str = dataclasses.field(default_factory=str)  # 选择目的地：军马场
+    task_yanjing_yi_ren_zhuang: str = dataclasses.field(default_factory=str)  # 选择目的地：异人庄
 
     # 金陵
-    task_jinlin_MeiHuaMen: str = dataclasses.field(default_factory=str)  # 选择目的地：梅花门
-    task_jinlin_HuangJiaLieChang: str = dataclasses.field(default_factory=str)  # 选择目的地：皇家猎场
-    task_jinlin_MoChouHu: str = dataclasses.field(default_factory=str)  # 选择目的地：莫愁湖
+    task_jinlin_mei_hua_men: str = dataclasses.field(default_factory=str)  # 选择目的地：梅花门
+    task_jinlin_huang_jia_lie_chang: str = dataclasses.field(default_factory=str)  # 选择目的地：皇家猎场
+    task_jinlin_mo_chou_hu: str = dataclasses.field(default_factory=str)  # 选择目的地：莫愁湖
 
     # 苏州
-    task_suzhou_YongCuiShanZhuang: str = dataclasses.field(default_factory=str)  # 选择目的地：拥翠山庄
-    task_suzhou_WuWangMu: str = dataclasses.field(default_factory=str)  # 选择目的地：吴王墓
-    task_suzhou_CaiShiChang: str = dataclasses.field(default_factory=str)  # 选择目的地：采石场
-    task_suzhou_BaoChuanChang: str = dataclasses.field(default_factory=str)  # 选择目的地：宝船厂
+    task_suzhou_yong_cui_shan_zhuang: str = dataclasses.field(default_factory=str)  # 选择目的地：拥翠山庄
+    task_suzhou_wu_wang_mu: str = dataclasses.field(default_factory=str)  # 选择目的地：吴王墓
+    task_suzhou_cai_shi_chang: str = dataclasses.field(default_factory=str)  # 选择目的地：采石场
+    task_suzhou_bao_chuan_chang: str = dataclasses.field(default_factory=str)  # 选择目的地：宝船厂
 
     # 洛阳
-    task_luoyang_BaoDuZhai: str = dataclasses.field(default_factory=str)  # 选择目的地：抱犊寨
-    task_luoyang_YanMenShiJia: str = dataclasses.field(default_factory=str)  # 选择目的地：燕门世家
-    task_luoyang_QinWangFu: str = dataclasses.field(default_factory=str)  # 选择目的地：秦王府
+    task_luoyang_bao_du_zhai: str = dataclasses.field(default_factory=str)  # 选择目的地：抱犊寨
+    task_luoyang_yan_men_shi_jia: str = dataclasses.field(default_factory=str)  # 选择目的地：燕门世家
+    task_luoyang_qin_wang_fu: str = dataclasses.field(default_factory=str)  # 选择目的地：秦王府
 
 
 @dataclasses.dataclass

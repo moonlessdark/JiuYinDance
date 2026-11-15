@@ -23,7 +23,7 @@ from Core.vision.screen import ScreenSource
 from Core.vision.target import RatioRect, TargetSpec
 from Core.windows.capture import PicCapture
 from Core.windows.window import WindowsHandle
-from Utils.resourceConfig import get_resources
+from Utils.resource_config import get_resources
 
 
 class CommonOperations:
@@ -35,6 +35,8 @@ class CommonOperations:
         self._windows_opt = WindowsHandle()
         self._screen = ScreenSource()
         self._locator = Locator(self._screen)
+        # 延迟创建，避免在幽灵键鼠驱动尚未初始化时缓存到空驱动
+        self._ghost_mouse = None
 
         # 物品使用进度条：先彩色匹配，失败再灰度匹配
         self._loading_bar_color = TargetSpec(
@@ -56,27 +58,37 @@ class CommonOperations:
             to_gray=False,
         )
 
-    def mouse_click_pos(self, hwnd: int, move_pos: tuple, mouse_type: int = 0) -> bool:
+    def _get_ghost_mouse(self) -> SetGhostMouse:
+        """获取幽灵键鼠操作实例，进程内只创建一次。"""
+        if self._ghost_mouse is None:
+            self._ghost_mouse = SetGhostMouse()
+        return self._ghost_mouse
+
+    def mouse_click_pos(self, hwnd: int, move_pos: tuple, mouse_type: int = 0,
+                        react_delay: float = 0.3) -> bool:
         """
         激活窗口并点击鼠标。
 
         :param hwnd: 窗口句柄
         :param move_pos: 屏幕坐标 (x, y)
         :param mouse_type: 0-左键 1-右键 2-中键
+        :param react_delay: 点击后等待客户端响应的时间（秒），高频点击的任务可以调小
         :return: 是否完成点击
         """
         if not self._windows_opt.activate_windows(hwnd):
             return False
         x, y = move_pos
-        SetGhostMouse().move_mouse_to(int(x), int(y))
+        ghost_mouse = self._get_ghost_mouse()
+        ghost_mouse.move_mouse_to(int(x), int(y))
         time.sleep(0.1)
         if mouse_type == 1:
-            SetGhostMouse().click_mouse_right_button()
+            ghost_mouse.click_mouse_right_button()
         elif mouse_type == 2:
-            SetGhostMouse().click_mouse_middle_button()
+            ghost_mouse.click_mouse_middle_button()
         else:
-            SetGhostMouse().click_mouse_left_button()
-        time.sleep(0.3)  # 给游戏窗口响应时间
+            ghost_mouse.click_mouse_left_button()
+        # 给游戏窗口响应时间，默认值保持与旧逻辑一致
+        time.sleep(max(0.0, float(react_delay)))
         return True
 
     def locate(self, hwnd: int, spec: TargetSpec,

@@ -3,11 +3,11 @@
 地图采集路线编辑器。
 
 配置文件 Resources/mapGoodsPointList.json 使用 GBK 编码读写，
-这里沿用 Utils.loadResources 中的读写函数，避免中文路线名损坏。
+这里沿用 Utils.load_resources 中的读写函数，避免中文路线名损坏。
 """
 from PySide6 import QtWidgets, QtCore
 
-from Utils.loadResources import get_map_goods_point_list, update_map_goods_point_list
+from Utils.load_resources import get_map_goods_point_list, update_map_goods_point_list
 
 
 class MapPointTable(QtWidgets.QDialog):

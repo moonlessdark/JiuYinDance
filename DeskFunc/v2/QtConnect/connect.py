@@ -10,28 +10,34 @@ v2 总装层：把界面按钮与六个任务线程关联起来。
 """
 import time
 
+from PySide6.QtCore import QTimer
+
 from Core.input.ghost import GetGhostDriver, SetGhostBoards, SetGhostMouse
 from Core.input.global_mouse import GlobalMouseListener
-from Core.windows.window import WindowsHandle, is_window_capturable
-from DeskFunc.v2.QthTask.QthBuffMonitor import BuffMonitorTask
-from DeskFunc.v2.QthTask.QthChallengePoint import ChallengePointTask
-from DeskFunc.v2.QthTask.QthDance import DanceTask
-from DeskFunc.v2.QthTask.QthGetAllGoods import GetAllGoodsTask
-from DeskFunc.v2.QthTask.QthMapGoods import MapGoodsTask
-from DeskFunc.v2.QthTask.QthMoneyCard import OpenGiftCardTask
-from DeskFunc.v2.QthTask.QthWorldMarket import WorldMarketTask
-from DeskFunc.v2.TaskBussinese.buffConfig import (
+from Core.windows.window import (
+    WindowsHandle,
+    is_window_alive,
+    is_window_capturable,
+)
+from DeskFunc.v2.QthTask.qth_buff_monitor import BuffMonitorTask
+from DeskFunc.v2.QthTask.qth_challenge_point import ChallengePointTask
+from DeskFunc.v2.QthTask.qth_dance import DanceTask
+from DeskFunc.v2.QthTask.qth_get_all_goods import GetAllGoodsTask
+from DeskFunc.v2.QthTask.qth_map_goods import MapGoodsTask
+from DeskFunc.v2.QthTask.qth_money_card import OpenGiftCardTask
+from DeskFunc.v2.QthTask.qth_world_market import WorldMarketTask
+from DeskFunc.v2.TaskBussinese.buff_config import (
     load_buff_config,
     miss_seconds_from_config,
     panel_settings_from_config,
 )
-from DeskPage.v2.buffPanel import (BuffState, PanelSettings,
+from DeskPage.v2.buff_panel import (BuffState, PanelSettings,
                                    load_show_icons)
-from DeskPage.v2.buffPanelWindow import PanelPresenter, StatePanelWidget
-from DeskPage.v2.fuctionPage import TaskEnum
-from DeskPage.v2.mainPage import MainUI
-from Utils.loadResources import get_map_goods_point_list_by_selected
-from Utils.resourceConfig import get_resources
+from DeskPage.v2.buff_panel_window import PanelPresenter, StatePanelWidget
+from DeskPage.v2.fuction_page import TaskEnum
+from DeskPage.v2.main_page import MainUI
+from Utils.load_resources import get_map_goods_point_list_by_selected
+from Utils.resource_config import get_resources
 
 
 class TaskConnect(MainUI):
@@ -47,6 +53,12 @@ class TaskConnect(MainUI):
 
         self.global_mouse_monitoring = False
         self.global_mouse_listener: GlobalMouseListener | None = None
+
+        # 任务窗口存活监测：记录本次任务勾选的窗口句柄，定时检查是否全部关闭
+        self._run_task_hwnd_list: list[int] = []
+        self._hwnd_alive_timer = QTimer(self)
+        self._hwnd_alive_timer.setInterval(500)
+        self._hwnd_alive_timer.timeout.connect(self._check_task_windows_alive)
 
         self._init_task_threads()
         self._bind_task_signals()
@@ -332,10 +344,40 @@ class TaskConnect(MainUI):
 
         if task_started:
             self.toggle_global_mouse_monitoring(True)
+            self._start_hwnd_alive_watch(checked_hwnd_list)
         return None
+
+    def _start_hwnd_alive_watch(self, hwnd_list: list[int]) -> None:
+        """记录本次任务的窗口句柄并启动存活监测。"""
+        self._run_task_hwnd_list = list(hwnd_list)
+        self._hwnd_alive_timer.start()
+
+    def _stop_hwnd_alive_watch(self) -> None:
+        """停止窗口存活监测并清空记录。"""
+        self._hwnd_alive_timer.stop()
+        self._run_task_hwnd_list = []
+
+    def _check_task_windows_alive(self) -> None:
+        """
+        定时检查任务窗口是否全部失效。
+
+        游戏窗口被关闭后句柄会失效，任务线程继续截图、点击就会空转甚至卡死；
+        只要还有任意一个勾选窗口存活就继续任务，全部失效时主动结束任务。
+        """
+        if not self._run_task_hwnd_list:
+            return
+        if any(is_window_alive(hwnd) for hwnd in self._run_task_hwnd_list):
+            return
+
+        self._stop_hwnd_alive_watch()
+        self.log_print("已勾选的游戏窗口全部关闭,任务自动结束")
+        self.windows_get.push_button_run_windows.setText("停止中...")
+        self.windows_get.push_button_run_windows.setEnabled(False)
+        self._stop_run_task()
 
     def _stop_run_task(self):
         """停止所有任务线程。"""
+        self._stop_hwnd_alive_watch()
         for thread in self._task_threads:
             thread.stop_execute_init()
 
@@ -357,5 +399,7 @@ class TaskConnect(MainUI):
             self.task_tab_windows.update_radio_enable(True)
             # 任务自然结束时也要关闭中键监听，避免监听线程长期占用
             self.toggle_global_mouse_monitoring(False)
+            # 任务结束（无论正常完成还是手动停止）都停止窗口存活监测
+            self._stop_hwnd_alive_watch()
             # BUFF 监控结束后保持无边框叠加窗口，保留最后一份识别结果；
             # 拖动已在方法开头随任务状态恢复，这里不恢复系统标题栏

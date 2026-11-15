@@ -7,14 +7,14 @@
 2. ResourcesConfig 只在首次调用 get_resources() 时创建一次，避免各业务类重复
    读取配置文件和重复创建大量 dataclass。
 3. 路径统一基于 PathUtil().get_root_path()，兼容源码运行与 PyInstaller 打包运行。
-4. 原来的 GetConfig 仍保留在 Utils/loadResources.py 中作为兼容层，业务代码无需
+4. 原来的 GetConfig 仍保留在 Utils/load_resources.py 中作为兼容层，业务代码无需
    一次性全部修改。
 """
 from __future__ import annotations
 
 from typing import Optional
 
-from Utils.dataClass import (
+from Utils.data_class import (
     BackpackItem,
     BuffAssets,
     ChallengePoint2LuckyMoney,
@@ -36,7 +36,7 @@ from Utils.dataClass import (
 )
 from Core.config.paths import PathUtil
 
-_RESOURCES: Optional["ResourcesConfig"] = None
+_resources: Optional["ResourcesConfig"] = None
 
 
 def _project_root() -> str:
@@ -78,28 +78,28 @@ class ResourcesConfig:
 
         # 团练授业按钮
         self.dance_grey = DancePicGrey(
-            dance_J=_res("/Resources/ImageTemplate/PicDance/pic_dance_J.png"),
-            dance_K=_res("/Resources/ImageTemplate/PicDance/pic_dance_K.png"),
-            dance_Down=_res("/Resources/ImageTemplate/PicDance/pic_dance_down_grey.png"),
-            dance_Up=_res("/Resources/ImageTemplate/PicDance/pic_dance_up_grey.png"),
-            dance_Left=_res("/Resources/ImageTemplate/PicDance/pic_dance_left_grey.png"),
-            dance_Right=_res("/Resources/ImageTemplate/PicDance/pic_dance_right_grey.png"),
+            dance_j=_res("/Resources/ImageTemplate/PicDance/pic_dance_J.png"),
+            dance_k=_res("/Resources/ImageTemplate/PicDance/pic_dance_K.png"),
+            dance_down=_res("/Resources/ImageTemplate/PicDance/pic_dance_down_grey.png"),
+            dance_up=_res("/Resources/ImageTemplate/PicDance/pic_dance_up_grey.png"),
+            dance_left=_res("/Resources/ImageTemplate/PicDance/pic_dance_left_grey.png"),
+            dance_right=_res("/Resources/ImageTemplate/PicDance/pic_dance_right_grey.png"),
         )
 
         # 绿色上下左右（漠西风涛）
         self.dance_green = DancePicGreen(
-            dance_Down=_res("/Resources/ImageTemplate/PicDance/pic_dance_down_green.png"),
-            dance_Up=_res("/Resources/ImageTemplate/PicDance/pic_dance_up_green.png"),
-            dance_Left=_res("/Resources/ImageTemplate/PicDance/pic_dance_left_green.png"),
-            dance_Right=_res("/Resources/ImageTemplate/PicDance/pic_dance_right_green.png"),
+            dance_down=_res("/Resources/ImageTemplate/PicDance/pic_dance_down_green.png"),
+            dance_up=_res("/Resources/ImageTemplate/PicDance/pic_dance_up_green.png"),
+            dance_left=_res("/Resources/ImageTemplate/PicDance/pic_dance_left_green.png"),
+            dance_right=_res("/Resources/ImageTemplate/PicDance/pic_dance_right_green.png"),
         )
 
         # 绿色上下左右（挖宝、隐士、势力任务）
         self.dance_whz = DancePicWhz(
-            dance_whz_Down=_res("/Resources/ImageTemplate/PicDance/whz_dance_down.png"),
-            dance_whz_Up=_res("/Resources/ImageTemplate/PicDance/whz_dance_up.png"),
-            dance_whz_Left=_res("/Resources/ImageTemplate/PicDance/whz_dance_left.png"),
-            dance_whz_Right=_res("/Resources/ImageTemplate/PicDance/whz_dance_right.png"),
+            dance_whz_down=_res("/Resources/ImageTemplate/PicDance/whz_dance_down.png"),
+            dance_whz_up=_res("/Resources/ImageTemplate/PicDance/whz_dance_up.png"),
+            dance_whz_left=_res("/Resources/ImageTemplate/PicDance/whz_dance_left.png"),
+            dance_whz_right=_res("/Resources/ImageTemplate/PicDance/whz_dance_right.png"),
         )
 
         # 物品背包
@@ -247,7 +247,7 @@ def get_resources() -> ResourcesConfig:
     使用单例的原因：资源路径是静态数据，业务层会频繁创建各类查找器，
     如果每次都重新构造会浪费 IO 与对象分配。
     """
-    global _RESOURCES
-    if _RESOURCES is None:
-        _RESOURCES = ResourcesConfig()
-    return _RESOURCES
+    global _resources
+    if _resources is None:
+        _resources = ResourcesConfig()
+    return _resources

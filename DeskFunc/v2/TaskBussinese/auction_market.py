@@ -1,4 +1,4 @@
-﻿# coding: utf-8
+# coding: utf-8
 """
 世界竞拍识别。
 
@@ -19,9 +19,9 @@ import cv2
 import numpy as np
 
 from Core.vision.template import find_all_template, load_template
-from Utils.resourceConfig import get_resources
+from Utils.resource_config import get_resources
 
-from DeskFunc.v2.TaskBussinese.imageTools import deduplicate_points, to_bgr
+from DeskFunc.v2.TaskBussinese.image_tools import deduplicate_points, to_bgr
 
 # (物品显示名, 资源字段名)
 _PRODUCT_FIELDS: tuple[tuple[str, str], ...] = (

@@ -13,8 +13,8 @@ import time
 from Core.input.ghost import SetGhostMouse
 from Core.windows.capture import WindowsCapture
 from Core.windows.window import WindowsHandle
-from DeskFunc.v2.QthTask.baseTask import BaseTaskThread
-from DeskFunc.v2.TaskBussinese.moneyCard import FindGiftCard
+from DeskFunc.v2.QthTask.base_task import BaseTaskThread
+from DeskFunc.v2.TaskBussinese.money_card import FindGiftCard
 
 
 class OpenGiftCardTask(BaseTaskThread):

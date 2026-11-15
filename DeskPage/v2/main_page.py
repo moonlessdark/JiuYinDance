@@ -11,10 +11,10 @@ from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtWidgets import QApplication
 
 from Core.config.paths import PathUtil
-from DeskPage.v2.fuctionPage import TaskFunc
-from DeskPage.v2.menuPage import MenuUI
-from DeskPage.v2.statusBar import StatusBarProcess
-from DeskPage.v2.windowsMonitorPage import WindowsButton
+from DeskPage.v2.fuction_page import TaskFunc
+from DeskPage.v2.menu_page import MenuUI
+from DeskPage.v2.status_bar import StatusBarProcess
+from DeskPage.v2.windows_monitor_page import WindowsButton
 
 
 class MainUI(QtWidgets.QMainWindow):

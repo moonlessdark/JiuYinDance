@@ -30,7 +30,7 @@ import numpy as np
 from Core.vision.template import find_all_template, load_template
 from Core.windows.capture import PicCapture, WindowsCapture
 from Core.windows.geometry import get_client_size
-from Utils.resourceConfig import get_resources
+from Utils.resource_config import get_resources
 
 # 按键类型：灰色按钮用于团练授业，绿色按钮用于漠西风涛等玩法
 DANCE_TYPE_GREY = "grey"
@@ -65,19 +65,19 @@ def _search_region(hwnd: int) -> Optional[tuple[int, int, int, int]]:
 
 # 资源字段与按键名的对应关系，顺序同时决定同一横坐标下的返回顺序（与 v1 保持一致）
 _GREY_BUTTON_FIELDS: tuple[tuple[str, str], ...] = (
-    ("UP", "dance_Up"),
-    ("Down", "dance_Down"),
-    ("Left", "dance_Left"),
-    ("Right", "dance_Right"),
-    ("J", "dance_J"),
-    ("K", "dance_K"),
+    ("UP", "dance_up"),
+    ("Down", "dance_down"),
+    ("Left", "dance_left"),
+    ("Right", "dance_right"),
+    ("J", "dance_j"),
+    ("K", "dance_k"),
 )
 
 _GREEN_BUTTON_FIELDS: tuple[tuple[str, str], ...] = (
-    ("UP", "dance_Up"),
-    ("Down", "dance_Down"),
-    ("Left", "dance_Left"),
-    ("Right", "dance_Right"),
+    ("UP", "dance_up"),
+    ("Down", "dance_down"),
+    ("Left", "dance_left"),
+    ("Right", "dance_right"),
 )
 
 ImageLike = Union[np.ndarray, PicCapture]
@@ -284,16 +284,14 @@ class FindDanceButton:
             # 白天到黑夜后整体亮度、半透明背景都会变化，但按键轮廓仍然存在，
             # 用相对阈值提取边缘可以稳定命中。
             edge_source = _auto_canny(_normalize_light(gray))
-            edge_matches, pending = self._match_stage(
-                edge_source, pending, self._edge_threshold, "edge")
+            edge_matches, pending = self._match_stage(edge_source, pending, self._edge_threshold, "edge")
             matches.extend(edge_matches)
 
         if pending and not matches:
             # 边缘级仍然零命中：极端偏暗/偏亮、对比度被压缩时，
             # 均衡后重新拉开灰度分布再做最后一次尝试。
             equalized_source = cv2.equalizeHist(gray)
-            equalized_matches, _ = self._match_stage(
-                equalized_source, pending, self._equalized_threshold, "equalized")
+            equalized_matches, _ = self._match_stage(equalized_source, pending, self._equalized_threshold, "equalized")
             matches.extend(equalized_matches)
 
         # 上下左右四个模板的外圈按钮底图非常相似，同一个按键可能被多个模板同时命中。

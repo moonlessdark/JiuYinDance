@@ -22,14 +22,14 @@ from PySide6.QtWidgets import (QCheckBox, QComboBox, QDialog,
                                QHBoxLayout, QLabel, QScrollArea, QSpinBox,
                                QVBoxLayout, QWidget)
 
-from DeskFunc.v2.TaskBussinese.buffConfig import (
+from DeskFunc.v2.TaskBussinese.buff_config import (
     DETECT_SENSITIVITY_SECONDS,
     TEMPLATE_CATEGORIES,
     detect_sensitivity_from_config,
     enabled_template_map,
     is_template_enabled,
 )
-from DeskPage.v2.buffPanel import (BuffState, ICON_SIZE_MAX, ICON_SIZE_MIN,
+from DeskPage.v2.buff_panel import (BuffState, ICON_SIZE_MAX, ICON_SIZE_MIN,
                                    PanelSettings, bgr_to_qimage,
                                    load_show_icons, render_state_panel)
 

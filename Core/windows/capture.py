@@ -26,16 +26,16 @@ class WindowsCapture:
     """基于 Win32 BitBlt 的窗口客户区截图。"""
 
     def __init__(self):
-        self.GetDC = windll.user32.GetDC
-        self.CreateCompatibleDC = windll.gdi32.CreateCompatibleDC
-        self.CreateCompatibleBitmap = windll.gdi32.CreateCompatibleBitmap
-        self.SelectObject = windll.gdi32.SelectObject
-        self.BitBlt = windll.gdi32.BitBlt
+        self.get_dc = windll.user32.GetDC
+        self.create_compatible_dc = windll.gdi32.CreateCompatibleDC
+        self.create_compatible_bitmap = windll.gdi32.CreateCompatibleBitmap
+        self.select_object = windll.gdi32.SelectObject
+        self.bit_blt = windll.gdi32.BitBlt
         self.SRCCOPY = 0x00CC0020
-        self.GetBitmapBits = windll.gdi32.GetBitmapBits
-        self.DeleteObject = windll.gdi32.DeleteObject
-        self.DeleteDC = windll.gdi32.DeleteDC
-        self.ReleaseDC = windll.user32.ReleaseDC
+        self.get_bitmap_bits = windll.gdi32.GetBitmapBits
+        self.delete_object = windll.gdi32.DeleteObject
+        self.delete_dc = windll.gdi32.DeleteDC
+        self.release_dc = windll.user32.ReleaseDC
 
     def capture(self, hwnd: int) -> Optional[PicCapture]:
         """
@@ -100,25 +100,25 @@ class WindowsCapture:
         compatible_dc = None
         bitmap = None
         try:
-            dc = self.GetDC(hwnd)
+            dc = self.get_dc(hwnd)
             if not dc:
                 return None
-            compatible_dc = self.CreateCompatibleDC(dc)
+            compatible_dc = self.create_compatible_dc(dc)
             if not compatible_dc:
                 return None
-            bitmap = self.CreateCompatibleBitmap(dc, width, height)
+            bitmap = self.create_compatible_bitmap(dc, width, height)
             if not bitmap:
                 return None
 
-            self.SelectObject(compatible_dc, bitmap)
-            if not self.BitBlt(compatible_dc, 0, 0, width, height, dc, left, top, self.SRCCOPY):
+            self.select_object(compatible_dc, bitmap)
+            if not self.bit_blt(compatible_dc, 0, 0, width, height, dc, left, top, self.SRCCOPY):
                 return None
 
             # 截图是 BGRA 排列，因此总元素个数需要乘以 4
             total_bytes = width * height * 4
             buffer = bytearray(total_bytes)
             byte_array = c_ubyte * total_bytes
-            if self.GetBitmapBits(bitmap, total_bytes, byte_array.from_buffer(buffer)) == 0:
+            if self.get_bitmap_bits(bitmap, total_bytes, byte_array.from_buffer(buffer)) == 0:
                 return None
 
             pic_content = np.frombuffer(buffer, dtype=np.uint8).reshape(height, width, 4)
@@ -128,8 +128,8 @@ class WindowsCapture:
         finally:
             # 释放顺序与创建顺序相反，保证异常分支也不泄漏 GDI 资源
             if bitmap:
-                self.DeleteObject(bitmap)
+                self.delete_object(bitmap)
             if compatible_dc:
-                self.DeleteDC(compatible_dc)
+                self.delete_dc(compatible_dc)
             if dc:
-                self.ReleaseDC(hwnd, dc)
+                self.release_dc(hwnd, dc)

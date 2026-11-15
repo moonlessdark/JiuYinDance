@@ -15,9 +15,9 @@ from __future__ import annotations
 import numpy as np
 
 from Core.vision.template import find_all_template, load_template
-from Utils.resourceConfig import get_resources
+from Utils.resource_config import get_resources
 
-from DeskFunc.v2.TaskBussinese.imageTools import deduplicate_points, to_gray
+from DeskFunc.v2.TaskBussinese.image_tools import deduplicate_points, to_gray
 
 # (输出字符, 资源字段)
 _NUMBER_FIELDS: tuple[tuple[str, str], ...] = (

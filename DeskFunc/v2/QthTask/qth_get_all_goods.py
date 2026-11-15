@@ -10,9 +10,9 @@
 import time
 
 from Core.input.ghost import SetGhostMouse
-from DeskFunc.v2.QthTask.baseTask import BaseTaskThread
-from DeskFunc.v2.TaskBussinese.commonOperations import CommonOperations
-from DeskFunc.v2.TaskBussinese.hiddenRealmItem import HiddenRealmItems
+from DeskFunc.v2.QthTask.base_task import BaseTaskThread
+from DeskFunc.v2.TaskBussinese.common_operations import CommonOperations
+from DeskFunc.v2.TaskBussinese.hidden_realm_item import HiddenRealmItems
 
 
 class GetAllGoodsTask(BaseTaskThread):

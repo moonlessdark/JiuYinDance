@@ -2,17 +2,17 @@
 """
 资源读取与用户配置读写。
 
-资源路径已经迁移到 Utils/resourceConfig.py 的 ResourcesConfig 对象中，
+资源路径已经迁移到 Utils/resource_config.py 的 ResourcesConfig 对象中，
 本文件中的 GetConfig 仅作为兼容层保留，避免一次性修改所有业务模块。
 """
 import json
 import os.path
 
-from Utils.dataClass import BackpackItem, ChallengePoint2LuckyMoney, DancePicGreen, DancePicGrey, DancePicWhz, \
+from Utils.data_class import BackpackItem, ChallengePoint2LuckyMoney, DancePicGreen, DancePicGrey, DancePicWhz, \
     DmDll, FindTruckCarTaskNPC, GhostDll, GoodsOptStatus, MapPic, MapPointNum, MarketPic, MyFight, \
     PersonStatusAndBuff, Team, TruckCarPic, TruckCarReceiveTask
 from Core.config.paths import PathUtil
-from Utils.resourceConfig import ResourcesConfig, get_resources
+from Utils.resource_config import ResourcesConfig, get_resources
 
 
 def _get_dir_map_goods_point_path() -> str:
@@ -100,7 +100,7 @@ class GetConfig:
     """
     资源路径兼容层。
 
-    真正的数据保存在 Utils/resourceConfig.py 的 ResourcesConfig 单例中，
+    真正的数据保存在 Utils/resource_config.py 的 ResourcesConfig 单例中，
     这里不再读取 YAML，也不会重复创建路径对象。
     """
 

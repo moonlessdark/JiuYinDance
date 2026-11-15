@@ -19,12 +19,12 @@ import time
 from PySide6.QtCore import Signal
 
 from Core.windows.capture import WindowsCapture
-from DeskFunc.v2.QthTask.baseTask import BaseTaskThread
-from DeskFunc.v2.TaskBussinese.buffRecognition import (
+from DeskFunc.v2.QthTask.base_task import BaseTaskThread
+from DeskFunc.v2.TaskBussinese.buff_recognition import (
     BuffDetection,
     BuffRecognizer,
 )
-from Utils.resourceConfig import get_resources
+from Utils.resource_config import get_resources
 
 
 class BuffMonitorTask(BaseTaskThread):

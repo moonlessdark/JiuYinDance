@@ -9,7 +9,7 @@
 4. “全部拾取”按钮。
 
 旧版调用 FindWindowsImageTemplate 和 GetConfig，v2 改为 Core 的 Locator + find_all_template，
-资源路径统一从 Utils.resourceConfig 获取。
+资源路径统一从 Utils.resource_config 获取。
 """
 from __future__ import annotations
 
@@ -22,10 +22,10 @@ from Core.vision.target import TargetSpec
 from Core.windows.capture import WindowsCapture
 from Core.windows.geometry import client_to_screen
 from Core.windows.window import WindowsHandle
-from Utils.resourceConfig import get_resources
+from Utils.resource_config import get_resources
 
-from DeskFunc.v2.TaskBussinese.commonOperations import CommonOperations
-from DeskFunc.v2.TaskBussinese.imageTools import mask_template_region
+from DeskFunc.v2.TaskBussinese.common_operations import CommonOperations
+from DeskFunc.v2.TaskBussinese.image_tools import mask_template_region
 
 
 class FindGiftCard:

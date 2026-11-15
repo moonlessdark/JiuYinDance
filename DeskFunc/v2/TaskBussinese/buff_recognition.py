@@ -29,19 +29,19 @@ from Core.config.paths import PathUtil
 from Core.vision.buff_matcher import (find_matches_gray,
                                       preprocess_gray_template)
 from Core.vision.template import load_template
-from DeskFunc.v2.TaskBussinese.buffConfig import (
+from DeskFunc.v2.TaskBussinese.buff_config import (
     TEMPLATE_CATEGORIES,
     enabled_template_map,
     is_template_enabled,
     load_buff_config,
 )
-from DeskFunc.v2.TaskBussinese.buffCountdown import (
+from DeskFunc.v2.TaskBussinese.buff_countdown import (
     DEFAULT_DIGIT_THRESHOLD,
     load_digit_templates,
     read_countdown,
     read_stack_count,
 )
-from DeskFunc.v2.TaskBussinese.buffTracker import (
+from DeskFunc.v2.TaskBussinese.buff_tracker import (
     BuffTracker,
     TrackDetection,
 )

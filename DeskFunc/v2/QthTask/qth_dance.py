@@ -11,8 +11,8 @@ import time
 
 from Core.input.ghost import SetGhostBoards, get_random_time
 from Core.windows.window import WindowsHandle
-from DeskFunc.v2.QthTask.baseTask import BaseTaskThread
-from DeskFunc.v2.TaskBussinese.danceButton import (
+from DeskFunc.v2.QthTask.base_task import BaseTaskThread
+from DeskFunc.v2.TaskBussinese.dance_button import (
     DANCE_TYPE_GREY,
     FindDanceButton,
 )

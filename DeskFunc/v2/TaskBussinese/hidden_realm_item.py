@@ -15,10 +15,10 @@ from typing import Optional
 from Core.vision.template import find_all_template, load_template
 from Core.windows.capture import WindowsCapture
 from Core.windows.geometry import client_to_screen
-from Utils.resourceConfig import get_resources
+from Utils.resource_config import get_resources
 
-from DeskFunc.v2.TaskBussinese.commonOperations import CommonOperations
-from DeskFunc.v2.TaskBussinese.imageTools import mask_template_region
+from DeskFunc.v2.TaskBussinese.common_operations import CommonOperations
+from DeskFunc.v2.TaskBussinese.image_tools import mask_template_region
 
 
 class HiddenRealmItems:
