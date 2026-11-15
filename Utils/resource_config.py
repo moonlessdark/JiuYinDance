@@ -238,6 +238,7 @@ class ResourcesConfig:
             recycle_box_result=_res("/Resources/ImageTemplate/PicLuckyMoney/可获得的幸运硬币.png"),
             exchange_ok=_res("/Resources/ImageTemplate/PicLuckyMoney/确定兑换幸运硬币.png"),
             exchange_re_ok=_res("/Resources/ImageTemplate/PicLuckyMoney/兑换时的二次确认.png"),
+            continue_practice=_res("/Resources/ImageTemplate/PicPersonBuff/继续修炼.png"),
         )
 
 

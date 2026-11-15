@@ -36,6 +36,8 @@ class ChallengePointTask(BaseTaskThread):
     MAX_BOOK_SELECT_RETRY = 3  # 点击技能书页并等待兑换按钮的最大尝试次数
     DIALOG_CLOSE_TIMEOUT = 2.5  # 等待兑换确认框关闭的超时
     ROUND_SETTLE_DELAY = 0.3  # 确认框关闭后，留给面板恢复状态的额外时间
+    POPUP_DISMISS_TIMEOUT = 1.2  # 点击“继续修炼”后等待弹窗消失的超时
+    POPUP_RETRY_DELAY = 0.5  # 弹窗多次点击仍不消失时的重试间隔
 
     def __init__(self):
         super().__init__()
@@ -68,9 +70,55 @@ class ChallengePointTask(BaseTaskThread):
         self._last_click_time = time.monotonic()
         return clicked
 
+    def _click_continue_practice(self, pic) -> bool:
+        """
+        在给定截图上检测“继续修炼”弹窗并点击。
+
+        该弹窗会遮挡兑换界面，出现后不点掉会导致后续识别失败或误判，
+        因此每个轮询步骤都先做一次校验。
+
+        :param pic: 已截取的客户区画面
+        :return: True 表示检测到并点击了弹窗
+        """
+        match = self._exchange.locate_target(
+            self._hwnd, self._exchange.spec_continue_practice, pic=pic)
+        if match is None or match.screen_point is None:
+            return False
+        self.sin_out.emit(f"窗口:{self._hwnd} 发现'继续修炼'弹窗，点击继续")
+        self._click_match(match)
+        return True
+
+    def _dismiss_continue_practice(self, pic=None) -> bool:
+        """
+        检测并点掉“继续修炼”弹窗，直到弹窗消失。
+
+        用于每个业务步骤开始前：只有返回 True 才能继续识别界面，
+        否则弹窗会遮挡目标导致误判。
+
+        :param pic: 可选，复用调用方已经截好的图，省掉一次截图
+        :return: True 表示当前界面没有该弹窗；False 表示截图失败、点击失败或等待超时
+        """
+        deadline = time.monotonic() + self.POPUP_DISMISS_TIMEOUT
+        while self.working:
+            if pic is None:
+                pic = self._exchange.capture(self._hwnd)
+            if pic is None:
+                return False
+            if not self._click_continue_practice(pic):
+                return True
+            if time.monotonic() >= deadline:
+                return False
+            time.sleep(self.POLL_INTERVAL)
+            pic = None
+        return False
+
     def _wait_and_click(self, spec: TargetSpec, timeout: float) -> bool:
         """轮询等待目标出现并点击，命中返回 True。"""
         deadline = time.monotonic() + timeout
+        # 步骤开始先确认没有被“继续修炼”弹窗遮挡
+        if not self._dismiss_continue_practice():
+            if not self.working:
+                return False
         while self.working:
             pic = self._exchange.capture(self._hwnd)
             if pic is not None:
@@ -79,6 +127,10 @@ class ChallengePointTask(BaseTaskThread):
                     # 点击失败（例如窗口激活失败）时不认为完成，继续等到超时
                     if self._click_match(match):
                         return True
+                elif self._click_continue_practice(pic):
+                    # 目标没出现时确认是否被偶发弹窗遮挡，点掉后重新识别
+                    time.sleep(self.POLL_INTERVAL)
+                    continue
             if time.monotonic() >= deadline:
                 return False
             time.sleep(self.POLL_INTERVAL)
@@ -93,11 +145,19 @@ class ChallengePointTask(BaseTaskThread):
         :return: True 表示超时前识别到目标
         """
         deadline = time.monotonic() + timeout
+        # 步骤开始先确认没有被“继续修炼”弹窗遮挡
+        if not self._dismiss_continue_practice():
+            if not self.working:
+                return False
         while self.working:
             pic = self._exchange.capture(self._hwnd)
-            if pic is not None and self._exchange.locate_target(
-                    self._hwnd, spec, pic=pic) is not None:
-                return True
+            if pic is not None:
+                if self._exchange.locate_target(self._hwnd, spec, pic=pic) is not None:
+                    return True
+                if self._click_continue_practice(pic):
+                    # 目标没出现时确认是否被偶发弹窗遮挡，点掉后重新识别
+                    time.sleep(self.POLL_INTERVAL)
+                    continue
             if time.monotonic() >= deadline:
                 return False
             time.sleep(self.POLL_INTERVAL)
@@ -125,6 +185,9 @@ class ChallengePointTask(BaseTaskThread):
 
     def _panel_intact(self) -> bool:
         """确认兑换面板还在（技能书页或回收栏仍可见）。"""
+        # 弹窗会遮挡面板，先点掉再判定，避免误判成“面板被关闭”
+        if not self._dismiss_continue_practice():
+            return False
         pic = self._exchange.capture(self._hwnd)
         if pic is None:
             return False
@@ -146,9 +209,14 @@ class ChallengePointTask(BaseTaskThread):
         deadline = time.monotonic() + timeout
         while self.working:
             pic = self._exchange.capture(self._hwnd)
-            if pic is not None and self._exchange.locate_target(
-                    self._hwnd, self._exchange.spec_exchange_re_ok, pic=pic) is None:
-                return True
+            if pic is not None:
+                if self._click_continue_practice(pic):
+                    # 弹窗遮挡界面，点掉后重新截图再判断确认框
+                    time.sleep(self.POLL_INTERVAL)
+                    continue
+                if self._exchange.locate_target(
+                        self._hwnd, self._exchange.spec_exchange_re_ok, pic=pic) is None:
+                    return True
             if time.monotonic() >= deadline:
                 return False
             time.sleep(self.POLL_INTERVAL)
@@ -201,7 +269,20 @@ class ChallengePointTask(BaseTaskThread):
             while self.working:
                 self.status_bar.emit(exchange_count)
 
+                # “继续修炼”弹窗会遮挡兑换界面，每轮开始先确认没有弹窗
+                if not self._dismiss_continue_practice():
+                    if not self.working:
+                        break
+                    self.sin_out.emit(f"窗口:{self._hwnd} '继续修炼'弹窗未消失，稍后重试")
+                    if not self._sleep_working(self.POPUP_RETRY_DELAY):
+                        break
+                    continue
+
                 check_code = self._exchange.check_pic_template_exist(self._hwnd)
+                if check_code != 0:
+                    # 弹窗可能在检查瞬间才出现，点掉后复查一次，避免误判成面板丢失
+                    self._dismiss_continue_practice()
+                    check_code = self._exchange.check_pic_template_exist(self._hwnd)
                 if check_code != 0:
                     if check_code == -1:
                         # 未发现技能书页：先点击左侧的夺魄书页展开列表

@@ -106,6 +106,13 @@ class ChallengePointExchange:
             threshold=0.9,
             to_gray=True,
         )
+        # 偶发弹窗：出现后会遮挡兑换界面，必须先点掉才能继续识别
+        self.spec_continue_practice = TargetSpec(
+            name="继续修炼弹窗",
+            template=config.continue_practice,
+            threshold=0.85,
+            to_gray=True,
+        )
 
         # key: TargetSpec.name -> 坐标缓存
         self._cache: dict[str, _TargetCache] = {}

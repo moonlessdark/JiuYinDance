@@ -328,3 +328,4 @@ class ChallengePoint2LuckyMoney:
     recycle_box_result: str = dataclasses.field(default_factory=str)  # 回收结果预览
     exchange_ok: str = dataclasses.field(default_factory=str)  # 确认回收
     exchange_re_ok: str = dataclasses.field(default_factory=str)  # 二次确认回收
+    continue_practice: str = dataclasses.field(default_factory=str)  # 偶发“继续修炼”弹窗按钮
