@@ -177,6 +177,7 @@ class ResourcesConfig:
             follow_line=_res("/Resources/ImageTemplate/PicWorldMarket/Border/my_follow_page.png"),
             ok=_res("/Resources/ImageTemplate/PicWorldMarket/Border/ok.png"),
             plus_price_10=_res("/Resources/ImageTemplate/PicWorldMarket/Border/plus_10.png"),
+            plus_price_50=_res("/Resources/ImageTemplate/PicWorldMarket/Border/plus_50.png"),
             plus_price_100=_res("/Resources/ImageTemplate/PicWorldMarket/Border/plus_100.png"),
             summit_price=_res("/Resources/ImageTemplate/PicWorldMarket/Border/summit.png"),
             bidding_man=_res("/Resources/ImageTemplate/PicWorldMarket/Border/竞价者.png"),

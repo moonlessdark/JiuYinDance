@@ -171,6 +171,7 @@ class FindAuctionMarket:
         self._follow_line = load_template(config.follow_line)
         self._ok = load_template(config.ok)
         self._plus_price_10 = load_template(config.plus_price_10)
+        self._plus_price_50 = load_template(config.plus_price_50)
         self._plus_price_100 = load_template(config.plus_price_100)
         self._summit_price = load_template(config.summit_price)
         self._bidder_man = load_template(config.bidder_man)
@@ -254,19 +255,32 @@ class FindAuctionMarket:
         result = self._find_area(image, self._follow_line, threshold=0.7)
         return result is not None and float(result["confidence"]) > 0.85
 
-    def find_plus_price(self, image: np.ndarray) -> list[tuple[float, float, float]]:
-        """
-        查找 10 两 / 100 两加价按钮。
-
-        :return: [(x, y, confidence)]，按横坐标升序；调用方使用第一个即可
-        """
-        points: list[tuple[float, float, float]] = []
-        for template in (self._plus_price_10, self._plus_price_100):
+    def _collect_plus_points(
+            self, image: np.ndarray,
+            templates: tuple[tuple[Optional[np.ndarray], int], ...],
+    ) -> list[tuple[float, float, float, int]]:
+        """在图像中查找指定加价模板，返回 (x, y, confidence, 加价金额)，按横坐标升序。"""
+        points: list[tuple[float, float, float, int]] = []
+        for template, increment in templates:
             for result in self._find_results(image, template, threshold=0.7):
                 x, y = result["result"]
-                points.append((float(x), float(y), float(result["confidence"])))
+                points.append((float(x), float(y), float(result["confidence"]), increment))
         points.sort(key=lambda item: item[0])
         return points
+
+    def find_plus_price(self, image: np.ndarray) -> list[tuple[float, float, float, int]]:
+        """
+        查找加价按钮，返回 [(x, y, confidence, 加价金额)]，按横坐标升序。
+
+        三种按钮互斥：正常阶段显示 10 两和 100 两，竞拍倒计时进入最后阶段后
+        10 两 / 100 两会消失，只剩 50 两按钮。因此先找 10 两 / 100 两，
+        两者都没有命中时才检测 50 两。
+        """
+        points = self._collect_plus_points(
+            image, ((self._plus_price_10, 10), (self._plus_price_100, 100)))
+        if points:
+            return points
+        return self._collect_plus_points(image, ((self._plus_price_50, 50),))
 
     def find_summit_price(self, image: np.ndarray) -> Optional[tuple[float, float]]:
         """

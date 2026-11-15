@@ -249,6 +249,7 @@ class MarketPic:
     follow_line: str = dataclasses.field(default_factory=str)  # 我的关注
     ok: str = dataclasses.field(default_factory=str)  #  出价后的确认按钮
     plus_price_10: str = dataclasses.field(default_factory=str)  # 加价10两
+    plus_price_50: str = dataclasses.field(default_factory=str)  # 加价50两（倒计时最后阶段独占显示）
     plus_price_100: str = dataclasses.field(default_factory=str)  # 加价100两
     summit_price: str = dataclasses.field(default_factory=str)  # 确认出价
     bidding_man: str = dataclasses.field(default_factory=str)  # 竞价人

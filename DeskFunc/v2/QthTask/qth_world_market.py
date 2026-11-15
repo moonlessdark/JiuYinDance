@@ -23,6 +23,7 @@ class WorldMarketTask(BaseTaskThread):
         self._scan_product_num = 2
         self._product_sell_price: list[dict] = []
         self._product_pass_name_list: list[str] = []
+        self._skip_product_names: set[str] = set()
         self._capture = WindowsCapture()
         self._find_market = FindAuctionMarket()
 
@@ -36,6 +37,8 @@ class WorldMarketTask(BaseTaskThread):
             product["product_name"] for product in product_price_list
             if product.get("max_price") != ""
         ]
+        # 本次运行中因加价会超过最高价而放弃的物品，避免反复尝试刷日志
+        self._skip_product_names = set()
         self._scan_product_num = int(scan_product_num)
 
     def run(self):
@@ -59,6 +62,9 @@ class WorldMarketTask(BaseTaskThread):
                 for goods in goods_list:
                     if not self.working:
                         break
+
+                    if goods.product_name in self._skip_product_names:
+                        continue
 
                     setting = next((item for item in self._product_sell_price
                                     if item["product_name"] == goods.product_name), None)
@@ -90,6 +96,7 @@ class WorldMarketTask(BaseTaskThread):
                     time.sleep(0.3)
 
                     plus_success = False
+                    plus_increment = 10
                     for _ in range(2):
                         if not self.working:
                             break
@@ -101,6 +108,15 @@ class WorldMarketTask(BaseTaskThread):
                         plus_points = self._find_market.find_plus_price(market_capture.pic_content)
                         if not plus_points:
                             # 加价按钮消失，通常表示竞拍已经结束
+                            break
+
+                        # 倒计时最后阶段只剩 50 两按钮，需判断本次加价后是否会超过价格上限
+                        plus_increment = plus_points[0][3]
+                        if goods.current_price + plus_increment > max_price:
+                            self._skip_product_names.add(goods.product_name)
+                            self.sin_out.emit(
+                                f"{goods.product_name} 当前价:{goods.current_price} "
+                                f"加价{plus_increment}两将超过最高价:{max_price},放弃竞拍")
                             break
 
                         plus_point = client_to_screen(
@@ -142,7 +158,7 @@ class WorldMarketTask(BaseTaskThread):
                             (re_summit_points[0][0], re_summit_points[0][1]))
                         SetGhostMouse().move_mouse_to(re_summit_point[0], re_summit_point[1])
                         SetGhostMouse().click_mouse_left_button()
-                        self.sin_out.emit(f"{goods.product_name} 加价10两")
+                        self.sin_out.emit(f"{goods.product_name} 加价{plus_increment}两")
                     time.sleep(0.2)
 
                     # 一次只处理一个物品，刷新列表后重新扫描
