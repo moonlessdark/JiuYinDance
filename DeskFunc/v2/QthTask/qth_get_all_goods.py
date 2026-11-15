@@ -9,7 +9,7 @@
 """
 import time
 
-from Core.input.ghost import SetGhostMouse
+from Core.input.ghost import get_ghost_mouse
 from DeskFunc.v2.QthTask.base_task import BaseTaskThread
 from DeskFunc.v2.TaskBussinese.common_operations import CommonOperations
 from DeskFunc.v2.TaskBussinese.hidden_realm_item import HiddenRealmItems
@@ -32,8 +32,8 @@ class GetAllGoodsTask(BaseTaskThread):
     @staticmethod
     def move_mouse(hwnd: int):
         """移动一下鼠标，避免挡住背包中的包裹图标。"""
-        mouse_x, mouse_y = SetGhostMouse().get_mouse_x_y()
-        SetGhostMouse().move_mouse_to(mouse_x - 10, mouse_y - 10)
+        mouse_x, mouse_y = get_ghost_mouse().get_mouse_x_y()
+        get_ghost_mouse().move_mouse_to(mouse_x - 10, mouse_y - 10)
         time.sleep(0.5)
 
     def run(self):

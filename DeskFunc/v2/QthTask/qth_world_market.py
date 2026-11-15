@@ -6,7 +6,7 @@
 """
 import time
 
-from Core.input.ghost import SetGhostMouse
+from Core.input.ghost import get_ghost_mouse
 from Core.windows.capture import PicCapture, WindowsCapture
 from Core.windows.geometry import client_to_screen
 from Core.windows.window import WindowsHandle
@@ -91,8 +91,8 @@ class WorldMarketTask(BaseTaskThread):
 
                     product_point = client_to_screen(
                         self._windows_handle, (goods.client_x, goods.client_y))
-                    SetGhostMouse().move_mouse_to(product_point[0], product_point[1])
-                    SetGhostMouse().click_mouse_left_button()
+                    get_ghost_mouse().move_mouse_to(product_point[0], product_point[1])
+                    get_ghost_mouse().click_mouse_left_button()
                     time.sleep(0.3)
 
                     plus_success = False
@@ -121,8 +121,8 @@ class WorldMarketTask(BaseTaskThread):
 
                         plus_point = client_to_screen(
                             self._windows_handle, (plus_points[0][0], plus_points[0][1]))
-                        SetGhostMouse().move_mouse_to(plus_point[0], plus_point[1])
-                        SetGhostMouse().click_mouse_left_button()
+                        get_ghost_mouse().move_mouse_to(plus_point[0], plus_point[1])
+                        get_ghost_mouse().click_mouse_left_button()
                         time.sleep(0.3)
 
                         summit_capture = self._capture.capture(self._windows_handle)
@@ -134,8 +134,8 @@ class WorldMarketTask(BaseTaskThread):
                             continue
 
                         summit_screen = client_to_screen(self._windows_handle, summit_point)
-                        SetGhostMouse().move_mouse_to(summit_screen[0], summit_screen[1])
-                        SetGhostMouse().click_mouse_left_button()
+                        get_ghost_mouse().move_mouse_to(summit_screen[0], summit_screen[1])
+                        get_ghost_mouse().click_mouse_left_button()
                         time.sleep(0.2)
                         plus_success = True
                         break
@@ -156,8 +156,8 @@ class WorldMarketTask(BaseTaskThread):
                         re_summit_point = client_to_screen(
                             self._windows_handle,
                             (re_summit_points[0][0], re_summit_points[0][1]))
-                        SetGhostMouse().move_mouse_to(re_summit_point[0], re_summit_point[1])
-                        SetGhostMouse().click_mouse_left_button()
+                        get_ghost_mouse().move_mouse_to(re_summit_point[0], re_summit_point[1])
+                        get_ghost_mouse().click_mouse_left_button()
                         self.sin_out.emit(f"{goods.product_name} 加价{plus_increment}两")
                     time.sleep(0.2)
 

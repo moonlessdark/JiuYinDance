@@ -532,3 +532,26 @@ class SetGhostMouse(SetGhostDriver):
         """
         result_int: int = self.ghost_driver.ismousebuttonpressed(m_btn)
         return True if result_int == 1 else False
+
+
+# 进程级单例：所有实例最终都指向同一个类级 DLL，无需在业务代码里反复 new。
+# 必须懒加载：GetGhostDriver.dll 在驱动未初始化时为 None，若此时创建并缓存，
+# SetGhostDriver.get_ghost_driver 会把 None 永久写入实例，后续调用直接报错。
+_ghost_mouse_instance: SetGhostMouse | None = None
+_ghost_boards_instance: SetGhostBoards | None = None
+
+
+def get_ghost_mouse() -> SetGhostMouse:
+    """获取全局唯一的鼠标操作实例，首次调用时创建。"""
+    global _ghost_mouse_instance
+    if _ghost_mouse_instance is None:
+        _ghost_mouse_instance = SetGhostMouse()
+    return _ghost_mouse_instance
+
+
+def get_ghost_boards() -> SetGhostBoards:
+    """获取全局唯一的键盘操作实例，首次调用时创建。"""
+    global _ghost_boards_instance
+    if _ghost_boards_instance is None:
+        _ghost_boards_instance = SetGhostBoards()
+    return _ghost_boards_instance

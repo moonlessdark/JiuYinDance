@@ -16,7 +16,7 @@ from __future__ import annotations
 import time
 from typing import Optional
 
-from Core.input.ghost import SetGhostBoards
+from Core.input.ghost import get_ghost_boards
 from Core.vision.template import find_all_template, load_template
 from Core.vision.target import TargetSpec
 from Core.windows.capture import WindowsCapture
@@ -81,7 +81,7 @@ class FindGiftCard:
             if not self._windows_opt.activate_windows(hwnd):
                 return False
             time.sleep(0.2)
-            SetGhostBoards().click_press_and_release_by_key_code_hold_time(66, 0.3)
+            get_ghost_boards().click_press_and_release_by_key_code_hold_time(66, 0.3)
             time.sleep(0.2)
         return False
 

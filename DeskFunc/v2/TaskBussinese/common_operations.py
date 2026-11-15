@@ -17,7 +17,7 @@ import time
 from dataclasses import replace
 from typing import Optional
 
-from Core.input.ghost import SetGhostMouse
+from Core.input.ghost import get_ghost_mouse
 from Core.vision.locator import Locator, MatchResult
 from Core.vision.screen import ScreenSource
 from Core.vision.target import RatioRect, TargetSpec
@@ -35,8 +35,6 @@ class CommonOperations:
         self._windows_opt = WindowsHandle()
         self._screen = ScreenSource()
         self._locator = Locator(self._screen)
-        # 延迟创建，避免在幽灵键鼠驱动尚未初始化时缓存到空驱动
-        self._ghost_mouse = None
 
         # 物品使用进度条：先彩色匹配，失败再灰度匹配
         self._loading_bar_color = TargetSpec(
@@ -58,12 +56,6 @@ class CommonOperations:
             to_gray=False,
         )
 
-    def _get_ghost_mouse(self) -> SetGhostMouse:
-        """获取幽灵键鼠操作实例，进程内只创建一次。"""
-        if self._ghost_mouse is None:
-            self._ghost_mouse = SetGhostMouse()
-        return self._ghost_mouse
-
     def mouse_click_pos(self, hwnd: int, move_pos: tuple, mouse_type: int = 0,
                         react_delay: float = 0.3) -> bool:
         """
@@ -78,7 +70,7 @@ class CommonOperations:
         if not self._windows_opt.activate_windows(hwnd):
             return False
         x, y = move_pos
-        ghost_mouse = self._get_ghost_mouse()
+        ghost_mouse = get_ghost_mouse()
         ghost_mouse.move_mouse_to(int(x), int(y))
         time.sleep(0.1)
         if mouse_type == 1:

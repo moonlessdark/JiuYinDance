@@ -17,7 +17,7 @@ from __future__ import annotations
 import time
 from typing import Callable
 
-from Core.input.ghost import SetGhostBoards, SetGhostMouse
+from Core.input.ghost import get_ghost_boards, get_ghost_mouse
 from Core.vision.target import TargetSpec
 from Core.windows.capture import WindowsCapture
 from Core.windows.geometry import client_to_screen
@@ -100,20 +100,20 @@ class FindMapGoodsPoint:
 
         result = self._common.locate(hwnd, self._spec_plus_map)
         if result is None:
-            SetGhostBoards().click_press_and_release_by_key_name("M")
+            get_ghost_boards().click_press_and_release_by_key_name("M")
             time.sleep(0.5)
             result = self._common.locate(hwnd, self._spec_plus_map)
             print("找到地图了吗？", result)
         if result is None or result.screen_point is None:
             return False
 
-        SetGhostMouse().move_mouse_to(*result.screen_point)
+        get_ghost_mouse().move_mouse_to(*result.screen_point)
         time.sleep(0.2)
-        SetGhostMouse().press_mouse_left_button()
+        get_ghost_mouse().press_mouse_left_button()
         time.sleep(1)
-        SetGhostMouse().release_mouse_left_button()
+        get_ghost_mouse().release_mouse_left_button()
         time.sleep(0.1)
-        SetGhostBoards().click_press_and_release_by_key_name("M")
+        get_ghost_boards().click_press_and_release_by_key_name("M")
         time.sleep(1)
         return True
 
@@ -130,32 +130,32 @@ class FindMapGoodsPoint:
         """
         self._windows_opt.activate_windows(hwnd)
         time.sleep(0.5)
-        SetGhostBoards().click_press_and_release_by_key_name("M")
+        get_ghost_boards().click_press_and_release_by_key_name("M")
         time.sleep(0.5)
 
         if not self._input_coordinate(hwnd, self._spec_pos_x, str(x)):
-            SetGhostBoards().click_press_and_release_by_key_name("M")
+            get_ghost_boards().click_press_and_release_by_key_name("M")
             return False
 
         if not self._input_coordinate(hwnd, self._spec_pos_y, str(y)):
-            SetGhostBoards().click_press_and_release_by_key_name("M")
+            get_ghost_boards().click_press_and_release_by_key_name("M")
             return False
 
         if not self._wait_and_click(hwnd, self._spec_search_pos, is_running):
-            SetGhostBoards().click_press_and_release_by_key_name("M")
+            get_ghost_boards().click_press_and_release_by_key_name("M")
             return False
 
         if not self._wait_and_click(hwnd, self._spec_result_point, is_running):
-            SetGhostBoards().click_press_and_release_by_key_name("M")
+            get_ghost_boards().click_press_and_release_by_key_name("M")
             return False
 
         # 鼠标移到右上角，避免遮挡小地图
         capture = self._windows_cap.capture(hwnd)
         if capture is not None:
             point = client_to_screen(hwnd, (capture.pic_width - 110, 180))
-            SetGhostMouse().move_mouse_to(point[0], point[1] + 50)
+            get_ghost_mouse().move_mouse_to(point[0], point[1] + 50)
 
-        SetGhostBoards().click_press_and_release_by_key_name("M")
+        get_ghost_boards().click_press_and_release_by_key_name("M")
         time.sleep(0.5)
         return True
 
@@ -170,15 +170,15 @@ class FindMapGoodsPoint:
             return False
 
         # 输入框右侧留出距离，避免点到文字中间
-        SetGhostMouse().move_mouse_to(result.screen_point[0] + 50, result.screen_point[1])
+        get_ghost_mouse().move_mouse_to(result.screen_point[0] + 50, result.screen_point[1])
         time.sleep(0.2)
-        SetGhostMouse().click_mouse_left_button()
+        get_ghost_mouse().click_mouse_left_button()
         time.sleep(0.5)
         # 8 = Backspace，长按清空原有坐标
-        SetGhostBoards().click_press_and_release_by_key_code_hold_time(8, 0.5)
+        get_ghost_boards().click_press_and_release_by_key_code_hold_time(8, 0.5)
         time.sleep(0.1)
         for char in text:
-            SetGhostBoards().click_press_and_release_by_key_name(char)
+            get_ghost_boards().click_press_and_release_by_key_name(char)
             time.sleep(0.2)
         return True
 
@@ -217,7 +217,7 @@ class FindMapGoodsPoint:
                 return False
             pic_w = capture.pic_width
             point = client_to_screen(hwnd, (pic_w - 110, 180))
-            SetGhostMouse().move_mouse_to(point[0], point[1])
+            get_ghost_mouse().move_mouse_to(point[0], point[1])
             time.sleep(0.5)
 
             capture = self._windows_cap.capture(hwnd)
@@ -240,7 +240,7 @@ class FindMapGoodsPoint:
                 return True
             last_text = current_text
 
-            SetGhostMouse().move_mouse_to(point[0], point[1] + 50)
+            get_ghost_mouse().move_mouse_to(point[0], point[1] + 50)
             time.sleep(1)
         return False
 
@@ -261,8 +261,8 @@ class FindMapGoodsPoint:
         if capture is None:
             return False
         point = client_to_screen(hwnd, (capture.pic_width - 110, 120))
-        SetGhostMouse().move_mouse_to(point[0], point[1])
+        get_ghost_mouse().move_mouse_to(point[0], point[1])
         time.sleep(0.2)
-        SetGhostMouse().click_mouse_left_button()
+        get_ghost_mouse().click_mouse_left_button()
         time.sleep(0.2)
         return True

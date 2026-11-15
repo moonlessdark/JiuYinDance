@@ -12,7 +12,11 @@ import time
 
 from PySide6.QtCore import QTimer
 
-from Core.input.ghost import GetGhostDriver, SetGhostBoards, SetGhostMouse
+from Core.input.ghost import (
+    GetGhostDriver,
+    get_ghost_boards,
+    get_ghost_mouse,
+)
 from Core.input.global_mouse import GlobalMouseListener
 from Core.windows.window import (
     WindowsHandle,
@@ -167,10 +171,11 @@ class TaskConnect(MainUI):
         ghost_dll = get_resources().ghost_dll
         GetGhostDriver(dll_path=ghost_dll.dll_ghost)
         if GetGhostDriver.dll is not None:
-            SetGhostBoards().open_device()
-            if SetGhostBoards().check_usb_connect():
+            ghost_boards = get_ghost_boards()
+            ghost_boards.open_device()
+            if ghost_boards.check_usb_connect():
                 self.log_print("幽灵键鼠加载成功。\n如有疑问，请查看“帮助”-“功能说明”\n")
-                SetGhostMouse().set_mouse_movement_speed(8)
+                get_ghost_mouse().set_mouse_movement_speed(8)
                 return True
             self.log_print("未检测到usb设备,请检查后重试\n")
         else:

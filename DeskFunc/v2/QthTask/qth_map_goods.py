@@ -11,7 +11,7 @@
 import time
 from datetime import datetime, timedelta
 
-from Core.input.ghost import SetGhostBoards
+from Core.input.ghost import get_ghost_boards
 from DeskFunc.v2.QthTask.base_task import BaseTaskThread
 from DeskFunc.v2.TaskBussinese.map_goods_point import FindMapGoodsPoint
 
@@ -128,7 +128,7 @@ class MapGoodsTask(BaseTaskThread):
 
                             if not self._find_map_goods.check_person_move_status(self._windows_handle):
                                 # 仍然在移动，说明这个坐标无法正常寻路
-                                SetGhostBoards().click_press_and_release_by_key_name("S")
+                                get_ghost_boards().click_press_and_release_by_key_name("S")
                                 self.sin_out.emit(
                                     f"坐标({point_x},{point_y})地形不适合自动寻路,请优化坐标")
                             else:

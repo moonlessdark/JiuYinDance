@@ -10,7 +10,7 @@
 import datetime
 import time
 
-from Core.input.ghost import SetGhostMouse
+from Core.input.ghost import get_ghost_mouse
 from Core.windows.capture import WindowsCapture
 from Core.windows.window import WindowsHandle
 from DeskFunc.v2.QthTask.base_task import BaseTaskThread
@@ -107,7 +107,7 @@ class OpenGiftCardTask(BaseTaskThread):
                             self.sin_out.emit(f"窗口id:{hwnd} 未成功激活")
                             continue
 
-                        SetGhostMouse().click_mouse_right_button()
+                        get_ghost_mouse().click_mouse_right_button()
                         time.sleep(0.4)
 
                         if self._find_gift_card.find_open_loading(hwnd):
@@ -125,8 +125,8 @@ class OpenGiftCardTask(BaseTaskThread):
                         self._windows_opt.activate_windows(hwnd)
                         time.sleep(0.6)
                         # get_mouse_x_y 返回的是屏幕坐标，直接移动即可
-                        mouse_x, mouse_y = SetGhostMouse().get_mouse_x_y()
-                        SetGhostMouse().move_mouse_to(mouse_x - 10, mouse_y - 10)
+                        mouse_x, mouse_y = get_ghost_mouse().get_mouse_x_y()
+                        get_ghost_mouse().move_mouse_to(mouse_x - 10, mouse_y - 10)
                         if self._find_gift_card.click_get_all(hwnd):
                             self.sin_out.emit(f"窗口id:{hwnd} 没有钱,领取一些丹药")
                         else:

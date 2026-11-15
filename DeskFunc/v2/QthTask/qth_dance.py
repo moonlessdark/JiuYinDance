@@ -9,7 +9,7 @@
 """
 import time
 
-from Core.input.ghost import SetGhostBoards, get_random_time
+from Core.input.ghost import get_ghost_boards, get_random_time
 from Core.windows.window import WindowsHandle
 from DeskFunc.v2.QthTask.base_task import BaseTaskThread
 from DeskFunc.v2.TaskBussinese.dance_button import (
@@ -43,9 +43,9 @@ def input_key_by_ghost(key_list: list[str]) -> None:
     for key in key_list:
         target = _KEY_NAME_MAP.get(key)
         if isinstance(target, int):
-            SetGhostBoards().click_press_and_release_by_code(target)
+            get_ghost_boards().click_press_and_release_by_code(target)
         elif isinstance(target, str):
-            SetGhostBoards().click_press_and_release_by_key_name(target)
+            get_ghost_boards().click_press_and_release_by_key_name(target)
         time.sleep(get_random_time(0.3))
 
 
