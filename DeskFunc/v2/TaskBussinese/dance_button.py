@@ -17,6 +17,8 @@ v2 的做法：
   未命中的模板按“画面中不存在该按键”处理；只有整级一个都没命中时才整体进入边缘级/均衡级，
   避免未出现的按键模板每一帧都重复跑兜底；
 - 自适应 Canny 的阈值跟随图像中位数变化，亮度整体变暗时阈值同步下降，夜间不会丢失边缘；
+- 边缘级/均衡级的阈值必须放低才能兼容夜间，复杂画面下容易被局部纹理凑出高分，
+  因此这两级命中后会用亮度归一化后的原始灰度图再复核一次，结构对不上的命中直接丢弃；
 - 模板只在初始化时预处理一次，识别过程中不再修改模板，避免缓存对象被意外污染。
 """
 from __future__ import annotations
@@ -103,10 +105,18 @@ class DanceButtonMatch:
 
 @dataclass(frozen=True)
 class _DanceTemplate:
-    """预处理后的按键模板，初始化后只读。"""
+    """
+    预处理后的按键模板，初始化后只读。
+
+    - gray：原始灰度模板，用于灰度级直接匹配；
+    - gray_norm：亮度拉伸后的灰度模板，用于兜底级命中的灰度复核；
+    - edge：基于 gray_norm 生成的边缘模板；
+    - equalized：直方图均衡模板。
+    """
 
     name: str
     gray: np.ndarray
+    gray_norm: np.ndarray
     edge: np.ndarray
     equalized: np.ndarray
 
@@ -183,11 +193,13 @@ def _build_templates(pic_config, button_fields: tuple[tuple[str, str], ...]) -> 
         gray = _to_gray(image)
         if gray is None:
             continue
+        gray_norm = _normalize_light(gray)
         templates.append(_DanceTemplate(
             name=name,
             gray=gray,
+            gray_norm=gray_norm,
             # 边缘模板基于亮度拉伸后的图生成，与源图保持同一套预处理流程
-            edge=_auto_canny(_normalize_light(gray)),
+            edge=_auto_canny(gray_norm),
             equalized=cv2.equalizeHist(gray),
         ))
     return tuple(templates)
@@ -210,17 +222,26 @@ class FindDanceButton:
     def __init__(self, threshold: float = 0.8,
                  edge_threshold: float = 0.72,
                  equalized_threshold: float = 0.8,
-                 conflict_distance: float = 18.0):
+                 conflict_distance: float = 18.0,
+                 verify_threshold: float = 0.6):
         """
         :param threshold: 灰度直接匹配阈值，白天正常画面使用；
         :param edge_threshold: 边缘兜底阈值；边缘图是二值结构，匹配度略低于彩色灰度图属正常现象；
         :param equalized_threshold: 直方图均衡兜底阈值；
-        :param conflict_distance: 不同模板命中点相距小于该像素值时视为同一个按键，只保留匹配度最高的一项。
+        :param conflict_distance: 不同模板命中点相距小于该像素值时视为同一个按键，只保留匹配度最高的一项；
+        :param verify_threshold: 兜底级（边缘/均衡）命中后，在亮度归一化灰度图上的复核阈值；
+                                 低于该值视为纹理误报，直接丢弃命中。
+
+
+        备注：
+        依据：半透明按钮与随机背景按 0~80% 混合时，真实按钮的灰度复核分数为 0.72–1.0，仍有充足余量；而纹理巧合只能在边缘图上凑出高分，灰度结构复核会把它挡掉。
+        可调点：若仍偶发误报，调高 FindDanceButton(verify_threshold=0.65)；若夜间漏按，降到 0.55。
         """
         self._threshold = float(threshold)
         self._edge_threshold = float(edge_threshold)
         self._equalized_threshold = float(equalized_threshold)
         self._conflict_distance = float(conflict_distance)
+        self._verify_threshold = float(verify_threshold)
 
         resources = get_resources()
         self._grey_templates = _build_templates(resources.dance_grey, _GREY_BUTTON_FIELDS)
@@ -284,14 +305,18 @@ class FindDanceButton:
             # 白天到黑夜后整体亮度、半透明背景都会变化，但按键轮廓仍然存在，
             # 用相对阈值提取边缘可以稳定命中。
             edge_source = _auto_canny(_normalize_light(gray))
-            edge_matches, pending = self._match_stage(edge_source, pending, self._edge_threshold, "edge")
+            edge_matches, pending = self._match_stage(
+                edge_source, pending, self._edge_threshold, "edge",
+                verify_source=gray, verify_threshold=self._verify_threshold)
             matches.extend(edge_matches)
 
         if pending and not matches:
             # 边缘级仍然零命中：极端偏暗/偏亮、对比度被压缩时，
             # 均衡后重新拉开灰度分布再做最后一次尝试。
             equalized_source = cv2.equalizeHist(gray)
-            equalized_matches, _ = self._match_stage(equalized_source, pending, self._equalized_threshold, "equalized")
+            equalized_matches, _ = self._match_stage(
+                equalized_source, pending, self._equalized_threshold, "equalized",
+                verify_source=gray, verify_threshold=self._verify_threshold)
             matches.extend(equalized_matches)
 
         # 上下左右四个模板的外圈按钮底图非常相似，同一个按键可能被多个模板同时命中。
@@ -301,7 +326,9 @@ class FindDanceButton:
         return matches
 
     def _match_stage(self, source: np.ndarray, templates: tuple[_DanceTemplate, ...],
-                     threshold: float, strategy: str
+                     threshold: float, strategy: str,
+                     verify_source: Optional[np.ndarray] = None,
+                     verify_threshold: float = 0.0
                      ) -> tuple[list[DanceButtonMatch], list[_DanceTemplate]]:
         """
         对所有模板执行同一级匹配。
@@ -310,6 +337,8 @@ class FindDanceButton:
         :param templates: 需要匹配的模板集合；
         :param threshold: 本级阈值；
         :param strategy: gray / edge / equalized，同时作为模板图像字段名；
+        :param verify_source: 复核用的原始灰度图；为 None 时不做复核（灰度级不需要）；
+        :param verify_threshold: 灰度复核阈值；
         :return: (本级命中结果, 本级未命中的模板)
         """
         matched: list[DanceButtonMatch] = []
@@ -317,11 +346,52 @@ class FindDanceButton:
         for template in templates:
             found = self._match_template(source, getattr(template, strategy),
                                          template.name, threshold, strategy)
+            if found and verify_source is not None:
+                # 边缘/均衡级阈值放得低，复杂画面容易把局部纹理凑成高分；
+                # 用原始灰度图复核命中位置，结构对不上的按“未命中”处理，
+                # 这样既能保留夜间识别能力，又不会把纹理误报当成按键。
+                found = [
+                    item for item in found
+                    if self._verify_with_gray(verify_source, template.gray_norm,
+                                              item, verify_threshold)
+                ]
             if found:
                 matched.extend(found)
             else:
                 pending.append(template)
         return matched, pending
+
+    @staticmethod
+    def _verify_with_gray(gray_source: np.ndarray, gray_template: np.ndarray,
+                          match: DanceButtonMatch, threshold: float) -> bool:
+        """
+        在原始灰度图上复核兜底级的命中位置。
+
+        真实按键无论昼夜都保留完整的灰度结构，亮度拉伸后与模板的相关性明显
+        高于随机纹理；画面复杂时边缘图上的局部巧合很难通过这层结构复核。
+
+        :param gray_source: 原始截图灰度图；
+        :param gray_template: 亮度拉伸后的灰度模板；
+        :param match: 待复核的命中结果；
+        :param threshold: 复核阈值；
+        :return: 复核通过返回 True；越界、纯色区域或分数不足返回 False
+        """
+        template_height, template_width = gray_template.shape[:2]
+        source_height, source_width = gray_source.shape[:2]
+        left = int(round(match.x - template_width / 2.0))
+        top = int(round(match.y - template_height / 2.0))
+        if left < 0 or top < 0:
+            return False
+        if left + template_width > source_width or top + template_height > source_height:
+            return False
+
+        patch = gray_source[top:top + template_height, left:left + template_width]
+        # 纯色区域在 CCOEFF_NORMED 下没有意义，直接判为不通过
+        if float(np.std(patch)) < 1e-6:
+            return False
+        patch_norm = _normalize_light(patch)
+        score = cv2.matchTemplate(patch_norm, gray_template, cv2.TM_CCOEFF_NORMED)[0, 0]
+        return float(score) >= threshold
 
     def _deduplicate_matches(self, matches: list[DanceButtonMatch]) -> list[DanceButtonMatch]:
         """
